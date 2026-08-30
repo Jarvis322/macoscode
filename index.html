@@ -552,7 +552,14 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      transition: all 0.25s ease;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+      will-change: transform;
+    }
+
+    .controls-wrapper.controls-hidden {
+      transform: translateY(-140%);
+      opacity: 0;
+      pointer-events: none;
     }
 
     .search-row {
@@ -1415,10 +1422,14 @@
 
       .controls-wrapper {
         top: 6px;
-        padding: 9px 10px;
+        padding: 8px 10px;
         border-radius: 14px;
-        gap: 7px;
-        margin-bottom: 20px;
+        gap: 6px;
+        margin-bottom: 18px;
+      }
+
+      .controls-footer {
+        display: none; /* Hide 3-row tag chips on mobile so sticky header is ultra-compact ~65px */
       }
 
       .search-box input {
@@ -1435,8 +1446,13 @@
         right: 10px;
       }
 
+      .filter-bar {
+        padding-bottom: 0;
+        gap: 5px;
+      }
+
       .filter-btn {
-        padding: 5px 10px;
+        padding: 5px 9px;
         font-size: 0.75rem;
       }
 
@@ -3540,6 +3556,7 @@ echo "✅ Sistem tamamen macOS orijinal fabrika ayarlarına döndürüldü!"</pr
     function scrollToSearchTop() {
       const controls = document.querySelector('.controls-wrapper');
       if (controls) {
+        controls.classList.remove('controls-hidden');
         controls.scrollIntoView({ behavior: 'smooth', block: 'start' });
         const input = document.getElementById('searchInput');
         if (input) {
@@ -3550,15 +3567,31 @@ echo "✅ Sistem tamamen macOS orijinal fabrika ayarlarına döndürüldü!"</pr
       }
     }
 
+    let lastScrollY = window.scrollY;
     window.addEventListener('scroll', () => {
+      const currentScrollY = window.scrollY;
+      const controls = document.querySelector('.controls-wrapper');
       const btn = document.getElementById('floatingSearchBtn');
+
+      if (controls) {
+        if (currentScrollY > 320 && currentScrollY > lastScrollY + 10) {
+          // Scrolling down -> hide sticky bar smoothly so user has 100% full screen view of cards
+          controls.classList.add('controls-hidden');
+        } else if (currentScrollY < lastScrollY - 6 || currentScrollY < 180) {
+          // Scrolling up -> reveal sticky bar smoothly
+          controls.classList.remove('controls-hidden');
+        }
+      }
+
       if (btn) {
-        if (window.scrollY > 380) {
+        if (currentScrollY > 380) {
           btn.classList.add('show');
         } else {
           btn.classList.remove('show');
         }
       }
+
+      lastScrollY = currentScrollY;
     }, { passive: true });
 
     // INIT
