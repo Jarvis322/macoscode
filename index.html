@@ -13,6 +13,9 @@
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
   <meta name="theme-color" content="#0a0e17">
   <meta name="color-scheme" content="dark">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <link rel="canonical" href="https://jarvis322.github.io/macoscode/">
 
   <!-- Open Graph / Facebook / WhatsApp / Telegram / LinkedIn -->
@@ -1236,15 +1239,18 @@
         gap: 16px;
       }
 
-      /* STICKY COMPACT CONTROLS ON TABLETS & MOBILES */
+      /* NATURAL FLOW CONTROLS ON MOBILE/TABLET (NEVER COVERS CARDS) */
       .controls-wrapper {
-        position: sticky;
-        top: 8px;
+        position: relative !important;
+        top: auto !important;
+        transform: none !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
         margin-bottom: 24px;
-        padding: 12px 14px;
-        border-radius: 16px;
-        gap: 10px;
-        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65), 0 0 20px rgba(99, 102, 241, 0.15);
+        padding: 14px 16px;
+        border-radius: 18px;
+        gap: 12px;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), 0 0 20px rgba(99, 102, 241, 0.12);
       }
 
       .search-box input {
@@ -1257,26 +1263,29 @@
       }
 
       .filter-bar {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        padding-bottom: 3px;
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important;
+        padding-bottom: 4px;
         margin: 0 -2px;
         padding-left: 2px;
         padding-right: 2px;
+        gap: 7px !important;
       }
 
       .filter-bar::-webkit-scrollbar {
-        display: none;
+        display: none !important;
       }
 
       .filter-btn {
-        flex-shrink: 0;
-        white-space: nowrap;
-        padding: 6px 12px;
-        font-size: 0.8rem;
+        flex: 0 0 auto !important;
+        white-space: nowrap !important;
+        padding: 7px 14px;
+        font-size: 0.82rem;
         border-radius: 10px;
+        touch-action: manipulation;
       }
 
       .controls-footer {
@@ -1284,28 +1293,31 @@
         align-items: center;
         justify-content: space-between;
         gap: 8px;
-        padding-top: 4px;
+        padding-top: 6px;
       }
 
       .quick-tag-filters {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important;
         flex: 1;
         min-width: 0;
         padding-bottom: 2px;
+        gap: 6px !important;
       }
 
       .quick-tag-filters::-webkit-scrollbar {
-        display: none;
+        display: none !important;
       }
 
       .tag-chip {
-        flex-shrink: 0;
-        white-space: nowrap;
-        padding: 3px 8px;
-        font-size: 0.72rem;
+        flex: 0 0 auto !important;
+        white-space: nowrap !important;
+        padding: 4px 9px;
+        font-size: 0.73rem;
+        touch-action: manipulation;
       }
 
       #resultsCount {
@@ -1315,7 +1327,7 @@
       }
 
       .category-section {
-        scroll-margin-top: 100px;
+        scroll-margin-top: 30px;
       }
     }
 
@@ -1421,19 +1433,19 @@
       }
 
       .controls-wrapper {
-        top: 6px;
-        padding: 8px 10px;
-        border-radius: 14px;
-        gap: 6px;
-        margin-bottom: 18px;
-      }
-
-      .controls-footer {
-        display: none; /* Hide 3-row tag chips on mobile so sticky header is ultra-compact ~65px */
+        position: relative !important;
+        top: auto !important;
+        transform: none !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        padding: 12px 12px;
+        border-radius: 16px;
+        gap: 10px;
+        margin-bottom: 20px;
       }
 
       .search-box input {
-        padding: 9px 34px 9px 34px;
+        padding: 10px 34px 10px 36px;
         font-size: 16px;
       }
 
@@ -1447,18 +1459,18 @@
       }
 
       .filter-bar {
-        padding-bottom: 0;
-        gap: 5px;
+        gap: 5px !important;
+        padding-bottom: 2px;
       }
 
       .filter-btn {
-        padding: 5px 9px;
-        font-size: 0.75rem;
+        padding: 6px 11px;
+        font-size: 0.76rem;
       }
 
       .category-section {
         margin-bottom: 36px;
-        scroll-margin-top: 85px;
+        scroll-margin-top: 30px;
       }
 
       .category-header {
@@ -3573,18 +3585,16 @@ echo "✅ Sistem tamamen macOS orijinal fabrika ayarlarına döndürüldü!"</pr
       const controls = document.querySelector('.controls-wrapper');
       const btn = document.getElementById('floatingSearchBtn');
 
-      if (controls) {
-        if (currentScrollY > 320 && currentScrollY > lastScrollY + 10) {
-          // Scrolling down -> hide sticky bar smoothly so user has 100% full screen view of cards
+      if (window.innerWidth > 860 && controls) {
+        if (currentScrollY > 360 && currentScrollY > lastScrollY + 12) {
           controls.classList.add('controls-hidden');
-        } else if (currentScrollY < lastScrollY - 6 || currentScrollY < 180) {
-          // Scrolling up -> reveal sticky bar smoothly
+        } else if (currentScrollY < lastScrollY - 8 || currentScrollY < 200) {
           controls.classList.remove('controls-hidden');
         }
       }
 
       if (btn) {
-        if (currentScrollY > 380) {
+        if (currentScrollY > 280) {
           btn.classList.add('show');
         } else {
           btn.classList.remove('show');
