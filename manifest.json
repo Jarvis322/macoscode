@@ -1,0 +1,16 @@
+{
+  "name": "macOS 100 Power-User Cheatsheet",
+  "short_name": "macOS Tweaks",
+  "description": "macOS 100 Terminal defaults & Power-User Tweaks Cheatsheet",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#070a12",
+  "theme_color": "#0a0e17",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
