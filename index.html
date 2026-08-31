@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   
   <!-- Primary Meta Tags & SEO -->
-  <title>macOS 100 Power-User Tweaks & Terminal Cheatsheet (2026 - Tahoe / Golden Gate Ready)</title>
-  <meta name="title" content="macOS 100 Power-User Tweaks & Terminal Cheatsheet (2026 - Tahoe / Golden Gate Ready)">
-  <meta name="description" content="macOS için 100 adet ileri düzey Terminal defaults komutu, tek tıkla uygulama ve geri alma (revert) betikleri, macOS Tahoe &amp; Apple Intelligence optimizasyonları ve özel betik oluşturucu.">
-  <meta name="keywords" content="macOS tweaks, macOS defaults write, macOS terminal rehberi, macOS tahoe, macOS optimize etme, touch id sudo, dock hızlandırma, finder gizli dosyalar, apple intelligence ayarları, mac power user">
+  <title>macOS 100 Power-User Tweaks & Interactive CLI Cheatsheet (2026 - Tahoe / Golden Gate Ready)</title>
+  <meta name="title" content="macOS 100 Power-User Tweaks & Interactive CLI Cheatsheet (2026 - Tahoe / Golden Gate Ready)">
+  <meta name="description" content="macOS için 100 adet ileri düzey Terminal defaults komutu, Mole tarzı interaktif TUI CLI aracı (mc), bağımsız geri alma (revert) desteği, Tahoe optimizasyonları ve özel betik oluşturucu.">
+  <meta name="keywords" content="macOS tweaks, mole mac, mole cli, macOS mole, macOS defaults write, macOS terminal rehberi, macOS tui, mac cli tool, macOS tahoe, macOS optimize etme, touch id sudo, dock hızlandırma, finder gizli dosyalar, apple intelligence ayarları, mac power user, dotfiles macos">
   <meta name="author" content="Jarvis322">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
   <meta name="theme-color" content="#0a0e17">
@@ -1958,9 +1958,10 @@
         <div class="badge">macOS 2026 Power-User Cheatsheet &bull; 100 Tweaks</div>
         <div class="badge badge-emerald">✨ 100% Geri Alınabilir (Reversible)</div>
         <div class="badge badge-gold">🏔️ macOS Tahoe &amp; Golden Gate Uyumlu</div>
+        <div class="badge" style="background: rgba(168, 85, 247, 0.2); color: #e9d5ff; border: 1px solid rgba(168, 85, 247, 0.4);">🎛️ Mole Tarzı İnteraktif TUI (mc)</div>
       </div>
       <h1>macOS 100 Terminal &amp; defaults Rehberi</h1>
-      <p class="subtitle">Her ayar için tek tıkla bağımsız uygulama ve geri alma (revert) komutları, Apple Intelligence &amp; Tahoe optimizasyonları, tek seferlik master scriptler ve kişiselleştirilmiş betik oluşturucu.</p>
+      <p class="subtitle">Her ayar için tek tıkla bağımsız uygulama ve geri alma (revert) komutları, Mole tarzı interaktif CLI aracı, Apple Intelligence &amp; Tahoe optimizasyonları ve özel betik oluşturucu.</p>
 
       <!-- Precision Metric Deck -->
       <div class="hero-stats-grid">
@@ -2013,6 +2014,24 @@
         </a>
       </div>
     </header>
+
+    <!-- MOLE STYLE INTERACTIVE TUI PROMO -->
+    <section class="master-panel" style="margin-bottom: 24px; border-color: rgba(168, 85, 247, 0.4); box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 25px rgba(168, 85, 247, 0.15);">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 1.6rem;">🎛️</span>
+          <div>
+            <h2 style="font-size: 1.15rem; font-weight: 800; color: #fff;">Mole Tarzı İnteraktif Terminal Arayüzü (mc CLI)</h2>
+            <p style="font-size: 0.82rem; color: var(--text-muted);">Ok tuşlarıyla gezinme, Space ile seçim, System Audit durum raporu ve canlı terminal içi arama.</p>
+          </div>
+        </div>
+        <span class="master-pill" style="background: rgba(168, 85, 247, 0.2); color: #e9d5ff; border: 1px solid rgba(168, 85, 247, 0.4);">Yeni • Interactive TUI</span>
+      </div>
+      <div class="curl-box" style="background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(168, 85, 247, 0.3);">
+        <span class="curl-text" style="color: #f3e8ff;">curl -sSL https://raw.githubusercontent.com/Jarvis322/macoscode/main/scripts/mc | python3</span>
+        <button class="copy-btn" onclick="copyRawText('curl -sSL https://raw.githubusercontent.com/Jarvis322/macoscode/main/scripts/mc | python3', this)">Kopyala</button>
+      </div>
+    </section>
 
     <!-- MASTER DUAL SCRIPTS (Apply & Revert) -->
     <section class="master-grid" aria-label="Master Kurulum ve Sıfırlama Betikleri">

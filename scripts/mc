@@ -1,0 +1,1788 @@
+#!/usr/bin/env python3
+# ==============================================================================
+#  ███╗   ███╗ █████╗  ██████╗ ██████╗ ███████╗ ██████╗ ██████╗ ███████╗
+#  ████╗ ████║██╔══██╗██╔════╝██╔═══██╗██╔════╝██╔════╝██╔═══██╗██╔════╝
+#  ██╔████╔██║███████║██║     ██║   ██║███████╗██║     ██║   ██║█████╗  
+#  ██║╚██╔╝██║██╔══██║██║     ██║   ██║╚════██║██║     ██║   ██║██╔══╝  
+#  ██║ ╚═╝ ██║██║  ██║╚██████╗╚██████╔╝███████║╚██████╗╚██████╔╝███████╗
+#  ╚═╝     ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝ ╚═════╝ ╚═════╝ ╚══════╝
+#
+#  🚀 macOSCode (mc) - Interactive Terminal UI & macOS Power-User Tool
+#  Inspired by Mole (mo) & macOS Tahoe/Sequoia Power-Tweaks Engine
+#  Repository: https://github.com/Jarvis322/macoscode
+#  Web App: https://jarvis322.github.io/macoscode/
+# ==============================================================================
+
+import sys
+import os
+import re
+import json
+import subprocess
+import shutil
+import time
+import argparse
+
+# Reopen /dev/tty if stdin is piped (e.g., curl ... | python3)
+if not sys.stdin.isatty():
+    try:
+        sys.stdin = open('/dev/tty', 'r')
+    except Exception:
+        pass
+
+# Terminal Colors & Styles (ANSI)
+class C:
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
+    DIM = "\033[2m"
+    UNDERLINE = "\033[4m"
+    
+    # Colors
+    CYAN = "\033[38;2;56;189;248m"
+    BLUE = "\033[38;2;99;102;241m"
+    INDIGO = "\033[38;2;79;70;229m"
+    PURPLE = "\033[38;2;168;85;247m"
+    EMERALD = "\033[38;2;16;185;129m"
+    ROSE = "\033[38;2;244;63;94m"
+    GOLD = "\033[38;2;251;191;36m"
+    GRAY = "\033[38;2;148;163;184m"
+    DARK_GRAY = "\033[38;2;100;116;139m"
+    WHITE = "\033[38;2;248;250;252m"
+    
+    # Backgrounds
+    BG_CARD = "\033[48;2;15;23;42m"
+    BG_CYAN = "\033[48;2;14;116;144m"
+    BG_BLUE = "\033[48;2;67;56;202m"
+    BG_EMERALD = "\033[48;2;6;95;70m"
+    BG_ROSE = "\033[48;2;159;18;57m"
+
+# 100 TWEAKS DATASET
+TWEAKS = [
+  {
+    "id": "term-hostname",
+    "cat": "terminal",
+    "catName": "Terminal, Zsh & Kabuk",
+    "catIcon": "💻",
+    "title": "Kalıcı Hostname (Bilgisayar Adı) Tanımlama",
+    "tag": "Fix",
+    "desc": "DHCP reverse DNS sorguları nedeniyle terminalde 'jarvis@192' gibi IP öneklerinin çıkmasını engeller, sabit ad atar.",
+    "apply": "sudo scutil --set HostName MacAir\nsudo scutil --set LocalHostName MacAir\nsudo scutil --set ComputerName MacAir",
+    "revert": "sudo scutil --set HostName ''\nsudo scutil --set LocalHostName ''\nsudo scutil --set ComputerName ''"
+  },
+  {
+    "id": "term-interactive-comments",
+    "cat": "terminal",
+    "catName": "Terminal, Zsh & Kabuk",
+    "catIcon": "💻",
+    "title": "Zsh Yorum Satırı (#) Yorumlama Desteği",
+    "tag": "Zsh",
+    "desc": "Terminal'e '#' içeren açıklamalı kod blokları yapıştırıldığında zsh syntax hatası vermesini engeller.",
+    "apply": "setopt INTERACTIVE_COMMENTS",
+    "revert": "unsetopt INTERACTIVE_COMMENTS"
+  },
+  {
+    "id": "term-touchid-sudo",
+    "cat": "terminal",
+    "catName": "Terminal, Zsh & Kabuk",
+    "catIcon": "💻",
+    "title": "Touch ID ile Sudo Yetkilendirmesi",
+    "tag": "Auth",
+    "desc": "Terminalde her 'sudo' komutunda şifre yazmak yerine Touch ID parmak iziyle anında onay vermeni sağlar.",
+    "apply": "sudo sed -i '' '1s;^;auth       sufficient     pam_tid.so\\n;' /etc/pam.d/sudo",
+    "revert": "sudo sed -i '' '/pam_tid.so/d' /etc/pam.d/sudo"
+  },
+  {
+    "id": "term-title-simplify",
+    "cat": "terminal",
+    "catName": "Terminal, Zsh & Kabuk",
+    "catIcon": "💻",
+    "title": "Terminal Başlık Çubuğundaki Bilgileri Sadeleştirme",
+    "tag": "UI",
+    "desc": "Terminal pencere başlığındaki uzun dosya yolu, tty ve pencere boyutu kalabalığını kaldırır.",
+    "apply": "defaults write com.apple.Terminal ShowRepresentedURLInTitle -bool false",
+    "revert": "defaults delete com.apple.Terminal ShowRepresentedURLInTitle 2>/dev/null || true"
+  },
+  {
+    "id": "term-brew-no-analytics",
+    "cat": "terminal",
+    "catName": "Terminal, Zsh & Kabuk",
+    "catIcon": "💻",
+    "title": "Homebrew Otomatik Analitik Gönderimini Kapatma",
+    "tag": "Brew",
+    "desc": "Homebrew'un anonim telemetri verisi toplamasını kapatıp paket indirme/güncelleme hızını artırır.",
+    "apply": "export HOMEBREW_NO_ANALYTICS=1",
+    "revert": "unset HOMEBREW_NO_ANALYTICS"
+  },
+  {
+    "id": "find-all-extensions",
+    "cat": "finder",
+    "catName": "Finder & Gelişmiş Dosya Yönetimi",
+    "catIcon": "📁",
+    "title": "Tüm Dosya Uzantılarını Gösterme",
+    "tag": "Finder",
+    "desc": "Finder'da .ts, .json, .env, .png vb. tüm dosya adı uzantılarını her zaman görünür kılar.",
+    "apply": "defaults write NSGlobalDomain AppleShowAllExtensions -bool true\nkillall Finder",
+    "revert": "defaults delete NSGlobalDomain AppleShowAllExtensions\nkillall Finder"
+  },
+  {
+    "id": "find-hidden-files",
+    "cat": "finder",
+    "catName": "Finder & Gelişmiş Dosya Yönetimi",
+    "catIcon": "📁",
+    "title": "Gizli Dosyaları ve Klasörleri Gösterme",
+    "tag": "Finder",
+    "desc": "Nokta ile başlayan gizli sistem ve proje dosyalarını (.git, .zshrc, .env) varsayılan olarak görünür yapar.",
+    "apply": "defaults write com.apple.finder AppleShowAllFiles -bool true\nkillall Finder",
+    "revert": "defaults delete com.apple.finder AppleShowAllFiles\nkillall Finder"
+  },
+  {
+    "id": "find-path-status-bar",
+    "cat": "finder",
+    "catName": "Finder & Gelişmiş Dosya Yönetimi",
+    "catIcon": "📁",
+    "title": "Finder Yol (Path) ve Durum (Status) Çubuklarını Açma",
+    "tag": "Finder",
+    "desc": "Finder pencerelerinin altındaki dizin hiyerarşisi yolunu ve öğe/alan durumu göstergesini açar.",
+    "apply": "defaults write com.apple.finder ShowPathbar -bool true\ndefaults write com.apple.finder ShowStatusBar -bool true\nkillall Finder",
+    "revert": "defaults delete com.apple.finder ShowPathbar\ndefaults delete com.apple.finder ShowStatusBar\nkillall Finder"
+  },
+  {
+    "id": "find-home-target",
+    "cat": "finder",
+    "catName": "Finder & Gelişmiş Dosya Yönetimi",
+    "catIcon": "📁",
+    "title": "Yeni Finder Penceresinde Ana Dizin ($HOME) Açma",
+    "tag": "Finder",
+    "desc": "Yeni sekme ve pencerelerin 'Son Kullanılanlar' yerine doğrudan /Users/kullanıcı klasöründe açılmasını sağlar.",
+    "apply": "defaults write com.apple.finder NewWindowTarget -string \"PfHm\"\ndefaults write com.apple.finder NewWindowTargetPath -string \"file://$HOME/\"\nkillall Finder",
+    "revert": "defaults delete com.apple.finder NewWindowTarget\ndefaults delete com.apple.finder NewWindowTargetPath\nkillall Finder"
+  },
+  {
+    "id": "find-search-scope",
+    "cat": "finder",
+    "catName": "Finder & Gelişmiş Dosya Yönetimi",
+    "catIcon": "📁",
+    "title": "Finder Arama Kapsamını Geçerli Klasör Yapma",
+    "tag": "Finder",
+    "desc": "Finder içinde arama (⌘F) yapıldığında tüm Mac'i taramak yerine sadece bulunulan klasörü arar.",
+    "apply": "defaults write com.apple.finder FXDefaultSearchScope -string \"SCcf\"\nkillall Finder",
+    "revert": "defaults delete com.apple.finder FXDefaultSearchScope\nkillall Finder"
+  },
+  {
+    "id": "find-posix-title",
+    "cat": "finder",
+    "catName": "Finder & Gelişmiş Dosya Yönetimi",
+    "catIcon": "📁",
+    "title": "Finder Başlığında Tam Dosya Yolunu (POSIX Path) Gösterme",
+    "tag": "Finder",
+    "desc": "Pencerenin üst başlık çubuğunda tam Unix dizin yolunu (/Users/jarvis/...) gösterir.",
+    "apply": "defaults write com.apple.finder _FXShowPosixPathInTitle -bool true\nkillall Finder",
+    "revert": "defaults delete com.apple.finder _FXShowPosixPathInTitle\nkillall Finder"
+  },
+  {
+    "id": "find-quicklook-text",
+    "cat": "finder",
+    "catName": "Finder & Gelişmiş Dosya Yönetimi",
+    "catIcon": "📁",
+    "title": "Quick Look (Hızlı Bakış) Üzerinden Metin Seçimi",
+    "tag": "QuickLook",
+    "desc": "Space tuşuyla açılan Quick Look penceresindeki kod veya metinleri kopyalamayı aktif eder.",
+    "apply": "defaults write com.apple.finder QLEnableTextSelection -bool true\nkillall Finder",
+    "revert": "defaults delete com.apple.finder QLEnableTextSelection\nkillall Finder"
+  },
+  {
+    "id": "find-no-ds-store-network",
+    "cat": "finder",
+    "catName": "Finder & Gelişmiş Dosya Yönetimi",
+    "catIcon": "📁",
+    "title": "Ağ ve USB Sürücülerinde .DS_Store Dosyalarını Engelleme",
+    "tag": "Temizlik",
+    "desc": "Harici USB belleklerde ve paylaşılan NAS/ağ sürücülerinde çöp .DS_Store oluşumunu durdurur.",
+    "apply": "defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true\ndefaults write com.apple.desktopservices DSDontWriteUSBStores -bool true",
+    "revert": "defaults delete com.apple.desktopservices DSDontWriteNetworkStores\ndefaults delete com.apple.desktopservices DSDontWriteUSBStores"
+  },
+  {
+    "id": "find-no-empty-trash-warn",
+    "cat": "finder",
+    "catName": "Finder & Gelişmiş Dosya Yönetimi",
+    "catIcon": "📁",
+    "title": "Çöp Kutusunu Boşaltırken Uyarı Onayını Kapatma",
+    "tag": "Finder",
+    "desc": "Çöpü boşaltırken sorulan 'Emin misiniz?' uyarı kutusunu atlayıp anında temizler.",
+    "apply": "defaults write com.apple.finder WarnOnEmptyTrash -bool false\nkillall Finder",
+    "revert": "defaults delete com.apple.finder WarnOnEmptyTrash\nkillall Finder"
+  },
+  {
+    "id": "find-no-ext-change-warn",
+    "cat": "finder",
+    "catName": "Finder & Gelişmiş Dosya Yönetimi",
+    "catIcon": "📁",
+    "title": "Dosya Uzantısı Değiştirme Uyarısını Kapatma",
+    "tag": "Finder",
+    "desc": "Bir dosyanın sonundaki uzantıyı değiştirirken çıkan uyarı penceresini devre dışı bırakır.",
+    "apply": "defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false\nkillall Finder",
+    "revert": "defaults delete com.apple.finder FXEnableExtensionChangeWarning\nkillall Finder"
+  },
+  {
+    "id": "find-column-view",
+    "cat": "finder",
+    "catName": "Finder & Gelişmiş Dosya Yönetimi",
+    "catIcon": "📁",
+    "title": "Varsayılan Finder Görünümünü Sütun (Column) Yapma",
+    "tag": "Finder",
+    "desc": "Finder'ın tüm yeni pencerelerde otomatik olarak sütun görünümü hiyerarşisinde açılmasını sağlar.",
+    "apply": "defaults write com.apple.finder FXPreferredViewStyle -string \"clmv\"\nkillall Finder",
+    "revert": "defaults delete com.apple.finder FXPreferredViewStyle\nkillall Finder"
+  },
+  {
+    "id": "find-unhide-library",
+    "cat": "finder",
+    "catName": "Finder & Gelişmiş Dosya Yönetimi",
+    "catIcon": "📁",
+    "title": "Kütüphane (~/Library) Klasörünü Görünür Yapma",
+    "tag": "Finder",
+    "desc": "Kullanıcı dizini altındaki gizli ~/Library klasörünü Finder'da görünür kılar.",
+    "apply": "chflags nohidden ~/Library",
+    "revert": "chflags hidden ~/Library"
+  },
+  {
+    "id": "find-unhide-volumes",
+    "cat": "finder",
+    "catName": "Finder & Gelişmiş Dosya Yönetimi",
+    "catIcon": "📁",
+    "title": "/Volumes Klasörünü Finder'da Görünür Yapma",
+    "tag": "Finder",
+    "desc": "Sisteme bağlı tüm sürücülerin bağlandığı kök /Volumes dizinini gizlilikten çıkarır.",
+    "apply": "sudo chflags nohidden /Volumes",
+    "revert": "sudo chflags hidden /Volumes"
+  },
+  {
+    "id": "find-auto-expand-folders",
+    "cat": "finder",
+    "catName": "Finder & Gelişmiş Dosya Yönetimi",
+    "catIcon": "📁",
+    "title": "Finder Sütun Görünümünde Otomatik Klasör Senkronizasyonu",
+    "tag": "Finder",
+    "desc": "Sütun görünümünde klasörler arasında gezinirken sütun genişliklerini içeriğe göre genişletir.",
+    "apply": "defaults write com.apple.finder AutoExpandSyncFolders -bool true\nkillall Finder",
+    "revert": "defaults delete com.apple.finder AutoExpandSyncFolders\nkillall Finder"
+  },
+  {
+    "id": "find-airdrop-ethernet",
+    "cat": "finder",
+    "catName": "Finder & Gelişmiş Dosya Yönetimi",
+    "catIcon": "📁",
+    "title": "AirDrop'u Ethernet ve Tüm Ağ Arayüzlerinde Açma",
+    "tag": "AirDrop",
+    "desc": "AirDrop'un sadece Wi-Fi değil, kablolu Ethernet bağlantısında da cihazları bulmasını sağlar.",
+    "apply": "defaults write com.apple.NetworkBrowser DisableAirDrop -bool false\ndefaults write com.apple.NetworkBrowser BrowseAllInterfaces -bool true",
+    "revert": "defaults delete com.apple.NetworkBrowser DisableAirDrop 2>/dev/null || true\ndefaults delete com.apple.NetworkBrowser BrowseAllInterfaces 2>/dev/null || true"
+  },
+  {
+    "id": "find-quicklook-fast-zoom",
+    "cat": "finder",
+    "catName": "Finder & Gelişmiş Dosya Yönetimi",
+    "catIcon": "📁",
+    "title": "Quick Look Zoom Açılış Animasyonunu Kapatma",
+    "tag": "Hız",
+    "desc": "Space tuşuna basıldığında dosya önizlemesinin sıfır animasyon gecikmesiyle anında açılmasını sağlar.",
+    "apply": "defaults write -g QLPanelAnimationDuration -float 0",
+    "revert": "defaults delete -g QLPanelAnimationDuration"
+  },
+  {
+    "id": "find-direct-delete-shortcut",
+    "cat": "finder",
+    "catName": "Finder & Gelişmiş Dosya Yönetimi",
+    "catIcon": "📁",
+    "title": "Dosyaları Çöp Kutusuna Göndermeden Doğrudan Silme Kısayolu",
+    "tag": "Finder",
+    "desc": "Finder'da ⌥ + ⌘ + Delete kısayolunu kullanarak dosyayı çöpü atlamadan tek adımda silme yeteneğini açık tutar.",
+    "apply": "defaults write com.apple.finder FXEnableRemoveWithoutTrash -bool true\nkillall Finder",
+    "revert": "defaults delete com.apple.finder FXEnableRemoveWithoutTrash 2>/dev/null || true\nkillall Finder"
+  },
+  {
+    "id": "win-top-drag-restore",
+    "cat": "window_dock",
+    "catName": "Pencereler, Masaüstü & Dock",
+    "catIcon": "🪟",
+    "title": "Büyütülmüş Pencereyi Üstten Çekip Eski Boyutuna Getirme",
+    "tag": "Windows",
+    "desc": "Döşenmiş/büyütülmüş pencereyi başlık çubuğundan aşağı sürükleyerek küçük boyutuna döndürür.",
+    "apply": "defaults write com.apple.WindowManager EnableTopDragToRestore -bool true\nkillall WindowManager",
+    "revert": "defaults delete com.apple.WindowManager EnableTopDragToRestore\nkillall WindowManager"
+  },
+  {
+    "id": "win-disable-click-desktop",
+    "cat": "window_dock",
+    "catName": "Pencereler, Masaüstü & Dock",
+    "catIcon": "🪟",
+    "title": "Duvar Kâğıdına Tıklayınca Masaüstünü Göstermeyi Kapatma",
+    "tag": "Desktop",
+    "desc": "Boş masaüstüne tıklayınca pencerelerin sağa sola kaçmasını engeller (Stage Manager hariç).",
+    "apply": "defaults write com.apple.WindowManager ClickWidgetBackgroundInStageManager -bool true\nkillall WindowManager",
+    "revert": "defaults delete com.apple.WindowManager ClickWidgetBackgroundInStageManager\nkillall WindowManager"
+  },
+  {
+    "id": "win-remove-tiling-margins",
+    "cat": "window_dock",
+    "catName": "Pencereler, Masaüstü & Dock",
+    "catIcon": "🪟",
+    "title": "Pencere Döşeme Kenar Boşluklarını (Margins) Sıfırlama",
+    "tag": "Tiling",
+    "desc": "macOS yerleşik pencere döşeme sisteminde pencereler arasında bırakılan yapay boşlukları kaldırır.",
+    "apply": "defaults write com.apple.WindowManager EnableTiledWindowMargins -bool false\nkillall WindowManager",
+    "revert": "defaults delete com.apple.WindowManager EnableTiledWindowMargins\nkillall WindowManager"
+  },
+  {
+    "id": "win-drag-anywhere",
+    "cat": "window_dock",
+    "catName": "Pencereler, Masaüstü & Dock",
+    "catIcon": "🪟",
+    "title": "Pencereyi Herhangi Bir Yerinden Sürükleme (⌘ + ⌃ + Tık)",
+    "tag": "UX",
+    "desc": "Üst çubuğa gitmeden pencerenin herhangi bir noktasına ⌘ + ⌃ basıp sürükleyerek taşıma sağlar.",
+    "apply": "defaults write -g NSWindowShouldDragOnGesture -bool true",
+    "revert": "defaults delete -g NSWindowShouldDragOnGesture"
+  },
+  {
+    "id": "dock-autohide-speed",
+    "cat": "window_dock",
+    "catName": "Pencereler, Masaüstü & Dock",
+    "catIcon": "🪟",
+    "title": "Dock Açılış Gecikmesini (Delay) Sıfırlama",
+    "tag": "Dock",
+    "desc": "Otomatik gizlenen Dock'un fare geldiğinde hiç beklemeden anında fırlamasını sağlar.",
+    "apply": "defaults write com.apple.dock autohide-delay -float 0\ndefaults write com.apple.dock autohide-time-modifier -float 0.3\nkillall Dock",
+    "revert": "defaults delete com.apple.dock autohide-delay\ndefaults delete com.apple.dock autohide-time-modifier\nkillall Dock"
+  },
+  {
+    "id": "dock-dim-hidden",
+    "cat": "window_dock",
+    "catName": "Pencereler, Masaüstü & Dock",
+    "catIcon": "🪟",
+    "title": "Gizli Uygulamaları Dock'ta Yarı Saydam Gösterme",
+    "tag": "Dock",
+    "desc": "⌘ + H ile gizlenen uygulamaların Dock ikonlarını soluklaştırarak gizli olduklarını belli eder.",
+    "apply": "defaults write com.apple.dock showhidden -bool true\nkillall Dock",
+    "revert": "defaults delete com.apple.dock showhidden\nkillall Dock"
+  },
+  {
+    "id": "dock-static-only",
+    "cat": "window_dock",
+    "catName": "Pencereler, Masaüstü & Dock",
+    "catIcon": "🪟",
+    "title": "Dock Sadece Çalışan (Aktif) Uygulamaları Göstersin",
+    "tag": "Dock",
+    "desc": "Dock üzerindeki sabitlenmiş tüm simgeleri gizleyip sadece o an çalışan uygulamaları listeler.",
+    "apply": "defaults write com.apple.dock static-only -bool true\nkillall Dock",
+    "revert": "defaults delete com.apple.dock static-only\nkillall Dock"
+  },
+  {
+    "id": "dock-no-recent-apps",
+    "cat": "window_dock",
+    "catName": "Pencereler, Masaüstü & Dock",
+    "catIcon": "🪟",
+    "title": "Dock'taki Son Kullanılan Uygulamalar Alanını Kapatma",
+    "tag": "Dock",
+    "desc": "Dock'un sağ tarafında açılan son kullanılan uygulamalar ayırıcı alanını devre dışı bırakır.",
+    "apply": "defaults write com.apple.dock show-recents -bool false\nkillall Dock",
+    "revert": "defaults delete com.apple.dock show-recents\nkillall Dock"
+  },
+  {
+    "id": "dock-group-mission-control",
+    "cat": "window_dock",
+    "catName": "Pencereler, Masaüstü & Dock",
+    "catIcon": "🪟",
+    "title": "Mission Control Pencerelerini Uygulamaya Göre Gruplama",
+    "tag": "MissionControl",
+    "desc": "Mission Control açıldığında aynı uygulamanın açık tüm pencerelerini bir arada gruplar.",
+    "apply": "defaults write com.apple.dock expose-group-apps -bool true\nkillall Dock",
+    "revert": "defaults delete com.apple.dock expose-group-apps\nkillall Dock"
+  },
+  {
+    "id": "dock-fast-expose-anim",
+    "cat": "window_dock",
+    "catName": "Pencereler, Masaüstü & Dock",
+    "catIcon": "🪟",
+    "title": "Mission Control Animasyon Süresini Hızlandırma",
+    "tag": "Hız",
+    "desc": "3 parmak yukarı kaydırmadaki pencerelerin açılma geçiş animasyonunu hızlandırır.",
+    "apply": "defaults write com.apple.dock expose-animation-duration -float 0.1\nkillall Dock",
+    "revert": "defaults delete com.apple.dock expose-animation-duration\nkillall Dock"
+  },
+  {
+    "id": "win-hide-desktop-icons",
+    "cat": "window_dock",
+    "catName": "Pencereler, Masaüstü & Dock",
+    "catIcon": "🪟",
+    "title": "Masaüstünde Simgelerin (İkonların) Görünmesini Tamamen Kapatma",
+    "tag": "Desktop",
+    "desc": "Masaüstünde hiçbir dosya/klasör simgesinin görünmemesini sağlar, tamamen temiz tutar.",
+    "apply": "defaults write com.apple.finder CreateDesktop -bool false\nkillall Finder",
+    "revert": "defaults delete com.apple.finder CreateDesktop\nkillall Finder"
+  },
+  {
+    "id": "dock-suck-effect",
+    "cat": "window_dock",
+    "catName": "Pencereler, Masaüstü & Dock",
+    "catIcon": "🪟",
+    "title": "Pencerelerin Küçülme Animasyonunu 'Suck' Efekti Yapma",
+    "tag": "Dock",
+    "desc": "Pencereler Dock'a küçülürken Genie yerine daha akıcı ve şık olan 'Suck' efektini aktif eder.",
+    "apply": "defaults write com.apple.dock mineffect -string \"suck\"\nkillall Dock",
+    "revert": "defaults delete com.apple.dock mineffect\nkillall Dock"
+  },
+  {
+    "id": "win-fast-resize",
+    "cat": "window_dock",
+    "catName": "Pencereler, Masaüstü & Dock",
+    "catIcon": "🪟",
+    "title": "Pencere Boyutlanma ve Yeniden Çizim Süresini Hızlandırma",
+    "tag": "Hız",
+    "desc": "Sistem genelinde pencerelerin açılış/kapanış animasyon süresini minimuma çeker.",
+    "apply": "defaults write NSGlobalDomain NSWindowResizeTime -float 0.001",
+    "revert": "defaults delete NSGlobalDomain NSWindowResizeTime"
+  },
+  {
+    "id": "dock-no-mru-spaces",
+    "cat": "window_dock",
+    "catName": "Pencereler, Masaüstü & Dock",
+    "catIcon": "🪟",
+    "title": "Masaüstü Alanları (Spaces) Otomatik Sıralamasını Kapatma",
+    "tag": "Spaces",
+    "desc": "macOS'in sanal masaüstlerinin yerini en son kullanım sırasına göre otomatik değiştirmesini engeller.",
+    "apply": "defaults write com.apple.dock mru-spaces -bool false\nkillall Dock",
+    "revert": "defaults delete com.apple.dock mru-spaces\nkillall Dock"
+  },
+  {
+    "id": "win-double-click-fill",
+    "cat": "window_dock",
+    "catName": "Pencereler, Masaüstü & Dock",
+    "catIcon": "🪟",
+    "title": "Başlık Çubuğuna Çift Tıklayınca Pencereyi Doldurma",
+    "tag": "Windows",
+    "desc": "Pencere üst çubuğuna çift tıklandığında simge durumuna küçülmek yerine tüm alanı kaplar.",
+    "apply": "defaults write NSGlobalDomain AppleActionOnDoubleClick -string \"Fill\"",
+    "revert": "defaults delete NSGlobalDomain AppleActionOnDoubleClick"
+  },
+  {
+    "id": "dock-disable-hotcorner-note",
+    "cat": "window_dock",
+    "catName": "Pencereler, Masaüstü & Dock",
+    "catIcon": "🪟",
+    "title": "Ekran Köşesi (Hot Corner) Hızlı Notu Devre Dışı Bırakma",
+    "tag": "HotCorners",
+    "desc": "Sağ alt köşeye fare gittiğinde çıkan Quick Note açılır penceresini kapatır.",
+    "apply": "defaults write com.apple.dock wvous-br-corner -int 0\nkillall Dock",
+    "revert": "defaults delete com.apple.dock wvous-br-corner\nkillall Dock"
+  },
+  {
+    "id": "key-fast-repeat",
+    "cat": "keyboard_input",
+    "catName": "Klavye, Trackpad & Donanım Girdisi",
+    "catIcon": "⌨️",
+    "title": "Maksimum Tuş Tekrar Hızı ve Minimum Gecikme",
+    "tag": "Klavye",
+    "desc": "Kod yazarken yön tuşları, backspace ve gezinme gecikmesini en uç donanım sınırına çeker.",
+    "apply": "defaults write NSGlobalDomain KeyRepeat -int 1\ndefaults write NSGlobalDomain InitialKeyRepeat -int 10",
+    "revert": "defaults delete NSGlobalDomain KeyRepeat\ndefaults delete NSGlobalDomain InitialKeyRepeat"
+  },
+  {
+    "id": "key-disable-press-hold",
+    "cat": "keyboard_input",
+    "catName": "Klavye, Trackpad & Donanım Girdisi",
+    "catIcon": "⌨️",
+    "title": "Aksan Menüsü Yerine Doğrudan Tuş Tekrarı",
+    "tag": "Klavye",
+    "desc": "Harfe basılı tutunca aksan menüsü (é, è) açmak yerine sürekli aynı harfi art arda yazar.",
+    "apply": "defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false",
+    "revert": "defaults delete NSGlobalDomain ApplePressAndHoldEnabled"
+  },
+  {
+    "id": "track-tap-to-click",
+    "cat": "keyboard_input",
+    "catName": "Klavye, Trackpad & Donanım Girdisi",
+    "catIcon": "⌨️",
+    "title": "Trackpad Dokunarak Tıklama (Tap to Click)",
+    "tag": "Trackpad",
+    "desc": "Fiziksel tık basma zorunluluğunu kaldırıp hafif dokunuşla tıklamayı tüm hesapta aktif eder.",
+    "apply": "defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true\ndefaults write com.apple.AppleMultitouchTrackpad Clicking -bool true\ndefaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1",
+    "revert": "defaults delete com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking 2>/dev/null || true\ndefaults delete com.apple.AppleMultitouchTrackpad Clicking 2>/dev/null || true\ndefaults -currentHost delete NSGlobalDomain com.apple.mouse.tapBehavior 2>/dev/null || true"
+  },
+  {
+    "id": "track-three-finger-drag",
+    "cat": "keyboard_input",
+    "catName": "Klavye, Trackpad & Donanım Girdisi",
+    "catIcon": "⌨️",
+    "title": "Trackpad Üç Parmakla Sürükleme (Three-Finger Drag)",
+    "tag": "Trackpad",
+    "desc": "Pencereleri ve metin seçimlerini tıklamadan sadece 3 parmağı sürükleyerek taşımayı açar.",
+    "apply": "defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag -bool true\ndefaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerDrag -bool true",
+    "revert": "defaults delete com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag 2>/dev/null || true\ndefaults delete com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerDrag 2>/dev/null || true"
+  },
+  {
+    "id": "text-disable-autocorrect",
+    "cat": "keyboard_input",
+    "catName": "Klavye, Trackpad & Donanım Girdisi",
+    "catIcon": "⌨️",
+    "title": "Otomatik Nokta, Büyük Harf ve Düzeltmeyi Kapatma",
+    "tag": "Metin",
+    "desc": "Çift boşlukta otomatik nokta koyma ve otomatik düzeltmeleri kapatıp kod yazarken araya girmesini engeller.",
+    "apply": "defaults write NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled -bool false\ndefaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false\ndefaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false",
+    "revert": "defaults delete NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled\ndefaults delete NSGlobalDomain NSAutomaticCapitalizationEnabled\ndefaults delete NSGlobalDomain NSAutomaticSpellingCorrectionEnabled"
+  },
+  {
+    "id": "text-disable-smart-quotes",
+    "cat": "keyboard_input",
+    "catName": "Klavye, Trackpad & Donanım Girdisi",
+    "catIcon": "⌨️",
+    "title": "Akıllı Tırnak ve Kısa Çizgi Dönüşümünü Kapatma",
+    "tag": "Metin",
+    "desc": "Düz tırnakların eğik tırnaklara, iki tirenin uzun çizgiye dönüşmesini engelleyerek kod sözdizimini korur.",
+    "apply": "defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false\ndefaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false",
+    "revert": "defaults delete NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled\ndefaults delete NSGlobalDomain NSAutomaticDashSubstitutionEnabled"
+  },
+  {
+    "id": "key-full-keyboard-access",
+    "cat": "keyboard_input",
+    "catName": "Klavye, Trackpad & Donanım Girdisi",
+    "catIcon": "⌨️",
+    "title": "Diyalog Kutularında Tab ile Gezinme (Full Keyboard Access)",
+    "tag": "Klavye",
+    "desc": "'Kaydet / Vazgeç / Sil' uyarılarında Tab tuşuyla butonlar arasında gezinip Space ile basmayı sağlar.",
+    "apply": "defaults write NSGlobalDomain AppleKeyboardUIMode -int 3",
+    "revert": "defaults delete NSGlobalDomain AppleKeyboardUIMode"
+  },
+  {
+    "id": "key-fn-state",
+    "cat": "keyboard_input",
+    "catName": "Klavye, Trackpad & Donanım Girdisi",
+    "catIcon": "⌨️",
+    "title": "İşlev Tuşlarını (F1-F12) Standart Fonksiyon Tuşu Yapma",
+    "tag": "Klavye",
+    "desc": "F1-F12 tuşlarının Fn basmadan doğrudan F tuşu olarak çalışmasını sağlar.",
+    "apply": "defaults write NSGlobalDomain com.apple.keyboard.fnState -bool true",
+    "revert": "defaults delete NSGlobalDomain com.apple.keyboard.fnState"
+  },
+  {
+    "id": "hw-keyboard-backlight-dim",
+    "cat": "keyboard_input",
+    "catName": "Klavye, Trackpad & Donanım Girdisi",
+    "catIcon": "⌨️",
+    "title": "Klavye Arka Aydınlatması Zaman Aşımını Kısaltma",
+    "tag": "Donanım",
+    "desc": "MacBook kullanılmadığında pil tasarrufu için klavye aydınlatmasını 10 saniyede kapatır.",
+    "apply": "defaults write com.apple.BezelServices kDimTime -int 10",
+    "revert": "defaults delete com.apple.BezelServices kDimTime 2>/dev/null || true"
+  },
+  {
+    "id": "snd-disable-volume-beep",
+    "cat": "keyboard_input",
+    "catName": "Klavye, Trackpad & Donanım Girdisi",
+    "catIcon": "⌨️",
+    "title": "Ses Seviyesi Değişirken Çıkan Bip Sesini Kapatma",
+    "tag": "Ses",
+    "desc": "F11/F12 ile ses kısılıp açılırken çalan geri bildirim ses efektini susturur.",
+    "apply": "defaults write NSGlobalDomain \"com.apple.sound.beep.feedback\" -int 0",
+    "revert": "defaults delete NSGlobalDomain \"com.apple.sound.beep.feedback\""
+  },
+  {
+    "id": "ui-helpviewer-devmode",
+    "cat": "keyboard_input",
+    "catName": "Klavye, Trackpad & Donanım Girdisi",
+    "catIcon": "⌨️",
+    "title": "Yardım Penceresinin (Help Viewer) Her Zaman Üstte Kalmasını Engelleme",
+    "tag": "UI",
+    "desc": "Uygulamalarda yardım ekranı açıldığında diğer pencerelerin önünde kilitlenip kalmasını durdurur.",
+    "apply": "defaults write com.apple.helpviewer DevMode -bool true",
+    "revert": "defaults delete com.apple.helpviewer DevMode 2>/dev/null || true"
+  },
+  {
+    "id": "track-disable-natural-scroll",
+    "cat": "keyboard_input",
+    "catName": "Klavye, Trackpad & Donanım Girdisi",
+    "catIcon": "⌨️",
+    "title": "Trackpad Doğal Kaydırma Yönünü Kapatma (Standart Kaydırma)",
+    "tag": "Trackpad",
+    "desc": "Kaydırma yönünü tersine çevirip geleneksel fare tekeri mantığına döndürür.",
+    "apply": "defaults write NSGlobalDomain com.apple.swipescrolldirection -bool false",
+    "revert": "defaults delete NSGlobalDomain com.apple.swipescrolldirection"
+  },
+  {
+    "id": "dev-xcode-build-duration",
+    "cat": "dev_security",
+    "catName": "Geliştirici, Safari, Güvenlik & Sistem",
+    "catIcon": "⚡",
+    "title": "Xcode Derleme Süresi Sayacı (Build Operation Duration)",
+    "tag": "Xcode",
+    "desc": "Xcode'un üst çubuğunda projenin kaç saniyede build edildiğini gösterir.",
+    "apply": "defaults write com.apple.dt.Xcode ShowBuildOperationDuration -bool true",
+    "revert": "defaults delete com.apple.dt.Xcode ShowBuildOperationDuration 2>/dev/null || true"
+  },
+  {
+    "id": "sec-disable-quarantine",
+    "cat": "dev_security",
+    "catName": "Geliştirici, Safari, Güvenlik & Sistem",
+    "catIcon": "⚡",
+    "title": "İndirilen Dosyaların Karantina Uyarısını Kapatma",
+    "tag": "Güvenlik",
+    "desc": "İnternetten indirilen araçları ilk kez açarken çıkan 'İnternetten indirildi, açılsın mı?' uyarısını atlar.",
+    "apply": "defaults write com.apple.LaunchServices LSQuarantine -bool false",
+    "revert": "defaults delete com.apple.LaunchServices LSQuarantine 2>/dev/null || true"
+  },
+  {
+    "id": "safari-enable-develop-menu",
+    "cat": "dev_security",
+    "catName": "Geliştirici, Safari, Güvenlik & Sistem",
+    "catIcon": "⚡",
+    "title": "Safari Geliştirici Menüsü ve Web Inspector'ı Açma",
+    "tag": "Safari",
+    "desc": "Safari tercihlerine girmeden Geliştirici menüsünü ve yerel HTML/JS denetim aracını aktif eder.",
+    "apply": "defaults write com.apple.Safari IncludeDevelopMenu -bool true\ndefaults write com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey -bool true\ndefaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled -bool true",
+    "revert": "defaults delete com.apple.Safari IncludeDevelopMenu 2>/dev/null || true\ndefaults delete com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey 2>/dev/null || true\ndefaults delete com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled 2>/dev/null || true"
+  },
+  {
+    "id": "safari-show-full-url",
+    "cat": "dev_security",
+    "catName": "Geliştirici, Safari, Güvenlik & Sistem",
+    "catIcon": "⚡",
+    "title": "Safari Akıllı Arama Çubuğunda Tam URL Gösterme",
+    "tag": "Safari",
+    "desc": "Safari'de sadece alan adını değil, tüm URL yolunu (https://site.com/path/to/page) açık gösterir.",
+    "apply": "defaults write com.apple.Safari ShowFullURLInSmartSearchField -bool true",
+    "revert": "defaults delete com.apple.Safari ShowFullURLInSmartSearchField 2>/dev/null || true"
+  },
+  {
+    "id": "sys-expand-save-print-panels",
+    "cat": "dev_security",
+    "catName": "Geliştirici, Safari, Güvenlik & Sistem",
+    "catIcon": "⚡",
+    "title": "Kayıt ve Yazdırma Pencerelerini Her Zaman Genişletilmiş Açma",
+    "tag": "Sistem",
+    "desc": "Dosya kaydederken dar gelen pencere yerine tüm dizin ağacını varsayılan olarak açık getirir.",
+    "apply": "defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true\ndefaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode2 -bool true\ndefaults write NSGlobalDomain PMPrintingExpandedStateForPrint -bool true\ndefaults write NSGlobalDomain PMPrintingExpandedStateForPrint2 -bool true",
+    "revert": "defaults delete NSGlobalDomain NSNavPanelExpandedStateForSaveMode 2>/dev/null || true\ndefaults delete NSGlobalDomain NSNavPanelExpandedStateForSaveMode2 2>/dev/null || true\ndefaults delete NSGlobalDomain PMPrintingExpandedStateForPrint 2>/dev/null || true\ndefaults delete NSGlobalDomain PMPrintingExpandedStateForPrint2 2>/dev/null || true"
+  },
+  {
+    "id": "sys-disable-crash-reporter",
+    "cat": "dev_security",
+    "catName": "Geliştirici, Safari, Güvenlik & Sistem",
+    "catIcon": "⚡",
+    "title": "Çökme Raporu (Crash Reporter) Pencerelerini Kapatma",
+    "tag": "Sistem",
+    "desc": "Bir uygulama çöktüğünde ekrana gelen bildirim ve rapor gönderme diyalog kutularını devre dışı bırakır.",
+    "apply": "defaults write com.apple.CrashReporter DialogType -string \"none\"",
+    "revert": "defaults delete com.apple.CrashReporter DialogType 2>/dev/null || true"
+  },
+  {
+    "id": "sys-login-host-info",
+    "cat": "dev_security",
+    "catName": "Geliştirici, Safari, Güvenlik & Sistem",
+    "catIcon": "⚡",
+    "title": "Kilit Ekranına Ağ ve Sistem Bilgisi Ekleme",
+    "tag": "Sistem",
+    "desc": "Giriş ekranında sağ üstteki saate tıklandığında IP adresi, hostname ve macOS versiyonunu dönüşümlü gösterir.",
+    "apply": "sudo defaults write /Library/Preferences/com.apple.loginwindow AdminHostInfo HostName",
+    "revert": "sudo defaults delete /Library/Preferences/com.apple.loginwindow AdminHostInfo 2>/dev/null || true"
+  },
+  {
+    "id": "hw-bluetooth-bitpool",
+    "cat": "dev_security",
+    "catName": "Geliştirici, Safari, Güvenlik & Sistem",
+    "catIcon": "⚡",
+    "title": "Bluetooth Ses Kalitesini ve AAC/SBC Bitrate Sınırını Artırma",
+    "tag": "Ses",
+    "desc": "Bluetooth kulaklık ve harici hoparlörlerde ses aktarım kalitesini en üst seviyeye sabitler.",
+    "apply": "defaults write com.apple.BluetoothAudioAgent \"Apple Bitpool Min (editable)\" -int 40",
+    "revert": "defaults delete com.apple.BluetoothAudioAgent \"Apple Bitpool Min (editable)\" 2>/dev/null || true"
+  },
+  {
+    "id": "net-disable-captive-portal",
+    "cat": "dev_security",
+    "catName": "Geliştirici, Safari, Güvenlik & Sistem",
+    "catIcon": "⚡",
+    "title": "Captive Portal (Esir Ağ) Algılamasını Kapatma",
+    "tag": "Ağ",
+    "desc": "Özel DNS veya kafe ağlarında sürekli açılan zorunlu tarayıcı pencerelerini engeller.",
+    "apply": "sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.captivecontrol Active -bool false",
+    "revert": "sudo defaults delete /Library/Preferences/SystemConfiguration/com.apple.captivecontrol Active 2>/dev/null || true"
+  },
+  {
+    "id": "hw-disable-autoboot",
+    "cat": "dev_security",
+    "catName": "Geliştirici, Safari, Güvenlik & Sistem",
+    "catIcon": "⚡",
+    "title": "Kapak Açıldığında / Güce Takıldığında Otomatik Açılmayı Kapatma",
+    "tag": "Donanım",
+    "desc": "MacBook kapağı açıldığında veya prize takıldığında otomatik boot etmesini engeller (ekran temizlerken ideal).",
+    "apply": "sudo nvram AutoBoot=%00",
+    "revert": "sudo nvram AutoBoot=%03"
+  },
+  {
+    "id": "hw-mute-startup-chime",
+    "cat": "dev_security",
+    "catName": "Geliştirici, Safari, Güvenlik & Sistem",
+    "catIcon": "⚡",
+    "title": "Mac Başlangıç Sesini (Startup Chime) Susturma",
+    "tag": "Donanım",
+    "desc": "Mac her açıldığında ve yeniden başladığında çalan yüksek gong sesini tamamen kapatır.",
+    "apply": "sudo nvram StartupMute=%01",
+    "revert": "sudo nvram StartupMute=%00"
+  },
+  {
+    "id": "sec-immediate-password-lock",
+    "cat": "dev_security",
+    "catName": "Geliştirici, Safari, Güvenlik & Sistem",
+    "catIcon": "⚡",
+    "title": "Ekran Koruyucu veya Uykudan Sonra Şifre İsteme Gecikmesini Sıfırlama",
+    "tag": "Güvenlik",
+    "desc": "Ekran kapandığı veya uykuya geçtiği saniye anında parola korumasını devreye alır.",
+    "apply": "defaults write com.apple.screensaver askForPassword -int 1\ndefaults write com.apple.screensaver askForPasswordDelay -int 0",
+    "revert": "defaults delete com.apple.screensaver askForPassword\ndefaults delete com.apple.screensaver askForPasswordDelay"
+  },
+  {
+    "id": "scr-format-jpg",
+    "cat": "dev_security",
+    "catName": "Geliştirici, Safari, Güvenlik & Sistem",
+    "catIcon": "⚡",
+    "title": "Ekran Görüntüsü Formatını JPG Yapma (Dosya Boyutu Küçültme)",
+    "tag": "Screenshots",
+    "desc": "Ekran görüntülerinin ağır PNG yerine daha hafif JPEG formatında kaydedilmesini sağlar.",
+    "apply": "defaults write com.apple.screencapture type -string \"jpg\"\nkillall SystemUIServer",
+    "revert": "defaults delete com.apple.screencapture type\nkillall SystemUIServer"
+  },
+  {
+    "id": "scr-disable-shadow",
+    "cat": "dev_security",
+    "catName": "Geliştirici, Safari, Güvenlik & Sistem",
+    "catIcon": "⚡",
+    "title": "Ekran Görüntüsü Pencerelerindeki Gölgeyi Kaldırma",
+    "tag": "Screenshots",
+    "desc": "Tek pencere ekran görüntüsü alırken (⌘+Shift+4 -> Space) etrafa eklenen dev gölgeyi siler.",
+    "apply": "defaults write com.apple.screencapture disable-shadow -bool true\nkillall SystemUIServer",
+    "revert": "defaults delete com.apple.screencapture disable-shadow\nkillall SystemUIServer"
+  },
+  {
+    "id": "scr-custom-location",
+    "cat": "dev_security",
+    "catName": "Geliştirici, Safari, Güvenlik & Sistem",
+    "catIcon": "⚡",
+    "title": "Ekran Görüntüsü Klasörünü ~/Pictures/Screenshots Yapma",
+    "tag": "Screenshots",
+    "desc": "Masaüstünün görsellerle dolmasını engelleyip hepsini otomatik özel klasöre yönlendirir.",
+    "apply": "mkdir -p ~/Pictures/Screenshots\ndefaults write com.apple.screencapture location ~/Pictures/Screenshots\nkillall SystemUIServer",
+    "revert": "defaults delete com.apple.screencapture location\nkillall SystemUIServer"
+  },
+  {
+    "id": "sys-disable-local-snapshots",
+    "cat": "dev_security",
+    "catName": "Geliştirici, Safari, Güvenlik & Sistem",
+    "catIcon": "⚡",
+    "title": "Time Machine Yerel Snapshot (Dahili SSD Yedekleri) Kapatma",
+    "tag": "Depolama",
+    "desc": "Harici disk yokken dahili SSD'de gigabaytlarca APFS snapshot birikmesini durdurur.",
+    "apply": "sudo tmutil disable",
+    "revert": "sudo tmutil enable 2>/dev/null || true"
+  },
+  {
+    "id": "ui-reduce-motion",
+    "cat": "dev_security",
+    "catName": "Geliştirici, Safari, Güvenlik & Sistem",
+    "catIcon": "⚡",
+    "title": "Hareketi Azalt (Reduce Motion) ile Tüm Arayüzü Hızlandırma",
+    "tag": "Performans",
+    "desc": "Sistem genelindeki geçiş animasyonlarını tamamen kaldırıp en seri keskin geçişe çevirir.",
+    "apply": "defaults write com.apple.universalaccess reduceMotion -bool true",
+    "revert": "defaults delete com.apple.universalaccess reduceMotion 2>/dev/null || true"
+  },
+  {
+    "id": "sec-dnd-screen-share",
+    "cat": "dev_security",
+    "catName": "Geliştirici, Safari, Güvenlik & Sistem",
+    "catIcon": "⚡",
+    "title": "Ekran Paylaşımı Sırasında Bildirimleri Gizleme",
+    "tag": "Gizlilik",
+    "desc": "Ekranınızı bir toplantıda paylaşırken veya yansıtırken kişisel bildirimlerin görünmesini engeller.",
+    "apply": "defaults write com.apple.notificationcenterui dndDisplayNotifications -bool false",
+    "revert": "defaults delete com.apple.notificationcenterui dndDisplayNotifications 2>/dev/null || true"
+  },
+  {
+    "id": "tahoe-tiling-preview-delay",
+    "cat": "tahoe",
+    "catName": "macOS Tahoe & Apple Intelligence Optimizasyonları",
+    "catIcon": "🏔️",
+    "title": "Pencere Döşeme Snap Önizleme Gecikmesini Sıfırlama",
+    "tag": "Tahoe",
+    "desc": "Pencereyi ekran kenarına yaklaştırınca çıkan hizalama alanının beklemeden anında belirmesini sağlar.",
+    "apply": "defaults write com.apple.WindowManager TilingWindowPreviewDelay -float 0\nkillall WindowManager",
+    "revert": "defaults delete com.apple.WindowManager TilingWindowPreviewDelay\nkillall WindowManager"
+  },
+  {
+    "id": "tahoe-hide-snap-dividers",
+    "cat": "tahoe",
+    "catName": "macOS Tahoe & Apple Intelligence Optimizasyonları",
+    "catIcon": "🏔️",
+    "title": "Döşenen Pencereler Arasındaki Ayırıcı Çizgiyi Kaldırma",
+    "tag": "Tahoe",
+    "desc": "macOS pencere döşeme özelliğinde pencereler arasına konan gri ayırıcı çizgiyi kapatır.",
+    "apply": "defaults write com.apple.WindowManager ShowTilingSnapDividers -bool false\nkillall WindowManager",
+    "revert": "defaults delete com.apple.WindowManager ShowTilingSnapDividers\nkillall WindowManager"
+  },
+  {
+    "id": "tahoe-mirror-group-notifications",
+    "cat": "tahoe",
+    "catName": "macOS Tahoe & Apple Intelligence Optimizasyonları",
+    "catIcon": "🏔️",
+    "title": "iPhone Yansıtma Bildirimlerini Otomatik Gruplama",
+    "tag": "Continuity",
+    "desc": "iPhone Mirroring üzerinden gelen bildirimlerin Mac bildirimleri altında düzenli gruplanmasını sağlar.",
+    "apply": "defaults write com.apple.ScreenContinuity AutoGroupPhoneNotifications -bool true",
+    "revert": "defaults delete com.apple.ScreenContinuity AutoGroupPhoneNotifications 2>/dev/null || true"
+  },
+  {
+    "id": "tahoe-mirror-dnd-sync",
+    "cat": "tahoe",
+    "catName": "macOS Tahoe & Apple Intelligence Optimizasyonları",
+    "catIcon": "🏔️",
+    "title": "iPhone ile Mac Odak (Rahatsız Etme) Modunu Eşitleme",
+    "tag": "Continuity",
+    "desc": "iPhone Yansıtma aktifken telefonun DND/Odak modunu doğrudan Mac ile senkronize eder.",
+    "apply": "defaults write com.apple.ScreenContinuity MirrorDoNotDisturbState -bool true",
+    "revert": "defaults delete com.apple.ScreenContinuity MirrorDoNotDisturbState 2>/dev/null || true"
+  },
+  {
+    "id": "tahoe-writing-tools-delay",
+    "cat": "tahoe",
+    "catName": "macOS Tahoe & Apple Intelligence Optimizasyonları",
+    "catIcon": "🏔️",
+    "title": "Yazma Araçları (Writing Tools) Açılış Gecikmesini Sıfırlama",
+    "tag": "AI",
+    "desc": "Metin seçildiğinde sistem çapında açılan Apple Intelligence / Yazma Araçları menüsünün tepki süresini sıfırlar.",
+    "apply": "defaults write NSGlobalDomain WritingToolsShowDelay -float 0",
+    "revert": "defaults delete NSGlobalDomain WritingToolsShowDelay 2>/dev/null || true"
+  },
+  {
+    "id": "tahoe-spotlight-direct-math",
+    "cat": "tahoe",
+    "catName": "macOS Tahoe & Apple Intelligence Optimizasyonları",
+    "catIcon": "🏔️",
+    "title": "Spotlight Matematik Formüllerini Doğrudan Çözümlesin",
+    "tag": "Spotlight",
+    "desc": "Spotlight'a matematiksel veya değişkenli formül yazıldığında ara adımları atlayıp anında sonucu öne çıkarır.",
+    "apply": "defaults write com.apple.Spotlight DirectMathEvaluation -bool true\nkillall Spotlight",
+    "revert": "defaults delete com.apple.Spotlight DirectMathEvaluation 2>/dev/null || true\nkillall Spotlight"
+  },
+  {
+    "id": "tahoe-spotlight-local-first",
+    "cat": "tahoe",
+    "catName": "macOS Tahoe & Apple Intelligence Optimizasyonları",
+    "catIcon": "🏔️",
+    "title": "Spotlight Aramasında Web/Siri Yerine Yerel Dosyalara Öncelik Verme",
+    "tag": "Spotlight",
+    "desc": "Spotlight aramalarında internet önerilerini kapatıp yerel proje ve dosya aramalarını en tepeye alır.",
+    "apply": "defaults write com.apple.Spotlight LookupServerDisableRemoteQueries -bool true\nkillall Spotlight",
+    "revert": "defaults delete com.apple.Spotlight LookupServerDisableRemoteQueries 2>/dev/null || true\nkillall Spotlight"
+  },
+  {
+    "id": "tahoe-compact-menubar-spacing",
+    "cat": "tahoe",
+    "catName": "macOS Tahoe & Apple Intelligence Optimizasyonları",
+    "catIcon": "🏔️",
+    "title": "Menü Çubuğu Simgelerinin Boşluklarını Sıkıştırma (Kompakt Mod)",
+    "tag": "MenuBar",
+    "desc": "Özellikle çentikli MacBook ekranlarında menü simgeleri aralığını daraltarak daha fazla ikon sığdırır.",
+    "apply": "defaults -currentHost write -globalDomain NSStatusItemSpacing -int 6\ndefaults -currentHost write -globalDomain NSStatusItemSelectionPadding -int 4\nkillall SystemUIServer",
+    "revert": "defaults -currentHost delete -globalDomain NSStatusItemSpacing 2>/dev/null || true\ndefaults -currentHost delete -globalDomain NSStatusItemSelectionPadding 2>/dev/null || true\nkillall SystemUIServer"
+  },
+  {
+    "id": "tahoe-passwords-instant-autofill",
+    "cat": "tahoe",
+    "catName": "macOS Tahoe & Apple Intelligence Optimizasyonları",
+    "catIcon": "🏔️",
+    "title": "Şifreler (Passwords) ve 2FA Açılış Gecikmesini Sıfırlama",
+    "tag": "Passwords",
+    "desc": "Sistem genelinde parola/2FA otomatik doldurma penceresinin açılma bekleme süresini kaldırır.",
+    "apply": "defaults write com.apple.Passwords AutoFillDisplayDelay -float 0\ndefaults write com.apple.Passwords EnableFastTouchIDAuthentication -bool true",
+    "revert": "defaults delete com.apple.Passwords AutoFillDisplayDelay 2>/dev/null || true\ndefaults delete com.apple.Passwords EnableFastTouchIDAuthentication 2>/dev/null || true"
+  },
+  {
+    "id": "tahoe-suppress-background-alerts",
+    "cat": "tahoe",
+    "catName": "macOS Tahoe & Apple Intelligence Optimizasyonları",
+    "catIcon": "🏔️",
+    "title": "Arka Plan Servis Bildirimlerini Susturma",
+    "tag": "Alerts",
+    "desc": "Homebrew, Node veya Docker bir servis eklediğinde sağ üstte sürekli çıkan 'Arka plan öğesi eklendi' uyarısını kapatır.",
+    "apply": "defaults write com.apple.backgroundtaskmanagement SuppressServiceAlerts -bool true",
+    "revert": "defaults delete com.apple.backgroundtaskmanagement SuppressServiceAlerts 2>/dev/null || true"
+  },
+  {
+    "id": "tahoe-fast-stage-manager",
+    "cat": "tahoe",
+    "catName": "macOS Tahoe & Apple Intelligence Optimizasyonları",
+    "catIcon": "🏔️",
+    "title": "Stage Manager Uygulama Değişim Hızını Artırma",
+    "tag": "StageManager",
+    "desc": "Stage Manager grupları arasında geçiş yaparken uygulanan kaydırma animasyonunu minimuma indirir.",
+    "apply": "defaults write com.apple.WindowManager AppSwitcherAnimationDuration -float 0.1\nkillall WindowManager",
+    "revert": "defaults delete com.apple.WindowManager AppSwitcherAnimationDuration 2>/dev/null || true\nkillall WindowManager"
+  },
+  {
+    "id": "tahoe-game-mode-auto-boost",
+    "cat": "tahoe",
+    "catName": "macOS Tahoe & Apple Intelligence Optimizasyonları",
+    "catIcon": "🏔️",
+    "title": "Game Mode (Oyun Modu) Önceliğini Anında Tetikleme",
+    "tag": "Gaming",
+    "desc": "Oyun ve simülatörler tam ekrana geçtiğinde Bluetooth gecikme düşürme ve CPU/GPU önceliğini gecikmesiz açar.",
+    "apply": "defaults write com.apple.gameoverlay EnableGameModeAutoBoost -bool true",
+    "revert": "defaults delete com.apple.gameoverlay EnableGameModeAutoBoost 2>/dev/null || true"
+  },
+  {
+    "id": "tahoe-stage-show-desktop",
+    "cat": "tahoe",
+    "catName": "macOS Tahoe & Apple Intelligence Optimizasyonları",
+    "catIcon": "🏔️",
+    "title": "Stage Manager'da Masaüstü Öğelerini Her Zaman Gösterme",
+    "tag": "StageManager",
+    "desc": "Stage Manager devredeyken bile masaüstündeki dosya ve disk simgelerini gizlemeden görünür tutar.",
+    "apply": "defaults write com.apple.WindowManager HideDesktop -bool false\nkillall WindowManager",
+    "revert": "defaults delete com.apple.WindowManager HideDesktop 2>/dev/null || true\nkillall WindowManager"
+  },
+  {
+    "id": "tahoe-restore-stage-layout",
+    "cat": "tahoe",
+    "catName": "macOS Tahoe & Apple Intelligence Optimizasyonları",
+    "catIcon": "🏔️",
+    "title": "Harici Ekrana Bağlanıldığında Stage Manager Durumunu Hatırlama",
+    "tag": "Displays",
+    "desc": "Monitör takılıp çıkarıldığında pencerelerin dizilimini ve Stage Manager durumunu korur.",
+    "apply": "defaults write com.apple.WindowManager AutoRestoreStageLayout -bool true",
+    "revert": "defaults delete com.apple.WindowManager AutoRestoreStageLayout 2>/dev/null || true"
+  },
+  {
+    "id": "tahoe-fast-autohide-menubar",
+    "cat": "tahoe",
+    "catName": "macOS Tahoe & Apple Intelligence Optimizasyonları",
+    "catIcon": "🏔️",
+    "title": "Menü Çubuğu Otomatik Gizleme Animasyonunu Hızlandırma",
+    "tag": "MenuBar",
+    "desc": "Menü çubuğu gizli moddayken fare yukarı gittiğinde anında gecikmesiz görünmesini sağlar.",
+    "apply": "defaults write NSGlobalDomain _HIHideMenuBar -bool true\ndefaults write NSGlobalDomain MenuBarShowDelay -float 0",
+    "revert": "defaults delete NSGlobalDomain _HIHideMenuBar 2>/dev/null || true\ndefaults delete NSGlobalDomain MenuBarShowDelay 2>/dev/null || true"
+  },
+  {
+    "id": "tahoe-neural-camera-fx",
+    "cat": "tahoe",
+    "catName": "macOS Tahoe & Apple Intelligence Optimizasyonları",
+    "catIcon": "🏔️",
+    "title": "FaceTime ve Kamerada Studio Light / Arka Plan Efekti Donanım Hızlandırma",
+    "tag": "Media",
+    "desc": "Apple Silicon NPU üzerinde kamera efektlerinin öncelikli çalışmasını sağlar.",
+    "apply": "defaults write com.apple.CoreMedia.AVCapture EnableNeuralProcessingOverride -bool true",
+    "revert": "defaults delete com.apple.CoreMedia.AVCapture EnableNeuralProcessingOverride 2>/dev/null || true"
+  },
+  {
+    "id": "tahoe-spotlight-dict-priority",
+    "cat": "tahoe",
+    "catName": "macOS Tahoe & Apple Intelligence Optimizasyonları",
+    "catIcon": "🏔️",
+    "title": "Spotlight'ta Sözlük ve Tanım Aramalarına Öncelik Verme",
+    "tag": "Spotlight",
+    "desc": "Kelime aramalarında doğrudan yerel sözlük tanımını en üst arama sonucu olarak getirir.",
+    "apply": "defaults write com.apple.Spotlight LookupServerPrioritizeDefinitions -bool true\nkillall Spotlight",
+    "revert": "defaults delete com.apple.Spotlight LookupServerPrioritizeDefinitions 2>/dev/null || true\nkillall Spotlight"
+  },
+  {
+    "id": "net-wifi-disable-powersave",
+    "cat": "network_power",
+    "catName": "Ağ, Güç Yönetimi, Batarya & Bakım",
+    "catIcon": "🔋",
+    "title": "Wi-Fi Ağlarında Güç Tasarrufu Modunu Kapatma (Düşük Ping)",
+    "tag": "Ağ",
+    "desc": "Kablosuz kartın uyku döngülerine girmesini engelleyerek oyun ve SSH oturumlarında jitter/pingi düşürür.",
+    "apply": "sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.airport.opp.plist WiFiPowerManagement -bool false",
+    "revert": "sudo defaults delete /Library/Preferences/SystemConfiguration/com.apple.airport.opp.plist WiFiPowerManagement 2>/dev/null || true"
+  },
+  {
+    "id": "pwr-ac-never-sleep",
+    "cat": "network_power",
+    "catName": "Ağ, Güç Yönetimi, Batarya & Bakım",
+    "catIcon": "🔋",
+    "title": "Prizde İken Uykuya Geçişi Engelleme (Amphetamine benzeri)",
+    "tag": "Güç",
+    "desc": "Cihaz adaptöre bağlıyken ekran kapansa dahi arka plan işlemlerinin ve indirmelerin uyumasını engeller.",
+    "apply": "sudo pmset -c sleep 0",
+    "revert": "sudo pmset -c sleep 10"
+  },
+  {
+    "id": "pwr-clamshell-no-sleep",
+    "cat": "network_power",
+    "catName": "Ağ, Güç Yönetimi, Batarya & Bakım",
+    "catIcon": "🔋",
+    "title": "MacBook Kapağı Kapalıyken (Clamshell) Uyumayı Engelleme",
+    "tag": "Güç",
+    "desc": "Harici ekran bağlı olmasa dahi kapak kapatıldığında indirme/render devam etsin (dikkatli kullanın).",
+    "apply": "sudo pmset -a disablesleep 1",
+    "revert": "sudo pmset -a disablesleep 0"
+  },
+  {
+    "id": "pwr-restore-defaults",
+    "cat": "network_power",
+    "catName": "Ağ, Güç Yönetimi, Batarya & Bakım",
+    "catIcon": "🔋",
+    "title": "Varsayılan Güç ve Uyku Ayarlarına Geri Dönme",
+    "tag": "Güç",
+    "desc": "pmset güç yönetimi ayarlarını Apple fabrika ayarlarına sıfırlar.",
+    "apply": "sudo pmset -a restoredefaults",
+    "revert": "sudo pmset -a restoredefaults"
+  },
+  {
+    "id": "net-flush-dns",
+    "cat": "network_power",
+    "catName": "Ağ, Güç Yönetimi, Batarya & Bakım",
+    "catIcon": "🔋",
+    "title": "DNS Önbelleğini (DNS Cache) Anında Temizleme",
+    "tag": "Ağ",
+    "desc": "Alan adı ve DNS değişikliklerinin anında etkili olması için yerel DNS önbelleğini sıfırlar.",
+    "apply": "sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder",
+    "revert": "# Tek seferlik flush komutudur, geri dönüş gerektirmez."
+  },
+  {
+    "id": "net-disable-ipv6-wifi",
+    "cat": "network_power",
+    "catName": "Ağ, Güç Yönetimi, Batarya & Bakım",
+    "catIcon": "🔋",
+    "title": "IPv6'yı Wi-Fi Arayüzünde Geçici Olarak Kapatma",
+    "tag": "Ağ",
+    "desc": "IPv6 kaynaklı yavaşlama veya yönlendirme sorunlarında Wi-Fi arayüzünü saf IPv4 moduna alır.",
+    "apply": "networksetup -setv6off Wi-Fi",
+    "revert": "networksetup -setv6automatic Wi-Fi"
+  },
+  {
+    "id": "net-restart-wifi",
+    "cat": "network_power",
+    "catName": "Ağ, Güç Yönetimi, Batarya & Bakım",
+    "catIcon": "🔋",
+    "title": "Wi-Fi Ağını Terminalden Yeniden Başlatma",
+    "tag": "Ağ",
+    "desc": "Wi-Fi bağlantısını arayüze tıklamadan terminalden kapatıp 2 saniye sonra tekrar açar.",
+    "apply": "networksetup -setairportpower en0 off && sleep 2 && networksetup -setairportpower en0 on",
+    "revert": "networksetup -setairportpower en0 on"
+  },
+  {
+    "id": "pwr-fast-hibernation",
+    "cat": "network_power",
+    "catName": "Ağ, Güç Yönetimi, Batarya & Bakım",
+    "catIcon": "🔋",
+    "title": "Mac Hibernation (Derin Uyku) Modunu Hızlı Uyanmaya Ayarlama",
+    "tag": "Güç",
+    "desc": "RAM'i diske yazma süresini atlayıp Mac'in anında uyanması için hibernatemode 0 moduna alır.",
+    "apply": "sudo pmset -a hibernatemode 0",
+    "revert": "sudo pmset -a hibernatemode 3"
+  },
+  {
+    "id": "sys-clean-sleepimage",
+    "cat": "network_power",
+    "catName": "Ağ, Güç Yönetimi, Batarya & Bakım",
+    "catIcon": "🔋",
+    "title": "SSD Sleep Image Dosyasını Temizleyip Yer Açma",
+    "tag": "Depolama",
+    "desc": "Derin uyku dosyasını silerek dahili SSD'de RAM boyutunuz kadar yer açar.",
+    "apply": "sudo rm -f /var/vm/sleepimage",
+    "revert": "# Sistem gerektiğinde otomatik olarak yeniden oluşturacaktır."
+  },
+  {
+    "id": "hw-restart-bluetooth",
+    "cat": "network_power",
+    "catName": "Ağ, Güç Yönetimi, Batarya & Bakım",
+    "catIcon": "🔋",
+    "title": "Bluetooth Modülünü Terminalden Yeniden Başlatma",
+    "tag": "Donanım",
+    "desc": "Kulaklık veya klavye takılmalarında Bluetooth arka plan servisini resetler.",
+    "apply": "sudo pkill bluetoothd",
+    "revert": "# Tek seferlik servis resetidir."
+  },
+  {
+    "id": "sys-pin-text-input-menu",
+    "cat": "network_power",
+    "catName": "Ağ, Güç Yönetimi, Batarya & Bakım",
+    "catIcon": "🔋",
+    "title": "Klavye Dilini ve Giriş Kaynağını Menü Çubuğunda Sabitleme",
+    "tag": "Girdi",
+    "desc": "Menü çubuğundaki klavye bayrağının / giriş kaynağının her zaman açık kalmasını sağlar.",
+    "apply": "defaults write com.apple.TextInputMenu visible -bool true",
+    "revert": "defaults delete com.apple.TextInputMenu visible 2>/dev/null || true"
+  },
+  {
+    "id": "pwr-low-power-mode-battery-only",
+    "cat": "network_power",
+    "catName": "Ağ, Güç Yönetimi, Batarya & Bakım",
+    "catIcon": "🔋",
+    "title": "Düşük Güç Modunu (Low Power Mode) Sadece Pilde Otomatik Açma",
+    "tag": "Pil",
+    "desc": "Prizde tam performans çalışırken pilde otomatik olarak Düşük Güç Moduna geçmesini sağlar.",
+    "apply": "sudo pmset -b lowpowermode 1\nsudo pmset -c lowpowermode 0",
+    "revert": "sudo pmset -a lowpowermode 0"
+  },
+  {
+    "id": "pwr-charge-limit-80",
+    "cat": "network_power",
+    "catName": "Ağ, Güç Yönetimi, Batarya & Bakım",
+    "catIcon": "🔋",
+    "title": "Pil Sağlığı İçin %80 Şarj Sınırı Optimizasyonunu Tetikleme",
+    "tag": "Pil",
+    "desc": "macOS batarya koruma optimizasyon servisini aktif tutar.",
+    "apply": "sudo pmset -a bclm 80 2>/dev/null || defaults write com.apple.PowerManagement OptimizedBatteryCharging -bool true",
+    "revert": "defaults write com.apple.PowerManagement OptimizedBatteryCharging -bool false"
+  },
+  {
+    "id": "sec-disable-apple-analytics",
+    "cat": "network_power",
+    "catName": "Ağ, Güç Yönetimi, Batarya & Bakım",
+    "catIcon": "🔋",
+    "title": "Apple Analytics ve Tanılama Gönderimini Tamamen Kapatma",
+    "tag": "Gizlilik",
+    "desc": "Sistemin arka planda Apple sunucularına günlük ve kilitlenme logu göndermesini engeller.",
+    "apply": "sudo defaults write /Library/Application\\ Support/CrashReporter/DiagnosticMessagesHistory.plist AutoSubmit -bool false",
+    "revert": "sudo defaults delete /Library/Application\\ Support/CrashReporter/DiagnosticMessagesHistory.plist AutoSubmit 2>/dev/null || true"
+  },
+  {
+    "id": "sys-defaults-delete-guide",
+    "cat": "network_power",
+    "catName": "Ağ, Güç Yönetimi, Batarya & Bakım",
+    "catIcon": "🔋",
+    "title": "Tüm 'defaults write' Ayarlarını Sıfırlama Kılavuzu",
+    "tag": "Kılavuz",
+    "desc": "Yaptığınız herhangi bir ayarı fabrika varsayılanına döndürmek için kullanılan evrensel komut şablonu.",
+    "apply": "# Tek bir ayarı sıfırlamak için:\ndefaults delete [DomainAdı] [AnahtarAdı]\n# Örnek: defaults delete com.apple.dock autohide-delay && killall Dock",
+    "revert": "# Varsayılana döndürme komutu yukarıdadır."
+  }
+]
+
+CATEGORIES = [
+    {"id": "terminal", "name": "Terminal, Zsh & Kabuk", "icon": "💻"},
+    {"id": "finder", "name": "Finder & Dosya Yönetimi", "icon": "📁"},
+    {"id": "window_dock", "name": "Pencere, Masaüstü & Dock", "icon": "🪟"},
+    {"id": "keyboard_input", "name": "Klavye, Trackpad & Donanım", "icon": "⌨️"},
+    {"id": "dev_security", "name": "Geliştirici, Güvenlik & Sistem", "icon": "⚡"},
+    {"id": "tahoe", "name": "macOS Tahoe & AI Optimizasyonları", "icon": "🏔️"},
+    {"id": "network_power", "name": "Ağ, Güç Yönetimi & Bakım", "icon": "🔋"},
+]
+
+PRESETS = {
+    "dev": {
+        "title": "Geliştirici Güç Paketi (Developer Power Pack)",
+        "desc": "Xcode derleme sayacı, Safari geliştirici araçları, sudo Touch ID ve POSIX dosya yolları.",
+        "ids": [
+            "term-touchid-sudo", "term-interactive-comments", "find-all-extensions",
+            "find-hidden-files", "find-posix-title", "find-quicklook-text",
+            "dev-xcode-build-duration", "safari-enable-develop-menu", "safari-show-full-url",
+            "sys-expand-save-print-panels", "sys-disable-crash-reporter", "sec-disable-quarantine",
+            "key-full-keyboard-access", "key-fast-repeat", "key-disable-press-hold"
+        ]
+    },
+    "speed": {
+        "title": "Maksimum Hız & 0s Animasyon Paketi (FPS & UI Speed)",
+        "desc": "Dock gecikmesini sıfırlama, pencereleri anında boyutlandırma, hızlı klavye tekrarı ve akıcı geçişler.",
+        "ids": [
+            "dock-autohide-speed", "dock-suck-effect", "dock-fast-expose-anim",
+            "dock-no-recent-apps", "win-fast-resize", "find-quicklook-fast-zoom",
+            "win-top-drag-restore", "win-remove-tiling-margins", "ui-reduce-motion",
+            "key-fast-repeat"
+        ]
+    },
+    "battery": {
+        "title": "Pil Tasarrufu & Isı Koruma Paketi (Battery & Thermal Saver)",
+        "desc": "Pilde otomatik Düşük Güç Modu, %80 pil sağlığı koruması, Power Nap kapatma ve hızlı uyku.",
+        "ids": [
+            "pwr-low-power-mode-battery-only", "pwr-charge-limit-80", "pwr-fast-hibernation",
+            "sec-disable-apple-analytics", "hw-keyboard-backlight-dim", "find-no-ds-store-network",
+            "net-disable-captive-portal"
+        ]
+    },
+    "tahoe": {
+        "title": "macOS Tahoe & Apple Intelligence Paketi",
+        "desc": "Pencere döşeme önizlemesini hızlandırma, Writing Tools gecikmesini sıfırlama ve yerel Spotlight önceliği.",
+        "ids": [
+            "tahoe-tiling-preview-delay", "tahoe-hide-snap-dividers", "tahoe-writing-tools-delay",
+            "tahoe-spotlight-local-first", "tahoe-mirror-group-notifications", "tahoe-compact-menubar-spacing",
+            "tahoe-fast-stage-manager", "tahoe-game-mode-auto-boost", "tahoe-passwords-instant-autofill"
+        ]
+    }
+}
+
+# Raw Key Reader for Interactive TUI
+def get_key():
+    try:
+        import termios, tty
+        fd = sys.stdin.fileno()
+        old = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            ch = sys.stdin.read(1)
+            if ch == '\x1b':
+                ch2 = sys.stdin.read(1)
+                if ch2 == '[':
+                    ch3 = sys.stdin.read(1)
+                    if ch3 == 'A': return 'UP'
+                    elif ch3 == 'B': return 'DOWN'
+                    elif ch3 == 'C': return 'RIGHT'
+                    elif ch3 == 'D': return 'LEFT'
+                    elif ch3 == 'H': return 'HOME'
+                    elif ch3 == 'F': return 'END'
+                    elif ch3 == '3':
+                        sys.stdin.read(1) # consume ~
+                        return 'DEL'
+                return 'ESC'
+            elif ch == '\r' or ch == '\n':
+                return 'ENTER'
+            elif ch == ' ':
+                return 'SPACE'
+            elif ch == '\x7f' or ch == '\x08':
+                return 'BACKSPACE'
+            elif ch == '\x03': # Ctrl+C
+                return 'CTRL_C'
+            return ch
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old)
+    except Exception:
+        # Fallback for non-raw environment
+        line = sys.stdin.readline().strip()
+        return line if line else 'ENTER'
+
+def clear_screen():
+    print("\033[2J\033[H", end="")
+
+def print_banner():
+    banner = f"""{C.CYAN}{C.BOLD}
+  ███╗   ███╗ █████╗  ██████╗ ██████╗ ███████╗ ██████╗ ██████╗ ███████╗
+  ████╗ ████║██╔══██╗██╔════╝██╔═══██╗██╔════╝██╔════╝██╔═══██╗██╔════╝
+  ██╔████╔██║███████║██║     ██║   ██║███████╗██║     ██║   ██║█████╗  
+  ██║╚██╔╝██║██╔══██║██║     ██║   ██║╚════██║██║     ██║   ██║██╔══╝  
+  ██║ ╚═╝ ██║██║  ██║╚██████╗╚██████╔╝███████║╚██████╗╚██████╔╝███████╗
+  ╚═╝     ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝ ╚═════╝ ╚═════╝ ╚══════╝{C.RESET}
+  {C.PURPLE}{C.BOLD}⚡ macOS Interactive Terminal CLI & TUI • 100 Power-Tweaks (v2.0){C.RESET}
+  {C.DARK_GRAY}https://github.com/Jarvis322/macoscode • Tahoe & Apple Silicon Ready{C.RESET}
+"""
+    print(banner)
+
+def refresh_services():
+    services = ["Finder", "Dock", "WindowManager", "SystemUIServer", "Spotlight"]
+    print(f"\n{C.CYAN}🔄 macOS Sistem servisleri yenileniyor...{C.RESET}")
+    for s in services:
+        subprocess.run(f"killall {s} 2>/dev/null || true", shell=True)
+    time.sleep(0.5)
+
+def run_command(cmd, dry_run=False):
+    if dry_run:
+        print(f"{C.GRAY}[DRY-RUN]{C.RESET} {cmd}")
+        return True
+    try:
+        res = subprocess.run(cmd, shell=True, check=False)
+        return res.returncode == 0
+    except Exception as e:
+        print(f"{C.ROSE}Hata:{C.RESET} {e}")
+        return False
+
+# Audit Check for a tweak
+def check_tweak_status(tweak):
+    apply_cmd = tweak["apply"]
+    # Look for defaults write
+    m = re.search(r"defaults write\s+([^\s]+)\s+([^\s]+)\s+(-\w+)\s+(.+)", apply_cmd)
+    if m:
+        domain, key, vtype, val = m.groups()
+        domain = domain.replace('\\', '')
+        key = key.replace('"', '').replace("'", "").replace('\\', '')
+        val = val.strip().replace('"', '').replace("'", "")
+        try:
+            res = subprocess.run(f"defaults read {domain} {key} 2>/dev/null", shell=True, capture_output=True, text=True)
+            if res.returncode == 0:
+                out = res.stdout.strip()
+                if vtype == "-bool":
+                    target = "1" if val.lower() in ["true", "yes", "1"] else "0"
+                    return out.lower() == target or out.lower() == val.lower()
+                elif vtype == "-int" or vtype == "-float":
+                    return out == val
+                return True
+            return False
+        except Exception:
+            return False
+    # Check pam_tid.so
+    if "pam_tid.so" in apply_cmd:
+        try:
+            res = subprocess.run("grep -q 'pam_tid.so' /etc/pam.d/sudo 2>/dev/null", shell=True)
+            return res.returncode == 0
+        except Exception:
+            return False
+    # Check zsh
+    if "INTERACTIVE_COMMENTS" in apply_cmd:
+        return False
+    return False
+
+# System Audit Dashboard
+def run_system_audit():
+    clear_screen()
+    print_banner()
+    print(f"{C.BOLD}{C.CYAN}📊 macOS Sistem Ayarları Denetim Raporu (Audit){C.RESET}")
+    print(f"{C.DARK_GRAY}Sisteminizdeki 100 optimizasyonun anlık durumu taranıyor...{C.RESET}\n")
+
+    active_count = 0
+    total_count = len(TWEAKS)
+
+    for cat in CATEGORIES:
+        cat_tweaks = [t for t in TWEAKS if t["cat"] == cat["id"]]
+        print(f"\n{C.BOLD}{cat['icon']} {cat['name']}{C.RESET} {C.DARK_GRAY}({len(cat_tweaks)} Ayar){C.RESET}")
+        print("─" * 68)
+        for t in cat_tweaks:
+            status = check_tweak_status(t)
+            if status:
+                active_count += 1
+                status_badge = f"{C.EMERALD}{C.BOLD}[✔ AKTİF]{C.RESET}"
+            else:
+                status_badge = f"{C.DARK_GRAY}[  VARSAYILAN  ]{C.RESET}"
+            
+            title_truncated = t['title'][:44] + "..." if len(t['title']) > 47 else t['title'].ljust(47)
+            print(f" {status_badge} {title_truncated} {C.GRAY}[{t['tag']}]{C.RESET}")
+
+    score = int((active_count / total_count) * 100)
+    print("\n" + "=" * 68)
+    print(f"{C.BOLD}📈 ÖZET: {C.EMERALD}{active_count}{C.RESET}/{total_count} Optimizasyon Aktif ({C.CYAN}%{score} Güç Seviyesi{C.RESET}){C.RESET}")
+    print("=" * 68)
+    print(f"\n{C.GRAY}Menüye dönmek için herhangi bir tuşa basın...{C.RESET}")
+    get_key()
+
+# Batch Apply / Revert
+def apply_tweaks_list(tweak_list, mode="apply", dry_run=False):
+    action_name = "Uygulanıyor" if mode == "apply" else "Sıfırlanıyor (Revert)"
+    color = C.CYAN if mode == "apply" else C.ROSE
+    print(f"\n{color}{C.BOLD}🚀 {len(tweak_list)} Ayar {action_name}...{C.RESET}\n")
+    
+    if not dry_run:
+        print(f"{C.GOLD}🔐 Sudo yetkilendirmesi istenebilir...{C.RESET}")
+        subprocess.run("sudo -v", shell=True)
+
+    for i, t in enumerate(tweak_list, 1):
+        cmd = t["apply"] if mode == "apply" else t["revert"]
+        print(f"{C.GRAY}[{i}/{len(tweak_list)}]{C.RESET} {C.BOLD}{t['title']}{C.RESET}")
+        if dry_run:
+            print(f"   {C.DARK_GRAY}$ {cmd.replace(chr(10), ' && ')}{C.RESET}")
+        else:
+            run_command(cmd, dry_run=False)
+
+    if not dry_run:
+        refresh_services()
+        print(f"\n{C.EMERALD}{C.BOLD}✨ İşlem başarıyla tamamlandı! ({len(tweak_list)} Ayar){C.RESET}\n")
+    else:
+        print(f"\n{C.GOLD}{C.BOLD}✨ [DRY-RUN] Komutlar görüntülendi, sistemde değişiklik yapılmadı.{C.RESET}\n")
+
+# Preset Selector
+def run_preset_menu():
+    selected_idx = 0
+    keys = list(PRESETS.keys())
+
+    while True:
+        clear_screen()
+        print_banner()
+        print(f"{C.BOLD}{C.GOLD}⚡ Hızlı Optimizasyon Paketleri (Presets){C.RESET}\n")
+
+        for idx, k in enumerate(keys):
+            p = PRESETS[k]
+            cursor = f"{C.CYAN}{C.BOLD}➜{C.RESET}" if idx == selected_idx else " "
+            highlight = f"{C.CYAN}{C.BOLD}" if idx == selected_idx else f"{C.WHITE}"
+            print(f" {cursor} {highlight}{idx+1}. {p['title']}{C.RESET}")
+            print(f"     {C.DARK_GRAY}{p['desc']} ({len(p['ids'])} Ayar){C.RESET}\n")
+
+        print(f"{C.DARK_GRAY}Navigasyon: [↑/↓] Gezin • [Enter] Paketi Seç & Uygula • [r] Paketi Revert Et • [q/Esc] Geri{C.RESET}")
+
+        key = get_key()
+        if key in ['UP', 'k']:
+            selected_idx = (selected_idx - 1) % len(keys)
+        elif key in ['DOWN', 'j']:
+            selected_idx = (selected_idx + 1) % len(keys)
+        elif key in ['ENTER', 'SPACE']:
+            chosen_key = keys[selected_idx]
+            chosen_preset = PRESETS[chosen_key]
+            tweaks_to_run = [t for t in TWEAKS if t["id"] in chosen_preset["ids"]]
+            apply_tweaks_list(tweaks_to_run, mode="apply")
+            print(f"\n{C.GRAY}Devam etmek için bir tuşa basın...{C.RESET}")
+            get_key()
+            break
+        elif key == 'r':
+            chosen_key = keys[selected_idx]
+            chosen_preset = PRESETS[chosen_key]
+            tweaks_to_run = [t for t in TWEAKS if t["id"] in chosen_preset["ids"]]
+            apply_tweaks_list(tweaks_to_run, mode="revert")
+            print(f"\n{C.GRAY}Devam etmek için bir tuşa basın...{C.RESET}")
+            get_key()
+            break
+        elif key in ['q', 'ESC']:
+            break
+
+# Interactive Tweak Selector (Mole Style)
+def run_interactive_selector(category_filter=None):
+    if category_filter:
+        items = [t for t in TWEAKS if t["cat"] == category_filter]
+        cat_obj = next((c for c in CATEGORIES if c["id"] == category_filter), None)
+        title = f"{cat_obj['icon']} {cat_obj['name']}" if cat_obj else "Kategori"
+    else:
+        items = TWEAKS
+        title = "Tüm Ayarlar (100-in-1)"
+
+    selected_set = set()
+    cursor_idx = 0
+    dry_run_mode = False
+
+    while True:
+        clear_screen()
+        print_banner()
+        print(f"{C.BOLD}{C.PURPLE}🎛️ {title}{C.RESET} {C.DARK_GRAY}(Seçili: {len(selected_set)}/{len(items)}){C.RESET}")
+        print("─" * 70)
+
+        # Show a window of 10 items
+        window_size = 10
+        start_idx = max(0, min(cursor_idx - window_size // 2, len(items) - window_size))
+        end_idx = min(len(items), start_idx + window_size)
+
+        for idx in range(start_idx, end_idx):
+            t = items[idx]
+            is_cur = (idx == cursor_idx)
+            is_sel = (t["id"] in selected_set)
+            
+            cursor_mark = f"{C.CYAN}➜{C.RESET}" if is_cur else " "
+            check_mark = f"{C.EMERALD}{C.BOLD}[✔]{C.RESET}" if is_sel else f"{C.DARK_GRAY}[ ]{C.RESET}"
+            text_style = f"{C.BOLD}{C.WHITE}" if is_cur else f"{C.GRAY}"
+            
+            tag_badge = f"{C.INDIGO}[{t['tag']}]{C.RESET}"
+            title_text = t['title'][:40] + "..." if len(t['title']) > 43 else t['title'].ljust(43)
+            print(f" {cursor_mark} {check_mark} {text_style}{title_text}{C.RESET} {tag_badge}")
+
+        # Current Item Detail Card
+        cur_tweak = items[cursor_idx]
+        print("\n" + f"{C.DARK_GRAY}┌─ Detay ─────────────────────────────────────────────────────────────┐{C.RESET}")
+        print(f"{C.DARK_GRAY}│{C.RESET} {C.BOLD}{cur_tweak['title']}{C.RESET}")
+        print(f"{C.DARK_GRAY}│{C.RESET} {C.GRAY}{cur_tweak['desc'][:68]}{C.RESET}")
+        first_cmd = cur_tweak['apply'].split('\n')[0]
+        print(f"{C.DARK_GRAY}│{C.RESET} {C.CYAN}$ {first_cmd[:66]}{C.RESET}")
+        print(f"{C.DARK_GRAY}└─────────────────────────────────────────────────────────────────────┘{C.RESET}")
+
+        dry_badge = f"{C.GOLD}[DRY-RUN AÇIK]{C.RESET}" if dry_run_mode else f"{C.DARK_GRAY}[CANLI MOD]{C.RESET}"
+        print(f"{C.DARK_GRAY}Navigasyon:{C.RESET} [↑/↓] Gezin • [Space] Seç/Bırak • [a] Tümünü Seç • [d] {dry_badge}")
+        print(f"{C.DARK_GRAY}Aksiyonlar:{C.RESET} [Enter] Seçilenleri Uygula • [r] Seçilenleri Sıfırla (Revert) • [q/Esc] Geri")
+
+        key = get_key()
+        if key in ['UP', 'k']:
+            cursor_idx = (cursor_idx - 1) % len(items)
+        elif key in ['DOWN', 'j']:
+            cursor_idx = (cursor_idx + 1) % len(items)
+        elif key == 'SPACE':
+            tid = cur_tweak["id"]
+            if tid in selected_set:
+                selected_set.remove(tid)
+            else:
+                selected_set.add(tid)
+        elif key == 'a':
+            if len(selected_set) == len(items):
+                selected_set.clear()
+            else:
+                selected_set = {t["id"] for t in items}
+        elif key == 'd':
+            dry_run_mode = not dry_run_mode
+        elif key == 'ENTER':
+            chosen_tweaks = [t for t in items if t["id"] in selected_set]
+            if not chosen_tweaks:
+                chosen_tweaks = [cur_tweak]
+            apply_tweaks_list(chosen_tweaks, mode="apply", dry_run=dry_run_mode)
+            print(f"\n{C.GRAY}Devam etmek için bir tuşa basın...{C.RESET}")
+            get_key()
+            break
+        elif key == 'r':
+            chosen_tweaks = [t for t in items if t["id"] in selected_set]
+            if not chosen_tweaks:
+                chosen_tweaks = [cur_tweak]
+            apply_tweaks_list(chosen_tweaks, mode="revert", dry_run=dry_run_mode)
+            print(f"\n{C.GRAY}Devam etmek için bir tuşa basın...{C.RESET}")
+            get_key()
+            break
+        elif key in ['q', 'ESC']:
+            break
+
+# Category Browser Menu
+def run_category_menu():
+    selected_idx = 0
+    while True:
+        clear_screen()
+        print_banner()
+        print(f"{C.BOLD}{C.CYAN}🎛️ Kategorilere Göre Ayar Gezgini{C.RESET}\n")
+
+        for idx, cat in enumerate(CATEGORIES):
+            cat_count = len([t for t in TWEAKS if t["cat"] == cat["id"]])
+            cursor = f"{C.CYAN}{C.BOLD}➜{C.RESET}" if idx == selected_idx else " "
+            highlight = f"{C.CYAN}{C.BOLD}" if idx == selected_idx else f"{C.WHITE}"
+            print(f" {cursor} {highlight}{idx+1}. {cat['icon']} {cat['name']}{C.RESET} {C.DARK_GRAY}({cat_count} Ayar){C.RESET}")
+
+        print(f"\n{C.DARK_GRAY}Navigasyon: [↑/↓] Gezin • [Enter/Space] Kategoriye Gir • [q/Esc] Geri{C.RESET}")
+
+        key = get_key()
+        if key in ['UP', 'k']:
+            selected_idx = (selected_idx - 1) % len(CATEGORIES)
+        elif key in ['DOWN', 'j']:
+            selected_idx = (selected_idx + 1) % len(CATEGORIES)
+        elif key in ['ENTER', 'SPACE']:
+            chosen_cat = CATEGORIES[selected_idx]["id"]
+            run_interactive_selector(category_filter=chosen_cat)
+        elif key in ['q', 'ESC']:
+            break
+
+# Interactive Live Search
+def run_search_menu():
+    clear_screen()
+    print_banner()
+    print(f"{C.BOLD}{C.CYAN}🔍 Terminal İçi Ayar Arama{C.RESET}")
+    print(f"{C.DARK_GRAY}Aramak istediğiniz anahtar kelimeyi yazın (örn: dock, sudo, finder, tahoe):{C.RESET}\n")
+    try:
+        query = input(f"{C.BOLD}{C.CYAN}Arama ➜ {C.RESET}").strip().lower()
+    except Exception:
+        return
+
+    if not query:
+        return
+
+    matched = [t for t in TWEAKS if query in t["title"].lower() or query in t["desc"].lower() or query in t["apply"].lower() or query in t["tag"].lower()]
+    
+    if not matched:
+        print(f"\n{C.ROSE}❌ '{query}' ile eşleşen ayar bulunamadı.{C.RESET}")
+        time.sleep(1.5)
+        return
+
+    # Open selector with matched items
+    selected_set = set()
+    cursor_idx = 0
+
+    while True:
+        clear_screen()
+        print_banner()
+        print(f"{C.BOLD}{C.CYAN}🔍 '{query}' Arama Sonuçları ({len(matched)} Ayar Bulundu){C.RESET}")
+        print("─" * 70)
+
+        for idx, t in enumerate(matched):
+            is_cur = (idx == cursor_idx)
+            is_sel = (t["id"] in selected_set)
+            cursor_mark = f"{C.CYAN}➜{C.RESET}" if is_cur else " "
+            check_mark = f"{C.EMERALD}[✔]{C.RESET}" if is_sel else f"{C.DARK_GRAY}[ ]{C.RESET}"
+            text_style = f"{C.BOLD}{C.WHITE}" if is_cur else f"{C.GRAY}"
+            print(f" {cursor_mark} {check_mark} {text_style}{t['title'][:44]}{C.RESET} {C.DARK_GRAY}[{t['tag']}]{C.RESET}")
+
+        print(f"\n{C.DARK_GRAY}Navigasyon: [↑/↓] • [Space] Seç • [a] Tümünü Seç • [Enter] Uygula • [r] Revert • [q] Geri{C.RESET}")
+
+        key = get_key()
+        if key in ['UP', 'k']:
+            cursor_idx = (cursor_idx - 1) % len(matched)
+        elif key in ['DOWN', 'j']:
+            cursor_idx = (cursor_idx + 1) % len(matched)
+        elif key == 'SPACE':
+            tid = matched[cursor_idx]["id"]
+            if tid in selected_set: selected_set.remove(tid)
+            else: selected_set.add(tid)
+        elif key == 'a':
+            if len(selected_set) == len(matched): selected_set.clear()
+            else: selected_set = {t["id"] for t in matched}
+        elif key == 'ENTER':
+            chosen = [t for t in matched if t["id"] in selected_set] or [matched[cursor_idx]]
+            apply_tweaks_list(chosen, mode="apply")
+            print(f"\n{C.GRAY}Devam etmek için bir tuşa basın...{C.RESET}")
+            get_key()
+            break
+        elif key == 'r':
+            chosen = [t for t in matched if t["id"] in selected_set] or [matched[cursor_idx]]
+            apply_tweaks_list(chosen, mode="revert")
+            print(f"\n{C.GRAY}Devam etmek için bir tuşa basın...{C.RESET}")
+            get_key()
+            break
+        elif key in ['q', 'ESC']:
+            break
+
+# Export Custom Bash Scripts
+def export_custom_scripts():
+    clear_screen()
+    print_banner()
+    print(f"{C.BOLD}{C.GOLD}📦 Kişiselleştirilmiş Bash Betiği Olarak Kaydet (.sh Export){C.RESET}\n")
+
+    setup_file = "custom-macos-setup.sh"
+    revert_file = "custom-macos-revert.sh"
+
+    # Generate Setup
+    with open(setup_file, "w", encoding="utf-8") as f:
+        f.write(f"#!/usr/bin/env bash\n# macOS Kişiselleştirilmiş Kurulum Betiği (100 Ayar)\nset -e\nsudo -v\n\n")
+        for t in TWEAKS:
+            f.write(f"# {t['title']}\n# ⏪ Revert: {t['revert']}\n{t['apply']}\n\n")
+        f.write("killall Finder Dock WindowManager 2>/dev/null || true\necho '✨ Tamamlandı!'\n")
+
+    # Generate Revert
+    with open(revert_file, "w", encoding="utf-8") as f:
+        f.write(f"#!/usr/bin/env bash\n# macOS Kişiselleştirilmiş Geri Alma Betiği (100 Ayar)\nset -e\nsudo -v\n\n")
+        for t in TWEAKS:
+            f.write(f"# {t['title']} (Revert)\n{t['revert']}\n\n")
+        f.write("killall Finder Dock WindowManager 2>/dev/null || true\necho '✅ Fabrika varsayılanına döndürüldü!'\n")
+
+    os.chmod(setup_file, 0o755)
+    os.chmod(revert_file, 0o755)
+
+    print(f"{C.EMERALD}✔ {setup_file} oluşturuldu.{C.RESET}")
+    print(f"{C.EMERALD}✔ {revert_file} oluşturuldu.{C.RESET}")
+    print(f"\n{C.CYAN}Bu betikleri doğrudan './{setup_file}' veya './{revert_file}' şeklinde çalıştırabilirsiniz.{C.RESET}")
+    print(f"\n{C.GRAY}Menüye dönmek için bir tuşa basın...{C.RESET}")
+    get_key()
+
+# Self Installer (mc -> /usr/local/bin or ~/.local/bin)
+def install_mc_globally():
+    clear_screen()
+    print_banner()
+    print(f"{C.BOLD}{C.CYAN}⚙️ 'mc' Komutunu Global Sisteme Yükle{C.RESET}\n")
+
+    script_path = os.path.abspath(__file__)
+    target_dir = "/usr/local/bin" if os.access("/usr/local/bin", os.W_OK) else os.path.expanduser("~/.local/bin")
+    
+    os.makedirs(target_dir, exist_ok=True)
+    target_mc = os.path.join(target_dir, "mc")
+    target_macoscode = os.path.join(target_dir, "macoscode")
+
+    try:
+        shutil.copyfile(script_path, target_mc)
+        shutil.copyfile(script_path, target_macoscode)
+        os.chmod(target_mc, 0o755)
+        os.chmod(target_macoscode, 0o755)
+        print(f"{C.EMERALD}✔ '{target_mc}' kuruldu.{C.RESET}")
+        print(f"{C.EMERALD}✔ '{target_macoscode}' kuruldu.{C.RESET}")
+        print(f"\n{C.BOLD}{C.PURPLE}Artık terminalinizde herhangi bir dizinde sadece 'mc' veya 'macoscode' yazarak çalıştırabilirsiniz! 🚀{C.RESET}")
+    except Exception as e:
+        print(f"{C.ROSE}Kurulum sırasında hata oluştu: {e}{C.RESET}")
+        print(f"{C.GRAY}Sudo ile çalıştırmayı deneyin: sudo cp {script_path} /usr/local/bin/mc{C.RESET}")
+
+    print(f"\n{C.GRAY}Menüye dönmek için bir tuşa basın...{C.RESET}")
+    get_key()
+
+# Main Interactive TUI Loop
+def run_main_tui():
+    selected_idx = 0
+    menu_items = [
+        ("🚀 1. Master Setup (Tüm 100 Ayarı Tek Tıkla Uygula)", "apply_all"),
+        ("⏪ 2. Master Revert (Tüm Ayarları Fabrika Varsayılanına Döndür)", "revert_all"),
+        ("🎛️ 3. İnteraktif Kategori & Ayar Seçici (Mole Tarzı TUI)", "categories"),
+        ("⚡ 4. Hızlı Paketler (Presets: Developer, Speed, Battery, Tahoe)", "presets"),
+        ("🔍 5. Canlı Arama & Filtreleme (Search by Keyword)", "search"),
+        ("📊 6. Sistem Denetimi & Durum Raporu (System Audit / Status)", "audit"),
+        ("📦 7. Kişiselleştirilmiş Bash Betiği Olarak Kaydet (.sh Export)", "export"),
+        ("⚙️ 8. 'mc' Komutunu Global Sisteme Yükle (Install CLI)", "install"),
+        ("🚪 0. Çıkış (Quit)", "quit")
+    ]
+
+    while True:
+        clear_screen()
+        print_banner()
+        print(f"{C.BOLD}{C.WHITE}Lütfen yapmak istediğiniz işlemi seçin:{C.RESET}\n")
+
+        for idx, (label, action) in enumerate(menu_items):
+            cursor = f"{C.CYAN}{C.BOLD}➜{C.RESET}" if idx == selected_idx else " "
+            highlight = f"{C.CYAN}{C.BOLD}" if idx == selected_idx else f"{C.WHITE}"
+            print(f" {cursor} {highlight}{label}{C.RESET}")
+
+        print(f"\n{C.DARK_GRAY}Navigasyon: [↑/↓] Gezin • [Enter/Space] Seç • [1-8/0] Hızlı Tuş • [q] Çıkış{C.RESET}")
+
+        key = get_key()
+        if key in ['UP', 'k']:
+            selected_idx = (selected_idx - 1) % len(menu_items)
+        elif key in ['DOWN', 'j']:
+            selected_idx = (selected_idx + 1) % len(menu_items)
+        elif key in ['ENTER', 'SPACE']:
+            action = menu_items[selected_idx][1]
+            handle_action(action)
+            if action == 'quit':
+                break
+        elif key in ['1', '2', '3', '4', '5', '6', '7', '8']:
+            idx = int(key) - 1
+            handle_action(menu_items[idx][1])
+        elif key in ['0', 'q', 'ESC']:
+            print(f"\n{C.CYAN}macOSCode ile sisteminiz daima en yüksek performansta! Görüşmek üzere! 👋{C.RESET}\n")
+            break
+
+def handle_action(action):
+    if action == "apply_all":
+        print(f"\n{C.GOLD}Tüm 100 optimizasyon uygulanacak. Onaylıyor musunuz? (e/h):{C.RESET} ", end="")
+        choice = get_key()
+        if choice.lower() in ['e', 'y', 'ENTER']:
+            apply_tweaks_list(TWEAKS, mode="apply")
+            print(f"\n{C.GRAY}Devam etmek için bir tuşa basın...{C.RESET}")
+            get_key()
+    elif action == "revert_all":
+        print(f"\n{C.ROSE}Tüm ayarlar Apple fabrika varsayılanına döndürülecek. Onaylıyor musunuz? (e/h):{C.RESET} ", end="")
+        choice = get_key()
+        if choice.lower() in ['e', 'y', 'ENTER']:
+            apply_tweaks_list(TWEAKS, mode="revert")
+            print(f"\n{C.GRAY}Devam etmek için bir tuşa basın...{C.RESET}")
+            get_key()
+    elif action == "categories":
+        run_category_menu()
+    elif action == "presets":
+        run_preset_menu()
+    elif action == "search":
+        run_search_menu()
+    elif action == "audit":
+        run_system_audit()
+    elif action == "export":
+        export_custom_scripts()
+    elif action == "install":
+        install_mc_globally()
+
+# CLI Main Entry Point
+def main():
+    parser = argparse.ArgumentParser(
+        description="macOSCode (mc) - Interactive Terminal UI & macOS Power-User CLI",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""Örnek Kullanımlar:
+  mc                     İnteraktif Mole tarzı TUI menüsünü açar
+  mc --apply-all         Tüm 100 optimizasyonu tek satırda uygular
+  mc --revert-all        Tüm ayarları orijinal fabrika varsayılanına döndürür
+  mc --status            Sistemdeki ayarların aktiflik durumunu tarar (Audit)
+  mc --preset dev        Geliştirici optimizasyon paketini uygular
+  mc --search dock       'dock' ile ilgili ayarları arar ve listeler
+  mc --install           'mc' komutunu sisteme kalıcı olarak yükler
+"""
+    )
+    parser.add_argument("-a", "--apply-all", action="store_true", help="Tüm 100 ayarı uygula")
+    parser.add_argument("-r", "--revert-all", action="store_true", help="Tüm ayarları sıfırla (revert)")
+    parser.add_argument("-s", "--status", action="store_true", help="Sistem denetimi ve durum raporu (Audit)")
+    parser.add_argument("-p", "--preset", choices=["dev", "speed", "battery", "tahoe"], help="Hızlı optimizasyon paketi çalıştır")
+    parser.add_argument("--search", type=str, help="Belirli bir kelimeyi ara")
+    parser.add_argument("-d", "--dry-run", action="store_true", help="Komutları çalıştırmadan sadece ekranda göster")
+    parser.add_argument("-i", "--install", action="store_true", help="'mc' komutunu /usr/local/bin dizinine yükle")
+    parser.add_argument("-t", "--tui", action="store_true", help="İnteraktif TUI modunu başlat")
+
+    args = parser.parse_args()
+
+    # Non-interactive CLI flags
+    if args.apply_all:
+        apply_tweaks_list(TWEAKS, mode="apply", dry_run=args.dry_run)
+    elif args.revert_all:
+        apply_tweaks_list(TWEAKS, mode="revert", dry_run=args.dry_run)
+    elif args.status:
+        run_system_audit()
+    elif args.preset:
+        chosen = PRESETS[args.preset]
+        tweaks_to_run = [t for t in TWEAKS if t["id"] in chosen["ids"]]
+        apply_tweaks_list(tweaks_to_run, mode="apply", dry_run=args.dry_run)
+    elif args.search:
+        q = args.search.lower()
+        matched = [t for t in TWEAKS if q in t["title"].lower() or q in t["desc"].lower() or q in t["apply"].lower() or q in t["tag"].lower()]
+        print(f"\n{C.CYAN}🔍 '{args.search}' için {len(matched)} ayar bulundu:{C.RESET}\n")
+        for i, t in enumerate(matched, 1):
+            print(f" {C.BOLD}{i}. {t['title']}{C.RESET} {C.DARK_GRAY}[{t['tag']}]{C.RESET}")
+            print(f"    {C.GRAY}{t['desc']}{C.RESET}")
+            print(f"    {C.CYAN}$ {t['apply'].replace(chr(10), ' && ')}{C.RESET}\n")
+    elif args.install:
+        install_mc_globally()
+    else:
+        # Default: Launch Interactive TUI
+        run_main_tui()
+
+if __name__ == "__main__":
+    main()
