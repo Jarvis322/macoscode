@@ -23,6 +23,10 @@ import time
 import argparse
 import urllib.request
 
+# macOSCode CLI Version
+VERSION = "2.1.0"
+VERSION_CODE = 210
+
 # Reopen /dev/tty if stdin is piped (e.g., curl ... | python3)
 if not sys.stdin.isatty():
     try:
@@ -1262,8 +1266,8 @@ def print_banner():
   ██║╚██╔╝██║██╔══██║██║     ██║   ██║╚════██║██║     ██║   ██║██║  ██║██╔══╝  
   ██║ ╚═╝ ██║██║  ██║╚██████╗╚██████╔╝███████║╚██████╗╚██████╔╝██████╔╝███████╗
   ╚═╝     ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝ ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝{C.RESET}
-  {C.PURPLE}{C.BOLD}⚡ macOS Interactive Terminal CLI & TUI • 100 Power-Tweaks (v2.0){C.RESET}
-  {C.DARK_GRAY}https://github.com/Jarvis322/macoscode • Tahoe & Apple Silicon Ready{C.RESET}
+  {C.PURPLE}{C.BOLD}⚡ macOS Interactive Terminal CLI & TUI • 100 Power-Tweaks (v{VERSION}){C.RESET}
+  {C.DARK_GRAY}https://github.com/Jarvis322/macoscode • Build {VERSION_CODE} • Tahoe Ready{C.RESET}
 """
     print(banner)
 
@@ -1702,12 +1706,13 @@ def install_mc_globally():
     get_key()
 
 # Self Updater (Fetch latest mc from GitHub and update local binaries)
-def update_mc(interactive=True):
+def update_mc(interactive=True, force=False):
     if interactive:
         clear_screen()
         print_banner()
-    print(f"{C.BOLD}{C.CYAN}🔄  'mc' Otomatik Güncelleme (Self-Update){C.RESET}\n")
-    print(f"{C.GRAY}GitHub üzerindeki en son sürüm kontrol ediliyor...{C.RESET}")
+    print(f"{C.BOLD}{C.CYAN}🔄  'mc' Sürüm ve Güncelleme Denetimi (Self-Update){C.RESET}\n")
+    print(f"Mevcut Sürüm: {C.BOLD}{C.EMERALD}v{VERSION}{C.RESET} (Build {VERSION_CODE})")
+    print(f"{C.GRAY}GitHub üzerindeki en son sürüm sorgulanıyor...{C.RESET}\n")
     
     url = "https://raw.githubusercontent.com/Jarvis322/macoscode/main/scripts/mc"
     try:
@@ -1734,6 +1739,29 @@ def update_mc(interactive=True):
             get_key()
         return
 
+    # Extract remote version
+    rem_ver_match = re.search(r'VERSION\s*=\s*["\']([^"\']+)["\']', new_code)
+    rem_code_match = re.search(r'VERSION_CODE\s*=\s*(\d+)', new_code)
+    
+    remote_version = rem_ver_match.group(1) if rem_ver_match else "unknown"
+    remote_vcode = int(rem_code_match.group(1)) if rem_code_match else 0
+
+    print(f"En Son GitHub Sürümü: {C.BOLD}{C.CYAN}v{remote_version}{C.RESET} (Build {remote_vcode})\n")
+
+    if remote_vcode > 0 and remote_vcode <= VERSION_CODE and not force:
+        print(f"{C.EMERALD}✔ Zaten en güncel sürümü (v{VERSION}) kullanıyorsunuz!{C.RESET}")
+        if interactive:
+            print(f"\n{C.GOLD}Yine de zorla yeniden yüklemek ister misiniz? (e/h):{C.RESET} ", end="")
+            choice = get_key()
+            if choice.lower() not in ['e', 'y']:
+                return
+        else:
+            return
+
+    if remote_vcode > VERSION_CODE:
+        print(f"{C.GOLD}🚀 Yeni bir sürüm bulundu: {C.ROSE}v{VERSION}{C.GOLD} ➜ {C.EMERALD}v{remote_version}{C.RESET}")
+        print(f"{C.CYAN}Güncelleme uygulanıyor...{C.RESET}\n")
+
     targets = []
     current_script = os.path.abspath(__file__)
     targets.append(current_script)
@@ -1757,13 +1785,13 @@ def update_mc(interactive=True):
         try:
             shutil.copyfile(temp_path, target)
             os.chmod(target, 0o755)
-            print(f"{C.EMERALD}✔ '{target}' başarıyla güncellendi.{C.RESET}")
+            print(f"{C.EMERALD}✔ '{target}' güncellendi (v{remote_version}).{C.RESET}")
             updated_any = True
         except PermissionError:
             print(f"{C.GOLD}🔐 '{target}' güncellemesi için yönetici (sudo) izni isteniyor...{C.RESET}")
             res = subprocess.run(f"sudo cp '{temp_path}' '{target}' && sudo chmod 755 '{target}'", shell=True)
             if res.returncode == 0:
-                print(f"{C.EMERALD}✔ '{target}' başarıyla güncellendi (sudo ile).{C.RESET}")
+                print(f"{C.EMERALD}✔ '{target}' güncellendi (v{remote_version}, sudo ile).{C.RESET}")
                 updated_any = True
             else:
                 print(f"{C.ROSE}❌ '{target}' güncellenemedi.{C.RESET}")
@@ -1776,7 +1804,7 @@ def update_mc(interactive=True):
         pass
 
     if updated_any:
-        print(f"\n{C.BOLD}{C.PURPLE}🎉 Tebrikler! 'mc' başarıyla en güncel sürüme yükseltildi! 🚀{C.RESET}")
+        print(f"\n{C.BOLD}{C.PURPLE}🎉 Başarılı! 'mc' v{remote_version} (Build {remote_vcode}) sürümüne yükseltildi! 🚀{C.RESET}")
     else:
         print(f"\n{C.GOLD}⚠️ Hedef dosyalar güncellenemedi.{C.RESET}")
 
@@ -1863,9 +1891,9 @@ def handle_action(action):
 # CLI Main Entry Point
 def main():
     parser = argparse.ArgumentParser(
-        description="macOSCode (mc) - Interactive Terminal UI & macOS Power-User CLI",
+        description=f"macOSCode (mc) v{VERSION} - Interactive Terminal UI & macOS Power-User CLI",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""Örnek Kullanımlar:
+        epilog=f"""Örnek Kullanımlar:
   mc                     İnteraktif TUI menüsünü açar
   mc --apply-all         Tüm 100 optimizasyonu tek satırda uygular
   mc --revert-all        Tüm ayarları orijinal fabrika varsayılanına döndürür
@@ -1874,8 +1902,10 @@ def main():
   mc --search dock       'dock' ile ilgili ayarları arar ve listeler
   mc --install           'mc' komutunu sisteme kalıcı olarak yükler
   mc --update            'mc' komutunu GitHub'dan en son sürüme günceller
+  mc --version           Sürüm bilgisini gösterir (v{VERSION})
 """
     )
+    parser.add_argument("-v", "--version", action="version", version=f"macOSCode CLI (mc) v{VERSION} (Build {VERSION_CODE})")
     parser.add_argument("-a", "--apply-all", action="store_true", help="Tüm 100 ayarı uygula")
     parser.add_argument("-r", "--revert-all", action="store_true", help="Tüm ayarları sıfırla (revert)")
     parser.add_argument("-s", "--status", action="store_true", help="Sistem denetimi ve durum raporu (Audit)")
@@ -1884,6 +1914,7 @@ def main():
     parser.add_argument("-d", "--dry-run", action="store_true", help="Komutları çalıştırmadan sadece ekranda göster")
     parser.add_argument("-i", "--install", action="store_true", help="'mc' komutunu /usr/local/bin dizinine yükle")
     parser.add_argument("-u", "--update", action="store_true", help="'mc' aracını GitHub'dan en son sürüme güncelle")
+    parser.add_argument("-f", "--force", action="store_true", help="Sürüm aynı olsa bile güncellemeyi zorla")
     parser.add_argument("-t", "--tui", action="store_true", help="İnteraktif TUI modunu başlat")
 
     args = parser.parse_args()
@@ -1910,7 +1941,7 @@ def main():
     elif args.install:
         install_mc_globally()
     elif args.update:
-        update_mc(interactive=False)
+        update_mc(interactive=False, force=args.force)
     else:
         # Default: Launch Interactive TUI
         run_main_tui()
