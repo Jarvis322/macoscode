@@ -1662,7 +1662,7 @@ def install_mc_globally():
         print(f"{C.EMERALD}✔ '{target_macoscode}' başarıyla kuruldu.{C.RESET}")
     except PermissionError:
         print(f"{C.GOLD}🔐 '/usr/local/bin' için yönetici (sudo) izni isteniyor...{C.RESET}")
-        res = subprocess.run(f"sudo cp '{script_path}' '{target_mc}' && sudo cp '{script_path}' '{target_macoscode}' && sudo chmod 755 '{target_mc}' '{target_macoscode}'", shell=True)
+        res = subprocess.run(f"sudo mkdir -p '{target_dir}' && sudo cp '{script_path}' '{target_mc}' && sudo cp '{script_path}' '{target_macoscode}' && sudo chmod 755 '{target_mc}' '{target_macoscode}'", shell=True)
         if res.returncode == 0:
             installed = True
             print(f"\n{C.EMERALD}✔ '{target_mc}' başarıyla kuruldu.{C.RESET}")
