@@ -550,11 +550,11 @@
       -webkit-backdrop-filter: blur(24px);
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 20px;
-      padding: 14px 18px;
+      padding: 12px 16px;
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(99, 102, 241, 0.15);
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
       will-change: transform;
     }
@@ -567,21 +567,22 @@
 
     .search-row {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       align-items: center;
     }
 
     .search-box {
       position: relative;
       flex: 1;
+      min-width: 0;
     }
 
     .search-box input {
       width: 100%;
-      padding: 13px 44px 13px 46px;
+      padding: 11px 40px 11px 42px;
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--border-subtle);
-      border-radius: 14px;
+      border-radius: 13px;
       color: #fff;
       font-size: 16px; /* 16px prevents iOS automatic zoom on focus */
       font-family: inherit;
@@ -597,11 +598,11 @@
 
     .search-icon {
       position: absolute;
-      left: 16px;
+      left: 14px;
       top: 50%;
       transform: translateY(-50%);
       color: var(--text-muted);
-      font-size: 1.05rem;
+      font-size: 1rem;
       pointer-events: none;
     }
 
@@ -627,49 +628,120 @@
       right: 14px;
       top: 50%;
       transform: translateY(-50%);
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-family: 'Fira Code', monospace;
       background: rgba(255, 255, 255, 0.08);
-      padding: 3px 7px;
+      padding: 2px 6px;
       border-radius: 6px;
       color: var(--text-dim);
       border: 1px solid rgba(255, 255, 255, 0.1);
       pointer-events: none;
     }
 
+    /* SMART FILTER TOGGLE BUTTON (MOBILE & TABLET) */
+    .btn-filter-toggle {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-muted);
+      padding: 9px 13px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      flex-shrink: 0;
+      touch-action: manipulation;
+    }
+
+    .btn-filter-toggle:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-filter-toggle.open {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: rgba(99, 102, 241, 0.5);
+      color: #fff;
+    }
+
+    .filter-toggle-badge {
+      font-size: 0.68rem;
+      background: var(--accent-cyan);
+      color: #030712;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 999px;
+      display: none;
+    }
+
+    .btn-filter-toggle.has-active-filters .filter-toggle-badge {
+      display: inline-block;
+    }
+
+    .toggle-arrow {
+      font-size: 0.6rem;
+      transition: transform 0.25s ease;
+      color: var(--text-dim);
+    }
+
+    .btn-filter-toggle.open .toggle-arrow {
+      transform: rotate(180deg);
+      color: var(--accent-cyan);
+    }
+
+    /* HORIZONTAL SCROLLABLE CATEGORIES */
     .filter-bar {
       display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      gap: 6px;
       align-items: center;
+      padding-bottom: 2px;
+      margin: 0 -2px;
+      padding-left: 2px;
+      padding-right: 2px;
+    }
+
+    .filter-bar::-webkit-scrollbar {
+      display: none;
     }
 
     .filter-btn {
-      background: transparent;
-      border: 1px solid transparent;
+      flex: 0 0 auto;
+      white-space: nowrap;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.07);
       color: var(--text-muted);
-      padding: 7px 14px;
-      border-radius: 12px;
-      font-size: 0.84rem;
+      padding: 6px 12px;
+      border-radius: 10px;
+      font-size: 0.8rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       font-family: inherit;
       touch-action: manipulation;
     }
 
     .filter-btn:hover {
       color: var(--text-main);
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.08);
     }
 
     .filter-btn.active {
       color: #fff;
       background: var(--accent-blue);
-      border-color: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.2);
       box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
     }
 
@@ -685,23 +757,37 @@
       box-shadow: 0 4px 14px rgba(251, 191, 36, 0.3);
     }
 
-    /* QUICK STATS & TAGS */
+    /* COLLAPSIBLE EXTENDED FILTERS DRAWER */
+    .collapsible-filter-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      animation: fadeInSlide 0.2s ease-out;
+    }
+
+    @keyframes fadeInSlide {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     .controls-footer {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--text-dim);
-      padding-top: 6px;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
       gap: 10px;
+      flex-wrap: wrap;
     }
 
     .quick-tag-filters {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 5px;
       align-items: center;
+      flex: 1;
     }
 
     .tag-chip {
@@ -716,10 +802,28 @@
       touch-action: manipulation;
     }
 
-    .tag-chip:hover, .tag-chip.active {
-      background: rgba(56, 189, 248, 0.15);
+    .tag-chip:hover {
+      color: #fff;
+      border-color: rgba(56, 189, 248, 0.4);
+      background: rgba(56, 189, 248, 0.1);
+    }
+
+    .tag-chip.active {
+      background: rgba(56, 189, 248, 0.2);
       color: var(--accent-cyan);
       border-color: var(--accent-cyan);
+      font-weight: 700;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+    }
+
+    .panel-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      width: 100%;
+      padding-top: 4px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.07);
     }
 
     /* FLOATING SCROLL-TO-SEARCH / BACK-TO-TOP BUTTON */
@@ -1080,9 +1184,9 @@
       background: #0f172a;
       border: 1px solid var(--border-accent);
       border-radius: 24px;
-      max-width: 780px;
+      max-width: 820px;
       width: 100%;
-      max-height: 85vh;
+      max-height: 88vh;
       display: flex;
       flex-direction: column;
       box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
@@ -1110,13 +1214,118 @@
       flex: 1;
     }
 
+    /* MODAL TABS */
+    .modal-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 6px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .modal-tab {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      font-family: inherit;
+    }
+
+    .modal-tab:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .modal-tab.active {
+      background: rgba(99, 102, 241, 0.22);
+      border-color: rgba(99, 102, 241, 0.5);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.25);
+    }
+
+    .modal-tab.tab-revert.active {
+      background: rgba(244, 63, 94, 0.22);
+      border-color: rgba(244, 63, 94, 0.5);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(244, 63, 94, 0.25);
+    }
+
+    .tab-pill {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .modal-tab.active .tab-pill {
+      background: rgba(99, 102, 241, 0.4);
+      color: #e0e7ff;
+    }
+
+    .modal-tab.tab-revert.active .tab-pill {
+      background: rgba(244, 63, 94, 0.4);
+      color: #ffe4e6;
+    }
+
+    .modal-notice {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .modal-notice strong {
+      color: #fff;
+    }
+
     .modal-footer {
       padding: 16px 24px;
       border-top: 1px solid var(--border-subtle);
       display: flex;
-      justify-content: flex-end;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
       gap: 12px;
-      background: rgba(0, 0, 0, 0.2);
+      background: rgba(0, 0, 0, 0.25);
+    }
+
+    .modal-footer-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-footer-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: auto;
+    }
+
+    @media (max-width: 640px) {
+      .modal-tabs { flex-direction: column; }
+      .modal-footer { flex-direction: column; align-items: stretch; }
+      .modal-footer-left, .modal-footer-right { width: 100%; flex-direction: column; margin-left: 0; }
+      .modal-footer button { width: 100%; justify-content: center; }
     }
 
     /* FAQ SECTION */
@@ -1219,6 +1428,18 @@
 
     .footer-links a:hover { color: var(--accent-cyan); }
 
+    @media (min-width: 861px) {
+      .btn-filter-toggle {
+        display: none !important;
+      }
+      .collapsible-filter-panel {
+        display: flex !important;
+      }
+      .panel-actions .copy-btn.btn-collapse-toggle {
+        display: none !important;
+      }
+    }
+
     /* ========================================================================== */
     /* RESPONSIVE MEDIA QUERIES (TABLETS & MOBILE PHONES) */
     /* ========================================================================== */
@@ -1246,20 +1467,29 @@
         transform: none !important;
         opacity: 1 !important;
         pointer-events: auto !important;
-        margin-bottom: 24px;
-        padding: 14px 16px;
-        border-radius: 18px;
-        gap: 12px;
-        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), 0 0 20px rgba(99, 102, 241, 0.12);
+        margin-bottom: 20px;
+        padding: 10px 12px;
+        border-radius: 16px;
+        gap: 8px;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5), 0 0 18px rgba(99, 102, 241, 0.1);
       }
 
       .search-box input {
-        padding: 11px 38px 11px 40px;
+        padding: 9px 34px 9px 36px;
         font-size: 16px; /* Prevents iOS auto zoom */
       }
 
       .shortcut-hint {
         display: none;
+      }
+
+      /* COLLAPSIBLE ON MOBILE: HIDDEN BY DEFAULT TO SAVE 75% SPACE */
+      .collapsible-filter-panel {
+        display: none;
+      }
+
+      .collapsible-filter-panel.show {
+        display: flex;
       }
 
       .filter-bar {
@@ -1268,11 +1498,11 @@
         overflow-x: auto !important;
         -webkit-overflow-scrolling: touch !important;
         scrollbar-width: none !important;
-        padding-bottom: 4px;
+        padding-bottom: 2px;
         margin: 0 -2px;
         padding-left: 2px;
         padding-right: 2px;
-        gap: 7px !important;
+        gap: 5px !important;
       }
 
       .filter-bar::-webkit-scrollbar {
@@ -1282,9 +1512,9 @@
       .filter-btn {
         flex: 0 0 auto !important;
         white-space: nowrap !important;
-        padding: 7px 14px;
-        font-size: 0.82rem;
-        border-radius: 10px;
+        padding: 5px 10px;
+        font-size: 0.76rem;
+        border-radius: 9px;
         touch-action: manipulation;
       }
 
@@ -1293,35 +1523,25 @@
         align-items: center;
         justify-content: space-between;
         gap: 8px;
-        padding-top: 6px;
+        padding-top: 4px;
       }
 
       .quick-tag-filters {
         display: flex !important;
-        flex-wrap: nowrap !important;
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        scrollbar-width: none !important;
+        flex-wrap: wrap !important;
+        gap: 5px !important;
         flex: 1;
         min-width: 0;
-        padding-bottom: 2px;
-        gap: 6px !important;
-      }
-
-      .quick-tag-filters::-webkit-scrollbar {
-        display: none !important;
       }
 
       .tag-chip {
-        flex: 0 0 auto !important;
-        white-space: nowrap !important;
-        padding: 4px 9px;
-        font-size: 0.73rem;
+        padding: 3px 8px;
+        font-size: 0.7rem;
         touch-action: manipulation;
       }
 
       #resultsCount {
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         flex-shrink: 0;
         white-space: nowrap;
       }
@@ -1694,16 +1914,40 @@
         <button class="copy-btn" onclick="closeBuilderModalDirect()">✕ Kapat</button>
       </div>
       <div class="modal-body">
-        <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 12px;">
-          Seçtiğiniz ayarları içeren özel kurulum betiğiniz hazırlandı. Terminalde çalıştırabilir veya <code>.sh</code> olarak indirebilirsiniz:
-        </p>
-        <div class="code-wrapper apply-wrapper">
+        <!-- Segmented Tab Switcher (Apply / Revert) -->
+        <div class="modal-tabs">
+          <button class="modal-tab active" id="modalTabApply" onclick="switchModalTab('apply')">
+            <span>🚀 Kurulum Betiği (Apply)</span>
+            <span class="tab-pill">custom-macos-setup.sh</span>
+          </button>
+          <button class="modal-tab tab-revert" id="modalTabRevert" onclick="switchModalTab('revert')">
+            <span>⏪ Geri Alma Betiği (Revert)</span>
+            <span class="tab-pill">custom-macos-revert.sh</span>
+          </button>
+        </div>
+
+        <div class="modal-notice">
+          <span id="modalNoticeText">Seçtiğiniz <strong>0</strong> ayarı uygulayan özel kurulum betiğiniz hazırlandı. <em>(Her ayarın altında geri alma komutu satır içi yorum olarak eklenmiştir)</em>:</span>
+        </div>
+
+        <div class="code-wrapper apply-wrapper" id="customScriptWrapper">
           <pre id="customScriptCode" style="max-height: 340px; overflow-y: auto;"></pre>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="hero-btn btn-secondary" onclick="downloadCustomScript()">⬇️ .sh Dosyası İndir</button>
-        <button class="hero-btn btn-primary" onclick="copyCustomScript()">📋 Kodu Kopyala</button>
+        <div class="modal-footer-left">
+          <button class="hero-btn btn-github" onclick="downloadBothCustomScripts()" title="Hem Kurulum hem de Revert betiğini tek seferde indirir">
+            📦 Her İkisini de İndir (.sh Paketi)
+          </button>
+        </div>
+        <div class="modal-footer-right">
+          <button class="hero-btn btn-secondary" id="modalDownloadBtn" onclick="downloadActiveCustomScript()">
+            ⬇️ custom-macos-setup.sh İndir
+          </button>
+          <button class="hero-btn btn-primary" onclick="copyCustomScript()">
+            📋 Kodu Kopyala
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -2008,9 +2252,17 @@ echo "✅ Sistem tamamen macOS orijinal fabrika ayarlarına döndürüldü!"</pr
           <span class="shortcut-hint">⌘K / /</span>
           <button class="search-clear" id="searchClearBtn" onclick="clearSearch()">✕</button>
         </div>
+        <button class="btn-filter-toggle" id="filterToggleBtn" onclick="toggleDetailedFilterPanel()" aria-label="Filtreleri Göster / Gizle">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+          </svg>
+          <span>Filtreler</span>
+          <span class="filter-toggle-badge" id="activeFilterBadge">0</span>
+          <span class="toggle-arrow">▼</span>
+        </button>
       </div>
 
-      <!-- Categories & Favorite Bar -->
+      <!-- Categories & Favorite Bar (1-Row Horizontal Smooth Track) -->
       <nav class="filter-bar" aria-label="Kategori filtreleri">
         <button class="filter-btn active" onclick="filterCategory('all', this)">Tümü (100)</button>
         <button class="filter-btn filter-btn-fav" onclick="filterCategory('favorites', this)">⭐ Favorilerim (<span id="favCount">0</span>)</button>
@@ -2023,22 +2275,28 @@ echo "✅ Sistem tamamen macOS orijinal fabrika ayarlarına döndürüldü!"</pr
         <button class="filter-btn" onclick="filterCategory('network_power', this)">🔋 Ağ &amp; Güç</button>
       </nav>
 
-      <!-- Sub-Filters: Quick Tags -->
-      <div class="controls-footer">
-        <div class="quick-tag-filters">
-          <span style="font-weight: 700; color: var(--text-muted); font-size: 0.75rem;">Hızlı Etiketler:</span>
-          <span class="tag-chip" onclick="filterTag('Finder')">Finder</span>
-          <span class="tag-chip" onclick="filterTag('Dock')">Dock</span>
-          <span class="tag-chip" onclick="filterTag('Trackpad')">Trackpad</span>
-          <span class="tag-chip" onclick="filterTag('Tahoe')">Tahoe</span>
-          <span class="tag-chip" onclick="filterTag('Spotlight')">Spotlight</span>
-          <span class="tag-chip" onclick="filterTag('Hız')">Hız/Animasyon</span>
-          <span class="tag-chip" onclick="filterTag('Gizlilik')">Gizlilik</span>
-          <span class="tag-chip" onclick="filterTag('Safari')">Safari</span>
-          <span class="tag-chip" onclick="filterTag('Xcode')">Xcode</span>
+      <!-- Collapsible Detailed Filters (Quick Tags & Reset Actions) -->
+      <div class="collapsible-filter-panel" id="collapsibleFilterPanel">
+        <div class="controls-footer">
+          <div class="quick-tag-filters">
+            <span style="font-weight: 700; color: var(--text-muted); font-size: 0.75rem;">Hızlı Etiketler:</span>
+            <span class="tag-chip" onclick="filterTag('Finder')">Finder</span>
+            <span class="tag-chip" onclick="filterTag('Dock')">Dock</span>
+            <span class="tag-chip" onclick="filterTag('Trackpad')">Trackpad</span>
+            <span class="tag-chip" onclick="filterTag('Tahoe')">Tahoe</span>
+            <span class="tag-chip" onclick="filterTag('Spotlight')">Spotlight</span>
+            <span class="tag-chip" onclick="filterTag('Hız')">Hız/Animasyon</span>
+            <span class="tag-chip" onclick="filterTag('Gizlilik')">Gizlilik</span>
+            <span class="tag-chip" onclick="filterTag('Safari')">Safari</span>
+            <span class="tag-chip" onclick="filterTag('Xcode')">Xcode</span>
+          </div>
         </div>
-        <div>
-          <span id="resultsCount" style="color: var(--accent-cyan); font-weight: 700;">100 ayar gösteriliyor</span>
+        <div class="panel-actions">
+          <span id="resultsCount" style="color: var(--accent-cyan); font-weight: 700;">100 ayar listeleniyor</span>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="copy-btn" onclick="resetAllFilters()" style="font-size: 0.72rem;">Sıfırla</button>
+            <button class="copy-btn btn-collapse-toggle" onclick="toggleDetailedFilterPanel(false)" style="background: rgba(99, 102, 241, 0.2); color: #fff; border-color: rgba(99, 102, 241, 0.4); font-size: 0.72rem;">▲ Gizle</button>
+          </div>
         </div>
       </div>
     </div>
@@ -2068,8 +2326,8 @@ echo "✅ Sistem tamamen macOS orijinal fabrika ayarlarına döndürüldü!"</pr
       </div>
 
       <div class="faq-item">
-        <h3 class="faq-question">4. Özel bir kurulum betiği oluşturup indirebilir miyim?</h3>
-        <p class="faq-answer">Evet! Kartların sol üst köşesindeki onay kutularını (checkbox) işaretleyerek sadece istediğiniz ayarları seçebilir, sağ altta beliren "Betiği Görüntüle / İndir" butonuna tıklayarak size özel <code>custom-macos-setup.sh</code> betiğinizi tek tıkla indirebilirsiniz.</p>
+        <h3 class="faq-question">4. Özel bir kurulum ve geri alma betiği oluşturup indirebilir miyim?</h3>
+        <p class="faq-answer">Evet! Kartların sol üst köşesindeki onay kutularını (checkbox) işaretleyerek sadece istediğiniz ayarları seçebilir, sağ alttaki "Betiği Görüntüle / İndir" butonuna tıklayarak hem özel <code>custom-macos-setup.sh</code> kurulum betiğinizi hem de yalnızca seçtiğiniz ayarları sıfırlayan <code>custom-macos-revert.sh</code> geri alma betiğinizi tek tıkla inceleyebilir ve indirebilirsiniz.</p>
       </div>
     </section>
 
@@ -3319,12 +3577,57 @@ echo "✅ Sistem tamamen macOS orijinal fabrika ayarlarına döndürüldü!"</pr
       }
     }
 
-    function generateCustomScriptContent() {
+    let currentModalTab = 'apply';
+
+    function switchModalTab(tab) {
+      currentModalTab = tab;
+      const tabApply = document.getElementById('modalTabApply');
+      const tabRevert = document.getElementById('modalTabRevert');
+      const wrapper = document.getElementById('customScriptWrapper');
+      const codeBlock = document.getElementById('customScriptCode');
+      const noticeText = document.getElementById('modalNoticeText');
+      const downloadBtn = document.getElementById('modalDownloadBtn');
+
+      if (tab === 'apply') {
+        if (tabApply) tabApply.classList.add('active');
+        if (tabRevert) tabRevert.classList.remove('active');
+        if (wrapper) wrapper.className = 'code-wrapper apply-wrapper';
+        if (noticeText) noticeText.innerHTML = `Seçtiğiniz <strong>${selectedTweaks.size}</strong> ayarı uygulayan özel kurulum betiğiniz hazırlandı. <em>(Her ayarın altında geri alma komutu satır içi yorum olarak eklenmiştir)</em>:`;
+        if (downloadBtn) downloadBtn.innerText = '⬇️ custom-macos-setup.sh İndir';
+        if (codeBlock) codeBlock.innerText = generateCustomScriptContent('apply');
+      } else {
+        if (tabApply) tabApply.classList.remove('active');
+        if (tabRevert) tabRevert.classList.add('active');
+        if (wrapper) wrapper.className = 'code-wrapper revert-wrapper';
+        if (noticeText) noticeText.innerHTML = `Seçtiğiniz <strong>${selectedTweaks.size}</strong> ayarı orijinal Apple fabrika ayarlarına döndüren özel geri alma betiğiniz:`;
+        if (downloadBtn) downloadBtn.innerText = '⬇️ custom-macos-revert.sh İndir';
+        if (codeBlock) codeBlock.innerText = generateCustomScriptContent('revert');
+      }
+    }
+
+    function generateCustomScriptContent(mode = 'apply') {
       const selectedList = TWEAKS_DATA.filter(t => selectedTweaks.has(t.id));
-      let bash = `#!/usr/bin/env bash\n# ==============================================================================\n# macOS Kişiselleştirilmiş Kurulum Betiği (${selectedList.length} Ayar)\n# Oluşturuldu: ${new Date().toLocaleDateString('tr-TR')}\n# ==============================================================================\n\nset -e\necho "🚀 Kişiselleştirilmiş macOS optimizasyonları uygulanıyor..."\nsudo -v\n\n`;
+      const dateStr = new Date().toLocaleDateString('tr-TR');
+
+      if (mode === 'revert') {
+        let bash = `#!/usr/bin/env bash\n# ==============================================================================\n# ⏪ macOS Kişiselleştirilmiş Geri Alma (Revert) Betiği (${selectedList.length} Ayar)\n# Repository: https://github.com/Jarvis322/macoscode\n# Web App: https://jarvis322.github.io/macoscode/\n# Oluşturuldu: ${dateStr}\n# ==============================================================================\n\nset -e\n\necho ""\necho "╔══════════════════════════════════════════════════════════════════════╗"\necho "║          ⏪ Kişiselleştirilmiş macOS Geri Alma Betiği                ║"\necho "║          Seçilen ${selectedList.length} ayar fabrika varsayılanına döndürülüyor        ║"\necho "╚══════════════════════════════════════════════════════════════════════╝"\necho ""\n\n# Admin yetkisi kontrolü\nsudo -v\nwhile true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &\n\n`;
+
+        selectedList.forEach((t, i) => {
+          bash += `# [${i+1}/${selectedList.length}] ${t.title} (Revert)\n`;
+          bash += `${t.revert}\n\n`;
+        });
+
+        bash += `echo "🔄 Servisler yenileniyor..."\nkillall Finder 2>/dev/null || true\nkillall Dock 2>/dev/null || true\nkillall WindowManager 2>/dev/null || true\nkillall SystemUIServer 2>/dev/null || true\nkillall Spotlight 2>/dev/null || true\n\necho "✨ Seçtiğiniz ${selectedList.length} ayar başarıyla Apple varsayılanına döndürüldü!"\n`;
+        return bash;
+      }
+
+      // Default Apply Script with inline Revert comments
+      let bash = `#!/usr/bin/env bash\n# ==============================================================================\n# 🚀 macOS Kişiselleştirilmiş Kurulum Betiği (${selectedList.length} Ayar)\n# Repository: https://github.com/Jarvis322/macoscode\n# Web App: https://jarvis322.github.io/macoscode/\n# Oluşturuldu: ${dateStr}\n# ==============================================================================\n\nset -e\n\necho ""\necho "╔══════════════════════════════════════════════════════════════════════╗"\necho "║          🚀 Kişiselleştirilmiş macOS Kurulum Betiği                  ║"\necho "║          Seçilen ${selectedList.length} optimizasyon uygulanıyor                      ║"\necho "╚══════════════════════════════════════════════════════════════════════╝"\necho ""\n\n# Admin yetkisi kontrolü\nsudo -v\nwhile true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &\n\n`;
 
       selectedList.forEach((t, i) => {
         bash += `# [${i+1}/${selectedList.length}] ${t.title}\n`;
+        const revertComments = t.revert.split('\n').map(l => `# ⏪ Revert: ${l}`).join('\n');
+        bash += `${revertComments}\n`;
         bash += `${t.apply}\n\n`;
       });
 
@@ -3334,10 +3637,9 @@ echo "✅ Sistem tamamen macOS orijinal fabrika ayarlarına döndürüldü!"</pr
 
     function openBuilderModal() {
       const modal = document.getElementById('customScriptModal');
-      const codeBlock = document.getElementById('customScriptCode');
       const countEl = document.getElementById('modalSelectedCount');
-      countEl.innerText = selectedTweaks.size;
-      codeBlock.innerText = generateCustomScriptContent();
+      if (countEl) countEl.innerText = selectedTweaks.size;
+      switchModalTab('apply');
       modal.classList.add('show');
     }
 
@@ -3353,19 +3655,33 @@ echo "✅ Sistem tamamen macOS orijinal fabrika ayarlarına döndürüldü!"</pr
 
     function copyCustomScript() {
       const text = document.getElementById('customScriptCode').innerText;
+      const scriptLabel = currentModalTab === 'apply' ? 'Özel kurulum betiği' : 'Özel geri alma (revert) betiği';
       navigator.clipboard.writeText(text).then(() => {
-        showToast('Özel bash betiği panoya kopyalandı! 📋');
+        showToast(`${scriptLabel} panoya kopyalandı! 📋`);
       });
     }
 
-    function downloadCustomScript() {
-      const text = document.getElementById('customScriptCode').innerText;
+    function downloadActiveCustomScript() {
+      downloadCustomScript(currentModalTab);
+    }
+
+    function downloadCustomScript(mode = 'apply') {
+      const text = generateCustomScriptContent(mode);
+      const filename = mode === 'apply' ? 'custom-macos-setup.sh' : 'custom-macos-revert.sh';
       const blob = new Blob([text], { type: 'text/x-sh' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = 'custom-macos-setup.sh';
+      a.download = filename;
       a.click();
-      showToast('custom-macos-setup.sh dosyası indirildi! ⬇️');
+      showToast(`${filename} dosyası indirildi! ⬇️`);
+    }
+
+    function downloadBothCustomScripts() {
+      downloadCustomScript('apply');
+      setTimeout(() => {
+        downloadCustomScript('revert');
+      }, 400);
+      showToast('📦 Kurulum ve Revert betikleri indirildi!');
     }
 
     // RENDERING CARDS
@@ -3470,6 +3786,51 @@ echo "✅ Sistem tamamen macOS orijinal fabrika ayarlarına döndürüldü!"</pr
     }
 
     // SEARCH & FILTERING
+    function toggleDetailedFilterPanel(forceState) {
+      const panel = document.getElementById('collapsibleFilterPanel');
+      const btn = document.getElementById('filterToggleBtn');
+      if (!panel || !btn) return;
+      const isOpening = forceState !== undefined ? forceState : !panel.classList.contains('show');
+      if (isOpening) {
+        panel.classList.add('show');
+        btn.classList.add('open');
+      } else {
+        panel.classList.remove('show');
+        btn.classList.remove('open');
+      }
+    }
+
+    function resetAllFilters() {
+      currentCategory = 'all';
+      activeTag = null;
+      const input = document.getElementById('searchInput');
+      if (input) input.value = '';
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      const allBtn = document.querySelector('.filter-btn[onclick*="\'all\'"]');
+      if (allBtn) allBtn.classList.add('active');
+      document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
+      filterCards();
+      showToast('Tüm filtreler sıfırlandı');
+    }
+
+    function updateActiveFilterBadge() {
+      const badge = document.getElementById('activeFilterBadge');
+      const btn = document.getElementById('filterToggleBtn');
+      if (!badge || !btn) return;
+      let count = 0;
+      if (currentCategory !== 'all') count++;
+      if (activeTag) count++;
+      const query = document.getElementById('searchInput') ? document.getElementById('searchInput').value.trim() : '';
+      if (query) count++;
+
+      if (count > 0) {
+        badge.innerText = count;
+        btn.classList.add('has-active-filters');
+      } else {
+        btn.classList.remove('has-active-filters');
+      }
+    }
+
     function filterCategory(cat, btn) {
       currentCategory = cat;
       activeTag = null;
@@ -3535,7 +3896,9 @@ echo "✅ Sistem tamamen macOS orijinal fabrika ayarlarına döndürüldü!"</pr
         sec.style.display = hasVisible ? 'block' : 'none';
       });
 
-      document.getElementById('resultsCount').innerText = `${visibleCount} ayar gösteriliyor`;
+      const resEl = document.getElementById('resultsCount');
+      if (resEl) resEl.innerText = `${visibleCount} ayar listeleniyor`;
+      updateActiveFilterBadge();
     }
 
     function clearSearch() {

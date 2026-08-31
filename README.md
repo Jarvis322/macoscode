@@ -32,7 +32,7 @@ curl -sSL https://raw.githubusercontent.com/Jarvis322/macoscode/main/scripts/mac
 - 🚀 **100 İleri Düzey İnce Ayar:** Terminal, Finder, Dock, Klavye/Trackpad, Xcode, Safari, Gizlilik ve Tahoe optimizasyonları.
 - 🔐 **Touch ID ile Sudo Onayı:** Terminalde şifre yazma zorunluluğunu kaldırıp parmak iziyle anında yetkilendirme.
 - 🏔️ **macOS Tahoe & Apple Intelligence:** Writing Tools gecikme sıfırlama, yerel Spotlight önceliği, iPhone Mirroring bildirim gruplama.
-- 📦 **Kişiselleştirilmiş Betik Oluşturucu:** İstediğiniz ayarları seçip tek tıkla özel `custom-macos-setup.sh` indirme/kopyalama.
+- 📦 **Kişiselleştirilmiş Betik Oluşturucu:** İstediğiniz ayarları seçip tek tıkla özel `custom-macos-setup.sh` (kurulum) ve `custom-macos-revert.sh` (geri alma) betiklerini indirme/kopyalama. Satır içi revert yorumları içerir.
 - ⭐ **Favoriler Sistemi:** En sık kullandığınız komutları yerel depolamada saklama.
 - 🔍 **Canlı Arama & Filtreleme:** `⌘ + K` veya `/` ile anında komut arama ve etiket filtreleme.
 - 🎨 **Ultra-Premium Glassmorphism:** Apple Tahoe esintili modern koyu tema ve akıcı animasyonlar.
