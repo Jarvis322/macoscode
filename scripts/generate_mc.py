@@ -12,7 +12,8 @@ with open(template_file, 'r', encoding='utf-8') as f:
 with open(tweaks_file, 'r', encoding='utf-8') as f:
     tweaks = json.load(f)
 
-final = template.replace('__TWEAKS_JSON_PLACEHOLDER__', json.dumps(tweaks, ensure_ascii=False, indent=2))
+embedded_code = f"    return {json.dumps(tweaks, ensure_ascii=False, indent=4)}"
+final = template.replace('    # __EMBEDDED_TWEAKS_PLACEHOLDER__', embedded_code)
 
 with open(mc_file, 'w', encoding='utf-8') as f:
     f.write(final)

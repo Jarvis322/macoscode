@@ -97,7 +97,18 @@ class C:
     WHITE = "\033[38;2;248;250;252m"
 
 # 100 TWEAKS DATASET
-TWEAKS = __TWEAKS_JSON_PLACEHOLDER__
+def _load_tweaks():
+    # __EMBEDDED_TWEAKS_PLACEHOLDER__
+    _path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tweaks.json")
+    if os.path.exists(_path):
+        try:
+            with open(_path, "r", encoding="utf-8") as _f:
+                return json.load(_f)
+        except Exception:
+            pass
+    return []
+
+TWEAKS = _load_tweaks()
 
 # CATEGORIES METADATA
 CATEGORIES = [
