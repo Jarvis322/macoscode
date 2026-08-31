@@ -8,7 +8,7 @@
 #  ╚═╝     ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝ ╚═════╝ ╚═════╝ ╚══════╝
 #
 #  🚀 macOSCode (mc) - Interactive Terminal UI & macOS Power-User Tool
-#  Inspired by Mole (mo) & macOS Tahoe/Sequoia Power-Tweaks Engine
+#  macOS Tahoe & Apple Silicon Power-Tweaks Engine
 #  Repository: https://github.com/Jarvis322/macoscode
 #  Web App: https://jarvis322.github.io/macoscode/
 # ==============================================================================
@@ -1418,7 +1418,7 @@ def run_preset_menu():
         elif key in ['q', 'ESC']:
             break
 
-# Interactive Tweak Selector (Mole Style)
+# Interactive Tweak Selector
 def run_interactive_selector(category_filter=None):
     if category_filter:
         items = [t for t in TWEAKS if t["cat"] == category_filter]
@@ -1706,7 +1706,7 @@ def run_main_tui():
     menu_items = [
         ("[1]", "🚀", "Master Setup (Tüm 100 Ayarı Tek Tıkla Uygula)", "apply_all"),
         ("[2]", "⏪", "Master Revert (Tüm Ayarları Fabrika Varsayılanına Döndür)", "revert_all"),
-        ("[3]", "🎛️ ", "İnteraktif Kategori & Ayar Seçici (Mole Tarzı TUI)", "categories"),
+        ("[3]", "🎛️ ", "İnteraktif Kategori & Ayar Seçici (TUI)", "categories"),
         ("[4]", "⚡", "Hızlı Paketler (Presets: Developer, Speed, Battery, Tahoe)", "presets"),
         ("[5]", "🔍", "Canlı Arama & Filtreleme (Search by Keyword)", "search"),
         ("[6]", "📊", "Sistem Denetimi & Durum Raporu (System Audit / Status)", "audit"),
@@ -1779,7 +1779,7 @@ def main():
         description="macOSCode (mc) - Interactive Terminal UI & macOS Power-User CLI",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""Örnek Kullanımlar:
-  mc                     İnteraktif Mole tarzı TUI menüsünü açar
+  mc                     İnteraktif TUI menüsünü açar
   mc --apply-all         Tüm 100 optimizasyonu tek satırda uygular
   mc --revert-all        Tüm ayarları orijinal fabrika varsayılanına döndürür
   mc --status            Sistemdeki ayarların aktiflik durumunu tarar (Audit)
