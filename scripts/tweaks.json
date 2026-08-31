@@ -8,7 +8,10 @@
     "tag": "Fix",
     "desc": "DHCP reverse DNS sorguları nedeniyle terminalde 'jarvis@192' gibi IP öneklerinin çıkmasını engeller, sabit ad atar.",
     "apply": "sudo scutil --set HostName MacAir\nsudo scutil --set LocalHostName MacAir\nsudo scutil --set ComputerName MacAir",
-    "revert": "sudo scutil --set HostName ''\nsudo scutil --set LocalHostName ''\nsudo scutil --set ComputerName ''"
+    "revert": "sudo scutil --set HostName ''\nsudo scutil --set LocalHostName ''\nsudo scutil --set ComputerName ''",
+    "title_en": "Set Persistent Hostname (Computer Name)",
+    "desc_en": "Prevents terminal prompts from displaying DHCP reverse DNS prefixes like 'user@192' by assigning a fixed hostname.",
+    "catName_en": "Terminal, Zsh & Shell"
   },
   {
     "id": "term-interactive-comments",
@@ -19,7 +22,10 @@
     "tag": "Zsh",
     "desc": "Terminal'e '#' içeren açıklamalı kod blokları yapıştırıldığında zsh syntax hatası vermesini engeller.",
     "apply": "setopt INTERACTIVE_COMMENTS",
-    "revert": "unsetopt INTERACTIVE_COMMENTS"
+    "revert": "unsetopt INTERACTIVE_COMMENTS",
+    "title_en": "Enable Interactive Comments (#) in Zsh",
+    "desc_en": "Allows pasting code blocks containing '#' comments into the terminal without causing Zsh syntax errors.",
+    "catName_en": "Terminal, Zsh & Shell"
   },
   {
     "id": "term-touchid-sudo",
@@ -30,7 +36,10 @@
     "tag": "Auth",
     "desc": "Terminalde her 'sudo' komutunda şifre yazmak yerine Touch ID parmak iziyle anında onay vermeni sağlar.",
     "apply": "sudo sed -i '' '1s;^;auth       sufficient     pam_tid.so\\n;' /etc/pam.d/sudo",
-    "revert": "sudo sed -i '' '/pam_tid.so/d' /etc/pam.d/sudo"
+    "revert": "sudo sed -i '' '/pam_tid.so/d' /etc/pam.d/sudo",
+    "title_en": "Enable Touch ID Authorization for Sudo",
+    "desc_en": "Allows fingerprint verification via Touch ID for 'sudo' commands instead of typing password every time.",
+    "catName_en": "Terminal, Zsh & Shell"
   },
   {
     "id": "term-title-simplify",
@@ -41,7 +50,10 @@
     "tag": "UI",
     "desc": "Terminal pencere başlığındaki uzun dosya yolu, tty ve pencere boyutu kalabalığını kaldırır.",
     "apply": "defaults write com.apple.Terminal ShowRepresentedURLInTitle -bool false",
-    "revert": "defaults delete com.apple.Terminal ShowRepresentedURLInTitle 2>/dev/null || true"
+    "revert": "defaults delete com.apple.Terminal ShowRepresentedURLInTitle 2>/dev/null || true",
+    "title_en": "Simplify Terminal Window Title Bar",
+    "desc_en": "Removes long file paths, TTY numbers, and window dimensions clutter from the Terminal title bar.",
+    "catName_en": "Terminal, Zsh & Shell"
   },
   {
     "id": "term-brew-no-analytics",
@@ -52,7 +64,10 @@
     "tag": "Brew",
     "desc": "Homebrew'un anonim telemetri verisi toplamasını kapatıp paket indirme/güncelleme hızını artırır.",
     "apply": "export HOMEBREW_NO_ANALYTICS=1",
-    "revert": "unset HOMEBREW_NO_ANALYTICS"
+    "revert": "unset HOMEBREW_NO_ANALYTICS",
+    "title_en": "Disable Homebrew Telemetry & Analytics",
+    "desc_en": "Disables Homebrew's background anonymous telemetry data collection to accelerate package operations.",
+    "catName_en": "Terminal, Zsh & Shell"
   },
   {
     "id": "find-all-extensions",
@@ -63,7 +78,10 @@
     "tag": "Finder",
     "desc": "Finder'da .ts, .json, .env, .png vb. tüm dosya adı uzantılarını her zaman görünür kılar.",
     "apply": "defaults write NSGlobalDomain AppleShowAllExtensions -bool true\nkillall Finder",
-    "revert": "defaults delete NSGlobalDomain AppleShowAllExtensions\nkillall Finder"
+    "revert": "defaults delete NSGlobalDomain AppleShowAllExtensions\nkillall Finder",
+    "title_en": "Always Show All File Name Extensions",
+    "desc_en": "Makes all file extensions (.ts, .json, .env, .png, etc.) permanently visible in Finder.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-hidden-files",
@@ -74,7 +92,10 @@
     "tag": "Finder",
     "desc": "Nokta ile başlayan gizli sistem ve proje dosyalarını (.git, .zshrc, .env) varsayılan olarak görünür yapar.",
     "apply": "defaults write com.apple.finder AppleShowAllFiles -bool true\nkillall Finder",
-    "revert": "defaults delete com.apple.finder AppleShowAllFiles\nkillall Finder"
+    "revert": "defaults delete com.apple.finder AppleShowAllFiles\nkillall Finder",
+    "title_en": "Show Hidden Files and Folders by Default",
+    "desc_en": "Makes dotfiles and hidden project directories (.git, .zshrc, .env) always visible in Finder.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-path-status-bar",
@@ -85,7 +106,10 @@
     "tag": "Finder",
     "desc": "Finder pencerelerinin altındaki dizin hiyerarşisi yolunu ve öğe/alan durumu göstergesini açar.",
     "apply": "defaults write com.apple.finder ShowPathbar -bool true\ndefaults write com.apple.finder ShowStatusBar -bool true\nkillall Finder",
-    "revert": "defaults delete com.apple.finder ShowPathbar\ndefaults delete com.apple.finder ShowStatusBar\nkillall Finder"
+    "revert": "defaults delete com.apple.finder ShowPathbar\ndefaults delete com.apple.finder ShowStatusBar\nkillall Finder",
+    "title_en": "Enable Finder Path Bar & Status Bar",
+    "desc_en": "Displays directory breadcrumbs and item count/disk space indicators at the bottom of Finder windows.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-home-target",
@@ -96,7 +120,10 @@
     "tag": "Finder",
     "desc": "Yeni sekme ve pencerelerin 'Son Kullanılanlar' yerine doğrudan /Users/kullanıcı klasöründe açılmasını sağlar.",
     "apply": "defaults write com.apple.finder NewWindowTarget -string \"PfHm\"\ndefaults write com.apple.finder NewWindowTargetPath -string \"file://$HOME/\"\nkillall Finder",
-    "revert": "defaults delete com.apple.finder NewWindowTarget\ndefaults delete com.apple.finder NewWindowTargetPath\nkillall Finder"
+    "revert": "defaults delete com.apple.finder NewWindowTarget\ndefaults delete com.apple.finder NewWindowTargetPath\nkillall Finder",
+    "title_en": "Open User Home Directory ($HOME) in New Windows",
+    "desc_en": "Configures new Finder tabs and windows to open directly in /Users/username instead of 'Recents'.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-search-scope",
@@ -107,7 +134,10 @@
     "tag": "Finder",
     "desc": "Finder içinde arama (⌘F) yapıldığında tüm Mac'i taramak yerine sadece bulunulan klasörü arar.",
     "apply": "defaults write com.apple.finder FXDefaultSearchScope -string \"SCcf\"\nkillall Finder",
-    "revert": "defaults delete com.apple.finder FXDefaultSearchScope\nkillall Finder"
+    "revert": "defaults delete com.apple.finder FXDefaultSearchScope\nkillall Finder",
+    "title_en": "Default Search Scope to Current Folder",
+    "desc_en": "Sets Finder search (⌘F) to search within the current directory by default instead of the entire Mac.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-posix-title",
@@ -118,7 +148,10 @@
     "tag": "Finder",
     "desc": "Pencerenin üst başlık çubuğunda tam Unix dizin yolunu (/Users/jarvis/...) gösterir.",
     "apply": "defaults write com.apple.finder _FXShowPosixPathInTitle -bool true\nkillall Finder",
-    "revert": "defaults delete com.apple.finder _FXShowPosixPathInTitle\nkillall Finder"
+    "revert": "defaults delete com.apple.finder _FXShowPosixPathInTitle\nkillall Finder",
+    "title_en": "Display Full POSIX Path in Window Title Bar",
+    "desc_en": "Shows the complete Unix directory path (/Users/user/...) in the Finder title bar for easy reference.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-quicklook-text",
@@ -129,7 +162,10 @@
     "tag": "QuickLook",
     "desc": "Space tuşuyla açılan Quick Look penceresindeki kod veya metinleri kopyalamayı aktif eder.",
     "apply": "defaults write com.apple.finder QLEnableTextSelection -bool true\nkillall Finder",
-    "revert": "defaults delete com.apple.finder QLEnableTextSelection\nkillall Finder"
+    "revert": "defaults delete com.apple.finder QLEnableTextSelection\nkillall Finder",
+    "title_en": "Enable Text Selection in Quick Look Previews",
+    "desc_en": "Enables selecting and copying text or code directly from Spacebar Quick Look preview windows.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-no-ds-store-network",
@@ -140,7 +176,10 @@
     "tag": "Temizlik",
     "desc": "Harici USB belleklerde ve paylaşılan NAS/ağ sürücülerinde çöp .DS_Store oluşumunu durdurur.",
     "apply": "defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true\ndefaults write com.apple.desktopservices DSDontWriteUSBStores -bool true",
-    "revert": "defaults delete com.apple.desktopservices DSDontWriteNetworkStores\ndefaults delete com.apple.desktopservices DSDontWriteUSBStores"
+    "revert": "defaults delete com.apple.desktopservices DSDontWriteNetworkStores\ndefaults delete com.apple.desktopservices DSDontWriteUSBStores",
+    "title_en": "Prevent .DS_Store Creation on Network & USB Drives",
+    "desc_en": "Stops macOS from generating clutter .DS_Store files on shared network volumes, NAS, and external USB drives.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-no-empty-trash-warn",
@@ -151,7 +190,10 @@
     "tag": "Finder",
     "desc": "Çöpü boşaltırken sorulan 'Emin misiniz?' uyarı kutusunu atlayıp anında temizler.",
     "apply": "defaults write com.apple.finder WarnOnEmptyTrash -bool false\nkillall Finder",
-    "revert": "defaults delete com.apple.finder WarnOnEmptyTrash\nkillall Finder"
+    "revert": "defaults delete com.apple.finder WarnOnEmptyTrash\nkillall Finder",
+    "title_en": "Disable Empty Trash Confirmation Warning",
+    "desc_en": "Bypasses the 'Are you sure?' confirmation prompt when emptying the Trash for instant deletion.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-no-ext-change-warn",
@@ -162,7 +204,10 @@
     "tag": "Finder",
     "desc": "Bir dosyanın sonundaki uzantıyı değiştirirken çıkan uyarı penceresini devre dışı bırakır.",
     "apply": "defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false\nkillall Finder",
-    "revert": "defaults delete com.apple.finder FXEnableExtensionChangeWarning\nkillall Finder"
+    "revert": "defaults delete com.apple.finder FXEnableExtensionChangeWarning\nkillall Finder",
+    "title_en": "Disable File Extension Change Warning",
+    "desc_en": "Disables the warning dialog when renaming files and changing file extensions in Finder.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-column-view",
@@ -173,7 +218,10 @@
     "tag": "Finder",
     "desc": "Finder'ın tüm yeni pencerelerde otomatik olarak sütun görünümü hiyerarşisinde açılmasını sağlar.",
     "apply": "defaults write com.apple.finder FXPreferredViewStyle -string \"clmv\"\nkillall Finder",
-    "revert": "defaults delete com.apple.finder FXPreferredViewStyle\nkillall Finder"
+    "revert": "defaults delete com.apple.finder FXPreferredViewStyle\nkillall Finder",
+    "title_en": "Set Default Finder View to Column View",
+    "desc_en": "Enforces Column View hierarchy as the default viewing style across all Finder windows.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-unhide-library",
@@ -184,7 +232,10 @@
     "tag": "Finder",
     "desc": "Kullanıcı dizini altındaki gizli ~/Library klasörünü Finder'da görünür kılar.",
     "apply": "chflags nohidden ~/Library",
-    "revert": "chflags hidden ~/Library"
+    "revert": "chflags hidden ~/Library",
+    "title_en": "Unhide User Library Folder (~/Library)",
+    "desc_en": "Makes the hidden ~/Library directory permanently visible in your home folder in Finder.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-unhide-volumes",
@@ -195,7 +246,10 @@
     "tag": "Finder",
     "desc": "Sisteme bağlı tüm sürücülerin bağlandığı kök /Volumes dizinini gizlilikten çıkarır.",
     "apply": "sudo chflags nohidden /Volumes",
-    "revert": "sudo chflags hidden /Volumes"
+    "revert": "sudo chflags hidden /Volumes",
+    "title_en": "Unhide Root /Volumes Directory in Finder",
+    "desc_en": "Reveals the root /Volumes directory where all mounted external drives and partitions reside.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-auto-expand-folders",
@@ -206,7 +260,10 @@
     "tag": "Finder",
     "desc": "Sütun görünümünde klasörler arasında gezinirken sütun genişliklerini içeriğe göre genişletir.",
     "apply": "defaults write com.apple.finder AutoExpandSyncFolders -bool true\nkillall Finder",
-    "revert": "defaults delete com.apple.finder AutoExpandSyncFolders\nkillall Finder"
+    "revert": "defaults delete com.apple.finder AutoExpandSyncFolders\nkillall Finder",
+    "title_en": "Auto-Expand Column Widths in Column View",
+    "desc_en": "Automatically adjusts column widths to match long file and folder names while browsing in Column View.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-airdrop-ethernet",
@@ -217,7 +274,10 @@
     "tag": "AirDrop",
     "desc": "AirDrop'un sadece Wi-Fi değil, kablolu Ethernet bağlantısında da cihazları bulmasını sağlar.",
     "apply": "defaults write com.apple.NetworkBrowser DisableAirDrop -bool false\ndefaults write com.apple.NetworkBrowser BrowseAllInterfaces -bool true",
-    "revert": "defaults delete com.apple.NetworkBrowser DisableAirDrop 2>/dev/null || true\ndefaults delete com.apple.NetworkBrowser BrowseAllInterfaces 2>/dev/null || true"
+    "revert": "defaults delete com.apple.NetworkBrowser DisableAirDrop 2>/dev/null || true\ndefaults delete com.apple.NetworkBrowser BrowseAllInterfaces 2>/dev/null || true",
+    "title_en": "Enable AirDrop over Ethernet & All Interfaces",
+    "desc_en": "Allows AirDrop to discover devices and transfer files over wired Ethernet as well as Wi-Fi.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-quicklook-fast-zoom",
@@ -228,7 +288,10 @@
     "tag": "Hız",
     "desc": "Space tuşuna basıldığında dosya önizlemesinin sıfır animasyon gecikmesiyle anında açılmasını sağlar.",
     "apply": "defaults write -g QLPanelAnimationDuration -float 0",
-    "revert": "defaults delete -g QLPanelAnimationDuration"
+    "revert": "defaults delete -g QLPanelAnimationDuration",
+    "title_en": "Disable Quick Look Opening Zoom Animation",
+    "desc_en": "Removes the zoom expansion animation delay when pressing Spacebar for instant Quick Look preview.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-direct-delete-shortcut",
@@ -239,7 +302,10 @@
     "tag": "Finder",
     "desc": "Finder'da ⌥ + ⌘ + Delete kısayolunu kullanarak dosyayı çöpü atlamadan tek adımda silme yeteneğini açık tutar.",
     "apply": "defaults write com.apple.finder FXEnableRemoveWithoutTrash -bool true\nkillall Finder",
-    "revert": "defaults delete com.apple.finder FXEnableRemoveWithoutTrash 2>/dev/null || true\nkillall Finder"
+    "revert": "defaults delete com.apple.finder FXEnableRemoveWithoutTrash 2>/dev/null || true\nkillall Finder",
+    "title_en": "Enable Instant Permanent File Deletion",
+    "desc_en": "Ensures the ⌥ + ⌘ + Delete shortcut permanently removes files in one step bypassing the Trash.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "win-top-drag-restore",
@@ -250,7 +316,10 @@
     "tag": "Windows",
     "desc": "Döşenmiş/büyütülmüş pencereyi başlık çubuğundan aşağı sürükleyerek küçük boyutuna döndürür.",
     "apply": "defaults write com.apple.WindowManager EnableTopDragToRestore -bool true\nkillall WindowManager",
-    "revert": "defaults delete com.apple.WindowManager EnableTopDragToRestore\nkillall WindowManager"
+    "revert": "defaults delete com.apple.WindowManager EnableTopDragToRestore\nkillall WindowManager",
+    "title_en": "Drag Maximized Window from Top Edge to Restore",
+    "desc_en": "Enables dragging a maximized window downward from the top menu area to un-maximize it smoothly.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "win-disable-click-desktop",
@@ -261,7 +330,10 @@
     "tag": "Desktop",
     "desc": "Boş masaüstüne tıklayınca pencerelerin sağa sola kaçmasını engeller (Stage Manager hariç).",
     "apply": "defaults write com.apple.WindowManager ClickWidgetBackgroundInStageManager -bool true\nkillall WindowManager",
-    "revert": "defaults delete com.apple.WindowManager ClickWidgetBackgroundInStageManager\nkillall WindowManager"
+    "revert": "defaults delete com.apple.WindowManager ClickWidgetBackgroundInStageManager\nkillall WindowManager",
+    "title_en": "Disable 'Click Wallpaper to Reveal Desktop'",
+    "desc_en": "Prevents windows from scattering when accidentally clicking wallpaper in macOS Sonoma & Tahoe.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "win-remove-tiling-margins",
@@ -272,7 +344,10 @@
     "tag": "Tiling",
     "desc": "macOS yerleşik pencere döşeme sisteminde pencereler arasında bırakılan yapay boşlukları kaldırır.",
     "apply": "defaults write com.apple.WindowManager EnableTiledWindowMargins -bool false\nkillall WindowManager",
-    "revert": "defaults delete com.apple.WindowManager EnableTiledWindowMargins\nkillall WindowManager"
+    "revert": "defaults delete com.apple.WindowManager EnableTiledWindowMargins\nkillall WindowManager",
+    "title_en": "Zero Margin Borders for Tiled Windows",
+    "desc_en": "Removes empty margin gaps around snapped/tiled windows to maximize 100% of your screen area.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "win-drag-anywhere",
@@ -283,7 +358,10 @@
     "tag": "UX",
     "desc": "Üst çubuğa gitmeden pencerenin herhangi bir noktasına ⌘ + ⌃ basıp sürükleyerek taşıma sağlar.",
     "apply": "defaults write -g NSWindowShouldDragOnGesture -bool true",
-    "revert": "defaults delete -g NSWindowShouldDragOnGesture"
+    "revert": "defaults delete -g NSWindowShouldDragOnGesture",
+    "title_en": "Drag Windows from Anywhere (⌘ + ⌃ + Click)",
+    "desc_en": "Allows dragging any window from anywhere on its surface by holding Command + Control and clicking.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "dock-autohide-speed",
@@ -294,7 +372,10 @@
     "tag": "Dock",
     "desc": "Otomatik gizlenen Dock'un fare geldiğinde hiç beklemeden anında fırlamasını sağlar.",
     "apply": "defaults write com.apple.dock autohide-delay -float 0\ndefaults write com.apple.dock autohide-time-modifier -float 0.3\nkillall Dock",
-    "revert": "defaults delete com.apple.dock autohide-delay\ndefaults delete com.apple.dock autohide-time-modifier\nkillall Dock"
+    "revert": "defaults delete com.apple.dock autohide-delay\ndefaults delete com.apple.dock autohide-time-modifier\nkillall Dock",
+    "title_en": "Zero Dock Auto-Hide Delay & Instant Animation",
+    "desc_en": "Eliminates the hover delay so the hidden Dock pops up instantaneously when cursor touches the edge.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "dock-dim-hidden",
@@ -305,7 +386,10 @@
     "tag": "Dock",
     "desc": "⌘ + H ile gizlenen uygulamaların Dock ikonlarını soluklaştırarak gizli olduklarını belli eder.",
     "apply": "defaults write com.apple.dock showhidden -bool true\nkillall Dock",
-    "revert": "defaults delete com.apple.dock showhidden\nkillall Dock"
+    "revert": "defaults delete com.apple.dock showhidden\nkillall Dock",
+    "title_en": "Dim Icons of Hidden Apps (⌘+H) in Dock",
+    "desc_en": "Applies a translucent dimming effect to the Dock icons of apps that are hidden with ⌘+H.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "dock-static-only",
@@ -316,7 +400,10 @@
     "tag": "Dock",
     "desc": "Dock üzerindeki sabitlenmiş tüm simgeleri gizleyip sadece o an çalışan uygulamaları listeler.",
     "apply": "defaults write com.apple.dock static-only -bool true\nkillall Dock",
-    "revert": "defaults delete com.apple.dock static-only\nkillall Dock"
+    "revert": "defaults delete com.apple.dock static-only\nkillall Dock",
+    "title_en": "Dock Focus Mode: Show Only Running Applications",
+    "desc_en": "Converts the Dock into a clean task switcher showing only currently open and running applications.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "dock-no-recent-apps",
@@ -327,7 +414,10 @@
     "tag": "Dock",
     "desc": "Dock'un sağ tarafında açılan son kullanılan uygulamalar ayırıcı alanını devre dışı bırakır.",
     "apply": "defaults write com.apple.dock show-recents -bool false\nkillall Dock",
-    "revert": "defaults delete com.apple.dock show-recents\nkillall Dock"
+    "revert": "defaults delete com.apple.dock show-recents\nkillall Dock",
+    "title_en": "Hide Recent Applications Section in Dock",
+    "desc_en": "Removes the recent apps divider section on the right side of the Dock for a cleaner aesthetic.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "dock-group-mission-control",
@@ -338,7 +428,10 @@
     "tag": "MissionControl",
     "desc": "Mission Control açıldığında aynı uygulamanın açık tüm pencerelerini bir arada gruplar.",
     "apply": "defaults write com.apple.dock expose-group-apps -bool true\nkillall Dock",
-    "revert": "defaults delete com.apple.dock expose-group-apps\nkillall Dock"
+    "revert": "defaults delete com.apple.dock expose-group-apps\nkillall Dock",
+    "title_en": "Group Windows by Application in Mission Control",
+    "desc_en": "Organizes scattered windows into tidy application clusters in Mission Control overview.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "dock-fast-expose-anim",
@@ -349,7 +442,10 @@
     "tag": "Hız",
     "desc": "3 parmak yukarı kaydırmadaki pencerelerin açılma geçiş animasyonunu hızlandırır.",
     "apply": "defaults write com.apple.dock expose-animation-duration -float 0.1\nkillall Dock",
-    "revert": "defaults delete com.apple.dock expose-animation-duration\nkillall Dock"
+    "revert": "defaults delete com.apple.dock expose-animation-duration\nkillall Dock",
+    "title_en": "Accelerate Mission Control & App Exposé Speed",
+    "desc_en": "Cuts the Mission Control animation duration down to 100ms for hyper-responsive workspace switching.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "win-hide-desktop-icons",
@@ -360,7 +456,10 @@
     "tag": "Desktop",
     "desc": "Masaüstünde hiçbir dosya/klasör simgesinin görünmemesini sağlar, tamamen temiz tutar.",
     "apply": "defaults write com.apple.finder CreateDesktop -bool false\nkillall Finder",
-    "revert": "defaults delete com.apple.finder CreateDesktop\nkillall Finder"
+    "revert": "defaults delete com.apple.finder CreateDesktop\nkillall Finder",
+    "title_en": "Clean Desktop: Hide All Desktop Icons & Files",
+    "desc_en": "Clears all files and disks from the desktop surface for a distraction-free, clean wallpaper view.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "dock-suck-effect",
@@ -371,7 +470,10 @@
     "tag": "Dock",
     "desc": "Pencereler Dock'a küçülürken Genie yerine daha akıcı ve şık olan 'Suck' efektini aktif eder.",
     "apply": "defaults write com.apple.dock mineffect -string \"suck\"\nkillall Dock",
-    "revert": "defaults delete com.apple.dock mineffect\nkillall Dock"
+    "revert": "defaults delete com.apple.dock mineffect\nkillall Dock",
+    "title_en": "Enable Fluid 'Suck' Window Minimize Effect",
+    "desc_en": "Replaces the default Genie minimize animation with the ultra-fast, sleek 'Suck' effect.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "win-fast-resize",
@@ -382,7 +484,10 @@
     "tag": "Hız",
     "desc": "Sistem genelinde pencerelerin açılış/kapanış animasyon süresini minimuma çeker.",
     "apply": "defaults write NSGlobalDomain NSWindowResizeTime -float 0.001",
-    "revert": "defaults delete NSGlobalDomain NSWindowResizeTime"
+    "revert": "defaults delete NSGlobalDomain NSWindowResizeTime",
+    "title_en": "Accelerate Window Resize & Redraw Animation",
+    "desc_en": "Accelerates dialog, alert, and window resizing animations across macOS for an ultra-snappy feel.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "dock-no-mru-spaces",
@@ -393,7 +498,10 @@
     "tag": "Spaces",
     "desc": "macOS'in sanal masaüstlerinin yerini en son kullanım sırasına göre otomatik değiştirmesini engeller.",
     "apply": "defaults write com.apple.dock mru-spaces -bool false\nkillall Dock",
-    "revert": "defaults delete com.apple.dock mru-spaces\nkillall Dock"
+    "revert": "defaults delete com.apple.dock mru-spaces\nkillall Dock",
+    "title_en": "Disable Automatic Desktop Space Rearrangement",
+    "desc_en": "Prevents macOS from constantly shuffling your Desktops based on most recent usage.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "win-double-click-fill",
@@ -404,7 +512,10 @@
     "tag": "Windows",
     "desc": "Pencere üst çubuğuna çift tıklandığında simge durumuna küçülmek yerine tüm alanı kaplar.",
     "apply": "defaults write NSGlobalDomain AppleActionOnDoubleClick -string \"Fill\"",
-    "revert": "defaults delete NSGlobalDomain AppleActionOnDoubleClick"
+    "revert": "defaults delete NSGlobalDomain AppleActionOnDoubleClick",
+    "title_en": "Double-Click Window Title Bar to Fill Screen",
+    "desc_en": "Configures double-clicking window title bars to fill available screen area instead of minimizing.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "dock-disable-hotcorner-note",
@@ -415,7 +526,10 @@
     "tag": "HotCorners",
     "desc": "Sağ alt köşeye fare gittiğinde çıkan Quick Note açılır penceresini kapatır.",
     "apply": "defaults write com.apple.dock wvous-br-corner -int 0\nkillall Dock",
-    "revert": "defaults delete com.apple.dock wvous-br-corner\nkillall Dock"
+    "revert": "defaults delete com.apple.dock wvous-br-corner\nkillall Dock",
+    "title_en": "Disable Bottom-Right Hot Corner Quick Note",
+    "desc_en": "Disables the accidental Quick Note popup when mouse cursor hits the bottom-right display corner.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "key-fast-repeat",
@@ -426,7 +540,10 @@
     "tag": "Klavye",
     "desc": "Kod yazarken yön tuşları, backspace ve gezinme gecikmesini en uç donanım sınırına çeker.",
     "apply": "defaults write NSGlobalDomain KeyRepeat -int 1\ndefaults write NSGlobalDomain InitialKeyRepeat -int 10",
-    "revert": "defaults delete NSGlobalDomain KeyRepeat\ndefaults delete NSGlobalDomain InitialKeyRepeat"
+    "revert": "defaults delete NSGlobalDomain KeyRepeat\ndefaults delete NSGlobalDomain InitialKeyRepeat",
+    "title_en": "Maximum Key Repeat Rate (Lightning-Fast Typing)",
+    "desc_en": "Sets key repeat speed past GUI limits for ultra-responsive cursor navigation in code editors.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "key-disable-press-hold",
@@ -437,7 +554,10 @@
     "tag": "Klavye",
     "desc": "Harfe basılı tutunca aksan menüsü (é, è) açmak yerine sürekli aynı harfi art arda yazar.",
     "apply": "defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false",
-    "revert": "defaults delete NSGlobalDomain ApplePressAndHoldEnabled"
+    "revert": "defaults delete NSGlobalDomain ApplePressAndHoldEnabled",
+    "title_en": "Disable Accent Popup for Real Key Holding (VS Code/Vim)",
+    "desc_en": "Disables the accented character menu popup so holding keys repeats characters smoothly in VS Code/Vim.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "track-tap-to-click",
@@ -448,7 +568,10 @@
     "tag": "Trackpad",
     "desc": "Fiziksel tık basma zorunluluğunu kaldırıp hafif dokunuşla tıklamayı tüm hesapta aktif eder.",
     "apply": "defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true\ndefaults write com.apple.AppleMultitouchTrackpad Clicking -bool true\ndefaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1",
-    "revert": "defaults delete com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking 2>/dev/null || true\ndefaults delete com.apple.AppleMultitouchTrackpad Clicking 2>/dev/null || true\ndefaults -currentHost delete NSGlobalDomain com.apple.mouse.tapBehavior 2>/dev/null || true"
+    "revert": "defaults delete com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking 2>/dev/null || true\ndefaults delete com.apple.AppleMultitouchTrackpad Clicking 2>/dev/null || true\ndefaults -currentHost delete NSGlobalDomain com.apple.mouse.tapBehavior 2>/dev/null || true",
+    "title_en": "Enable Tap to Click on Trackpad",
+    "desc_en": "Enables light one-finger tapping on the trackpad to click without mechanical depression.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "track-three-finger-drag",
@@ -459,7 +582,10 @@
     "tag": "Trackpad",
     "desc": "Pencereleri ve metin seçimlerini tıklamadan sadece 3 parmağı sürükleyerek taşımayı açar.",
     "apply": "defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag -bool true\ndefaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerDrag -bool true",
-    "revert": "defaults delete com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag 2>/dev/null || true\ndefaults delete com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerDrag 2>/dev/null || true"
+    "revert": "defaults delete com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag 2>/dev/null || true\ndefaults delete com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerDrag 2>/dev/null || true",
+    "title_en": "Enable 3-Finger Drag on Trackpad",
+    "desc_en": "Allows dragging windows and selecting text effortlessly by moving three fingers across the trackpad.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "text-disable-autocorrect",
@@ -470,7 +596,10 @@
     "tag": "Metin",
     "desc": "Çift boşlukta otomatik nokta koyma ve otomatik düzeltmeleri kapatıp kod yazarken araya girmesini engeller.",
     "apply": "defaults write NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled -bool false\ndefaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false\ndefaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false",
-    "revert": "defaults delete NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled\ndefaults delete NSGlobalDomain NSAutomaticCapitalizationEnabled\ndefaults delete NSGlobalDomain NSAutomaticSpellingCorrectionEnabled"
+    "revert": "defaults delete NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled\ndefaults delete NSGlobalDomain NSAutomaticCapitalizationEnabled\ndefaults delete NSGlobalDomain NSAutomaticSpellingCorrectionEnabled",
+    "title_en": "Disable Global Auto-Correct & Auto-Capitalize",
+    "desc_en": "Prevents macOS from altering technical terms, variable names, and code syntax automatically.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "text-disable-smart-quotes",
@@ -481,7 +610,10 @@
     "tag": "Metin",
     "desc": "Düz tırnakların eğik tırnaklara, iki tirenin uzun çizgiye dönüşmesini engelleyerek kod sözdizimini korur.",
     "apply": "defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false\ndefaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false",
-    "revert": "defaults delete NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled\ndefaults delete NSGlobalDomain NSAutomaticDashSubstitutionEnabled"
+    "revert": "defaults delete NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled\ndefaults delete NSGlobalDomain NSAutomaticDashSubstitutionEnabled",
+    "title_en": "Disable Smart Quotes & Smart Dashes",
+    "desc_en": "Prevents straight quotation marks (' and \") from converting into curly quotes that break code.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "key-full-keyboard-access",
@@ -492,7 +624,10 @@
     "tag": "Klavye",
     "desc": "'Kaydet / Vazgeç / Sil' uyarılarında Tab tuşuyla butonlar arasında gezinip Space ile basmayı sağlar.",
     "apply": "defaults write NSGlobalDomain AppleKeyboardUIMode -int 3",
-    "revert": "defaults delete NSGlobalDomain AppleKeyboardUIMode"
+    "revert": "defaults delete NSGlobalDomain AppleKeyboardUIMode",
+    "title_en": "Full Keyboard Navigation: Tab Through All UI Controls",
+    "desc_en": "Allows pressing the Tab key to navigate through all modal buttons, dialogs, and radio controls.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "key-fn-state",
@@ -503,7 +638,10 @@
     "tag": "Klavye",
     "desc": "F1-F12 tuşlarının Fn basmadan doğrudan F tuşu olarak çalışmasını sağlar.",
     "apply": "defaults write NSGlobalDomain com.apple.keyboard.fnState -bool true",
-    "revert": "defaults delete NSGlobalDomain com.apple.keyboard.fnState"
+    "revert": "defaults delete NSGlobalDomain com.apple.keyboard.fnState",
+    "title_en": "Use F1-F12 as Standard Function Keys",
+    "desc_en": "Configures F1-F12 keys to act as standard function keys without holding the Fn globe key.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "hw-keyboard-backlight-dim",
@@ -514,7 +652,10 @@
     "tag": "Donanım",
     "desc": "MacBook kullanılmadığında pil tasarrufu için klavye aydınlatmasını 10 saniyede kapatır.",
     "apply": "defaults write com.apple.BezelServices kDimTime -int 10",
-    "revert": "defaults delete com.apple.BezelServices kDimTime 2>/dev/null || true"
+    "revert": "defaults delete com.apple.BezelServices kDimTime 2>/dev/null || true",
+    "title_en": "Shorten Keyboard Backlight Idle Timeout",
+    "desc_en": "Dims keyboard illumination after 30 seconds of inactivity to conserve MacBook battery life.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "snd-disable-volume-beep",
@@ -525,7 +666,10 @@
     "tag": "Ses",
     "desc": "F11/F12 ile ses kısılıp açılırken çalan geri bildirim ses efektini susturur.",
     "apply": "defaults write NSGlobalDomain \"com.apple.sound.beep.feedback\" -int 0",
-    "revert": "defaults delete NSGlobalDomain \"com.apple.sound.beep.feedback\""
+    "revert": "defaults delete NSGlobalDomain \"com.apple.sound.beep.feedback\"",
+    "title_en": "Mute Beep Feedback on Volume Change",
+    "desc_en": "Silences the feedback audio beep sound when pressing keyboard volume adjustment keys.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "ui-helpviewer-devmode",
@@ -536,7 +680,10 @@
     "tag": "UI",
     "desc": "Uygulamalarda yardım ekranı açıldığında diğer pencerelerin önünde kilitlenip kalmasını durdurur.",
     "apply": "defaults write com.apple.helpviewer DevMode -bool true",
-    "revert": "defaults delete com.apple.helpviewer DevMode 2>/dev/null || true"
+    "revert": "defaults delete com.apple.helpviewer DevMode 2>/dev/null || true",
+    "title_en": "Unpin macOS Help Viewer from Always-on-Top",
+    "desc_en": "Prevents macOS Help Viewer windows from staying pinned above all other applications.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "track-disable-natural-scroll",
@@ -547,7 +694,10 @@
     "tag": "Trackpad",
     "desc": "Kaydırma yönünü tersine çevirip geleneksel fare tekeri mantığına döndürür.",
     "apply": "defaults write NSGlobalDomain com.apple.swipescrolldirection -bool false",
-    "revert": "defaults delete NSGlobalDomain com.apple.swipescrolldirection"
+    "revert": "defaults delete NSGlobalDomain com.apple.swipescrolldirection",
+    "title_en": "Set Standard (Non-Natural) Mouse Scrolling",
+    "desc_en": "Configures standard traditional scroll wheel direction when external mice are connected.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "dev-xcode-build-duration",
@@ -558,7 +708,10 @@
     "tag": "Xcode",
     "desc": "Xcode'un üst çubuğunda projenin kaç saniyede build edildiğini gösterir.",
     "apply": "defaults write com.apple.dt.Xcode ShowBuildOperationDuration -bool true",
-    "revert": "defaults delete com.apple.dt.Xcode ShowBuildOperationDuration 2>/dev/null || true"
+    "revert": "defaults delete com.apple.dt.Xcode ShowBuildOperationDuration 2>/dev/null || true",
+    "title_en": "Show Build Duration & Times in Xcode",
+    "desc_en": "Displays exact compilation times in seconds directly in the Xcode top status bar.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "sec-disable-quarantine",
@@ -569,7 +722,10 @@
     "tag": "Güvenlik",
     "desc": "İnternetten indirilen araçları ilk kez açarken çıkan 'İnternetten indirildi, açılsın mı?' uyarısını atlar.",
     "apply": "defaults write com.apple.LaunchServices LSQuarantine -bool false",
-    "revert": "defaults delete com.apple.LaunchServices LSQuarantine 2>/dev/null || true"
+    "revert": "defaults delete com.apple.LaunchServices LSQuarantine 2>/dev/null || true",
+    "title_en": "Disable Gatekeeper 'Downloaded from Internet' Prompt",
+    "desc_en": "Disables the repetitive 'App downloaded from the Internet. Are you sure?' warning dialog.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "safari-enable-develop-menu",
@@ -580,7 +736,10 @@
     "tag": "Safari",
     "desc": "Safari tercihlerine girmeden Geliştirici menüsünü ve yerel HTML/JS denetim aracını aktif eder.",
     "apply": "defaults write com.apple.Safari IncludeDevelopMenu -bool true\ndefaults write com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey -bool true\ndefaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled -bool true",
-    "revert": "defaults delete com.apple.Safari IncludeDevelopMenu 2>/dev/null || true\ndefaults delete com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey 2>/dev/null || true\ndefaults delete com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled 2>/dev/null || true"
+    "revert": "defaults delete com.apple.Safari IncludeDevelopMenu 2>/dev/null || true\ndefaults delete com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey 2>/dev/null || true\ndefaults delete com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled 2>/dev/null || true",
+    "title_en": "Enable Safari Developer Menu & Web Inspector",
+    "desc_en": "Enables the Develop menu in Safari menu bar and unlocks Web Inspector debugging for localhost.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "safari-show-full-url",
@@ -591,7 +750,10 @@
     "tag": "Safari",
     "desc": "Safari'de sadece alan adını değil, tüm URL yolunu (https://site.com/path/to/page) açık gösterir.",
     "apply": "defaults write com.apple.Safari ShowFullURLInSmartSearchField -bool true",
-    "revert": "defaults delete com.apple.Safari ShowFullURLInSmartSearchField 2>/dev/null || true"
+    "revert": "defaults delete com.apple.Safari ShowFullURLInSmartSearchField 2>/dev/null || true",
+    "title_en": "Always Show Full Web Address URL in Safari",
+    "desc_en": "Shows the entire URL path (https://domain.com/path?id=1) in Safari's address bar instead of just domain.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "sys-expand-save-print-panels",
@@ -602,7 +764,10 @@
     "tag": "Sistem",
     "desc": "Dosya kaydederken dar gelen pencere yerine tüm dizin ağacını varsayılan olarak açık getirir.",
     "apply": "defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true\ndefaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode2 -bool true\ndefaults write NSGlobalDomain PMPrintingExpandedStateForPrint -bool true\ndefaults write NSGlobalDomain PMPrintingExpandedStateForPrint2 -bool true",
-    "revert": "defaults delete NSGlobalDomain NSNavPanelExpandedStateForSaveMode 2>/dev/null || true\ndefaults delete NSGlobalDomain NSNavPanelExpandedStateForSaveMode2 2>/dev/null || true\ndefaults delete NSGlobalDomain PMPrintingExpandedStateForPrint 2>/dev/null || true\ndefaults delete NSGlobalDomain PMPrintingExpandedStateForPrint2 2>/dev/null || true"
+    "revert": "defaults delete NSGlobalDomain NSNavPanelExpandedStateForSaveMode 2>/dev/null || true\ndefaults delete NSGlobalDomain NSNavPanelExpandedStateForSaveMode2 2>/dev/null || true\ndefaults delete NSGlobalDomain PMPrintingExpandedStateForPrint 2>/dev/null || true\ndefaults delete NSGlobalDomain PMPrintingExpandedStateForPrint2 2>/dev/null || true",
+    "title_en": "Expand Save & Print Panels by Default",
+    "desc_en": "Always opens the full folder tree in File > Save and Print dialogs automatically.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "sys-disable-crash-reporter",
@@ -613,7 +778,10 @@
     "tag": "Sistem",
     "desc": "Bir uygulama çöktüğünde ekrana gelen bildirim ve rapor gönderme diyalog kutularını devre dışı bırakır.",
     "apply": "defaults write com.apple.CrashReporter DialogType -string \"none\"",
-    "revert": "defaults delete com.apple.CrashReporter DialogType 2>/dev/null || true"
+    "revert": "defaults delete com.apple.CrashReporter DialogType 2>/dev/null || true",
+    "title_en": "Disable Disruptive Crash Reporter Dialogs",
+    "desc_en": "Replaces disruptive crash dialog popups with silent background system crash logging.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "sys-login-host-info",
@@ -624,7 +792,10 @@
     "tag": "Sistem",
     "desc": "Giriş ekranında sağ üstteki saate tıklandığında IP adresi, hostname ve macOS versiyonunu dönüşümlü gösterir.",
     "apply": "sudo defaults write /Library/Preferences/com.apple.loginwindow AdminHostInfo HostName",
-    "revert": "sudo defaults delete /Library/Preferences/com.apple.loginwindow AdminHostInfo 2>/dev/null || true"
+    "revert": "sudo defaults delete /Library/Preferences/com.apple.loginwindow AdminHostInfo 2>/dev/null || true",
+    "title_en": "Display IP & System Info on Login Lock Screen",
+    "desc_en": "Clicking the clock on the macOS lock screen reveals IP address, hostname, and macOS build version.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "hw-bluetooth-bitpool",
@@ -635,7 +806,10 @@
     "tag": "Ses",
     "desc": "Bluetooth kulaklık ve harici hoparlörlerde ses aktarım kalitesini en üst seviyeye sabitler.",
     "apply": "defaults write com.apple.BluetoothAudioAgent \"Apple Bitpool Min (editable)\" -int 40",
-    "revert": "defaults delete com.apple.BluetoothAudioAgent \"Apple Bitpool Min (editable)\" 2>/dev/null || true"
+    "revert": "defaults delete com.apple.BluetoothAudioAgent \"Apple Bitpool Min (editable)\" 2>/dev/null || true",
+    "title_en": "Boost Bluetooth Audio Bitrate & AAC Quality",
+    "desc_en": "Increases SBC/AAC Bluetooth audio bitpool ceiling for rich, studio-grade headphone streaming.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "net-disable-captive-portal",
@@ -646,7 +820,10 @@
     "tag": "Ağ",
     "desc": "Özel DNS veya kafe ağlarında sürekli açılan zorunlu tarayıcı pencerelerini engeller.",
     "apply": "sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.captivecontrol Active -bool false",
-    "revert": "sudo defaults delete /Library/Preferences/SystemConfiguration/com.apple.captivecontrol Active 2>/dev/null || true"
+    "revert": "sudo defaults delete /Library/Preferences/SystemConfiguration/com.apple.captivecontrol Active 2>/dev/null || true",
+    "title_en": "Disable Captive Portal Automatic Web Popup",
+    "desc_en": "Prevents macOS from automatically opening web login sheets when connecting to public Wi-Fi.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "hw-disable-autoboot",
@@ -657,7 +834,10 @@
     "tag": "Donanım",
     "desc": "MacBook kapağı açıldığında veya prize takıldığında otomatik boot etmesini engeller (ekran temizlerken ideal).",
     "apply": "sudo nvram AutoBoot=%00",
-    "revert": "sudo nvram AutoBoot=%03"
+    "revert": "sudo nvram AutoBoot=%03",
+    "title_en": "Disable Auto-Boot on Lid Open / Power Connection",
+    "desc_en": "Prevents MacBooks from automatically powering on when opening the lid or plugging in MagSafe.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "hw-mute-startup-chime",
@@ -668,7 +848,10 @@
     "tag": "Donanım",
     "desc": "Mac her açıldığında ve yeniden başladığında çalan yüksek gong sesini tamamen kapatır.",
     "apply": "sudo nvram StartupMute=%01",
-    "revert": "sudo nvram StartupMute=%00"
+    "revert": "sudo nvram StartupMute=%00",
+    "title_en": "Mute Startup Chime Sound at Boot",
+    "desc_en": "Silences the loud Mac startup chime when turning on or restarting in quiet environments.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "sec-immediate-password-lock",
@@ -679,7 +862,10 @@
     "tag": "Güvenlik",
     "desc": "Ekran kapandığı veya uykuya geçtiği saniye anında parola korumasını devreye alır.",
     "apply": "defaults write com.apple.screensaver askForPassword -int 1\ndefaults write com.apple.screensaver askForPasswordDelay -int 0",
-    "revert": "defaults delete com.apple.screensaver askForPassword\ndefaults delete com.apple.screensaver askForPasswordDelay"
+    "revert": "defaults delete com.apple.screensaver askForPassword\ndefaults delete com.apple.screensaver askForPasswordDelay",
+    "title_en": "Instant Password Requirement on Sleep/Screen Saver",
+    "desc_en": "Requires password immediately (0 seconds delay) after display sleep or screen saver activation.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "scr-format-jpg",
@@ -690,7 +876,10 @@
     "tag": "Screenshots",
     "desc": "Ekran görüntülerinin ağır PNG yerine daha hafif JPEG formatında kaydedilmesini sağlar.",
     "apply": "defaults write com.apple.screencapture type -string \"jpg\"\nkillall SystemUIServer",
-    "revert": "defaults delete com.apple.screencapture type\nkillall SystemUIServer"
+    "revert": "defaults delete com.apple.screencapture type\nkillall SystemUIServer",
+    "title_en": "Save Screenshots as Lightweight JPG Format",
+    "desc_en": "Switches default screenshot image format from heavy PNG to compressed, fast-sharing JPG.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "scr-disable-shadow",
@@ -701,7 +890,10 @@
     "tag": "Screenshots",
     "desc": "Tek pencere ekran görüntüsü alırken (⌘+Shift+4 -> Space) etrafa eklenen dev gölgeyi siler.",
     "apply": "defaults write com.apple.screencapture disable-shadow -bool true\nkillall SystemUIServer",
-    "revert": "defaults delete com.apple.screencapture disable-shadow\nkillall SystemUIServer"
+    "revert": "defaults delete com.apple.screencapture disable-shadow\nkillall SystemUIServer",
+    "title_en": "Remove Heavy Window Shadows from Screenshots",
+    "desc_en": "Eliminates large transparent drop shadows when capturing window screenshots with ⌘ + Shift + 4 + Space.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "scr-custom-location",
@@ -712,7 +904,10 @@
     "tag": "Screenshots",
     "desc": "Masaüstünün görsellerle dolmasını engelleyip hepsini otomatik özel klasöre yönlendirir.",
     "apply": "mkdir -p ~/Pictures/Screenshots\ndefaults write com.apple.screencapture location ~/Pictures/Screenshots\nkillall SystemUIServer",
-    "revert": "defaults delete com.apple.screencapture location\nkillall SystemUIServer"
+    "revert": "defaults delete com.apple.screencapture location\nkillall SystemUIServer",
+    "title_en": "Set Dedicated Screenshots Folder (~/Pictures/Screenshots)",
+    "desc_en": "Redirects all captured screenshots to a tidy dedicated folder instead of cluttering Desktop.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "sys-disable-local-snapshots",
@@ -723,7 +918,10 @@
     "tag": "Depolama",
     "desc": "Harici disk yokken dahili SSD'de gigabaytlarca APFS snapshot birikmesini durdurur.",
     "apply": "sudo tmutil disable",
-    "revert": "sudo tmutil enable 2>/dev/null || true"
+    "revert": "sudo tmutil enable 2>/dev/null || true",
+    "title_en": "Disable Local Time Machine Snapshots (Save SSD Space)",
+    "desc_en": "Prevents macOS from writing redundant hourly local snapshots on internal SSD when backup drive is absent.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "ui-reduce-motion",
@@ -734,7 +932,10 @@
     "tag": "Performans",
     "desc": "Sistem genelindeki geçiş animasyonlarını tamamen kaldırıp en seri keskin geçişe çevirir.",
     "apply": "defaults write com.apple.universalaccess reduceMotion -bool true",
-    "revert": "defaults delete com.apple.universalaccess reduceMotion 2>/dev/null || true"
+    "revert": "defaults delete com.apple.universalaccess reduceMotion 2>/dev/null || true",
+    "title_en": "Accelerate UI with System Reduce Motion Mode",
+    "desc_en": "Replaces heavy zoom and slide transitions with instant crossfades across macOS for extreme speed.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "sec-dnd-screen-share",
@@ -745,7 +946,10 @@
     "tag": "Gizlilik",
     "desc": "Ekranınızı bir toplantıda paylaşırken veya yansıtırken kişisel bildirimlerin görünmesini engeller.",
     "apply": "defaults write com.apple.notificationcenterui dndDisplayNotifications -bool false",
-    "revert": "defaults delete com.apple.notificationcenterui dndDisplayNotifications 2>/dev/null || true"
+    "revert": "defaults delete com.apple.notificationcenterui dndDisplayNotifications 2>/dev/null || true",
+    "title_en": "Suppress Notifications During Screen Sharing",
+    "desc_en": "Automatically hides private notification banners when mirroring screen or presenting in meetings.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "tahoe-tiling-preview-delay",
@@ -756,7 +960,10 @@
     "tag": "Tahoe",
     "desc": "Pencereyi ekran kenarına yaklaştırınca çıkan hizalama alanının beklemeden anında belirmesini sağlar.",
     "apply": "defaults write com.apple.WindowManager TilingWindowPreviewDelay -float 0\nkillall WindowManager",
-    "revert": "defaults delete com.apple.WindowManager TilingWindowPreviewDelay\nkillall WindowManager"
+    "revert": "defaults delete com.apple.WindowManager TilingWindowPreviewDelay\nkillall WindowManager",
+    "title_en": "Zero-Delay Window Snap Preview",
+    "desc_en": "Accelerates the edge window tiling snap preview animation to zero milliseconds.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-hide-snap-dividers",
@@ -767,7 +974,10 @@
     "tag": "Tahoe",
     "desc": "macOS pencere döşeme özelliğinde pencereler arasına konan gri ayırıcı çizgiyi kapatır.",
     "apply": "defaults write com.apple.WindowManager ShowTilingSnapDividers -bool false\nkillall WindowManager",
-    "revert": "defaults delete com.apple.WindowManager ShowTilingSnapDividers\nkillall WindowManager"
+    "revert": "defaults delete com.apple.WindowManager ShowTilingSnapDividers\nkillall WindowManager",
+    "title_en": "Hide Dividers Between Tiled Windows",
+    "desc_en": "Removes the divider outline between side-by-side snapped windows for an edge-to-edge look.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-mirror-group-notifications",
@@ -778,7 +988,10 @@
     "tag": "Continuity",
     "desc": "iPhone Mirroring üzerinden gelen bildirimlerin Mac bildirimleri altında düzenli gruplanmasını sağlar.",
     "apply": "defaults write com.apple.ScreenContinuity AutoGroupPhoneNotifications -bool true",
-    "revert": "defaults delete com.apple.ScreenContinuity AutoGroupPhoneNotifications 2>/dev/null || true"
+    "revert": "defaults delete com.apple.ScreenContinuity AutoGroupPhoneNotifications 2>/dev/null || true",
+    "title_en": "Group iPhone Mirroring Notifications Separately",
+    "desc_en": "Organizes mirrored iOS notifications into a separate group away from macOS desktop alerts.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-mirror-dnd-sync",
@@ -789,7 +1002,10 @@
     "tag": "Continuity",
     "desc": "iPhone Yansıtma aktifken telefonun DND/Odak modunu doğrudan Mac ile senkronize eder.",
     "apply": "defaults write com.apple.ScreenContinuity MirrorDoNotDisturbState -bool true",
-    "revert": "defaults delete com.apple.ScreenContinuity MirrorDoNotDisturbState 2>/dev/null || true"
+    "revert": "defaults delete com.apple.ScreenContinuity MirrorDoNotDisturbState 2>/dev/null || true",
+    "title_en": "Sync Do Not Disturb Focus Between Mac & iPhone",
+    "desc_en": "Ensures Focus and Do Not Disturb states synchronize seamlessly during iPhone Mirroring.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-writing-tools-delay",
@@ -800,7 +1016,10 @@
     "tag": "AI",
     "desc": "Metin seçildiğinde sistem çapında açılan Apple Intelligence / Yazma Araçları menüsünün tepki süresini sıfırlar.",
     "apply": "defaults write NSGlobalDomain WritingToolsShowDelay -float 0",
-    "revert": "defaults delete NSGlobalDomain WritingToolsShowDelay 2>/dev/null || true"
+    "revert": "defaults delete NSGlobalDomain WritingToolsShowDelay 2>/dev/null || true",
+    "title_en": "Zero-Delay Apple Intelligence Writing Tools Popup",
+    "desc_en": "Eliminates the hover trigger delay on Apple Intelligence inline writing tool menus.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-spotlight-direct-math",
@@ -811,7 +1030,10 @@
     "tag": "Spotlight",
     "desc": "Spotlight'a matematiksel veya değişkenli formül yazıldığında ara adımları atlayıp anında sonucu öne çıkarır.",
     "apply": "defaults write com.apple.Spotlight DirectMathEvaluation -bool true\nkillall Spotlight",
-    "revert": "defaults delete com.apple.Spotlight DirectMathEvaluation 2>/dev/null || true\nkillall Spotlight"
+    "revert": "defaults delete com.apple.Spotlight DirectMathEvaluation 2>/dev/null || true\nkillall Spotlight",
+    "title_en": "Enable Instant Math & Currency Solver in Spotlight",
+    "desc_en": "Evaluates math formulas and currency conversions directly in Spotlight without opening Calculator.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-spotlight-local-first",
@@ -822,7 +1044,10 @@
     "tag": "Spotlight",
     "desc": "Spotlight aramalarında internet önerilerini kapatıp yerel proje ve dosya aramalarını en tepeye alır.",
     "apply": "defaults write com.apple.Spotlight LookupServerDisableRemoteQueries -bool true\nkillall Spotlight",
-    "revert": "defaults delete com.apple.Spotlight LookupServerDisableRemoteQueries 2>/dev/null || true\nkillall Spotlight"
+    "revert": "defaults delete com.apple.Spotlight LookupServerDisableRemoteQueries 2>/dev/null || true\nkillall Spotlight",
+    "title_en": "Prioritize Local Files in Spotlight (Disable Web Bing Ads)",
+    "desc_en": "Prioritizes local developer files, applications, and terminal paths above web search suggestions.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-compact-menubar-spacing",
@@ -833,7 +1058,10 @@
     "tag": "MenuBar",
     "desc": "Özellikle çentikli MacBook ekranlarında menü simgeleri aralığını daraltarak daha fazla ikon sığdırır.",
     "apply": "defaults -currentHost write -globalDomain NSStatusItemSpacing -int 6\ndefaults -currentHost write -globalDomain NSStatusItemSelectionPadding -int 4\nkillall SystemUIServer",
-    "revert": "defaults -currentHost delete -globalDomain NSStatusItemSpacing 2>/dev/null || true\ndefaults -currentHost delete -globalDomain NSStatusItemSelectionPadding 2>/dev/null || true\nkillall SystemUIServer"
+    "revert": "defaults -currentHost delete -globalDomain NSStatusItemSpacing 2>/dev/null || true\ndefaults -currentHost delete -globalDomain NSStatusItemSelectionPadding 2>/dev/null || true\nkillall SystemUIServer",
+    "title_en": "Compress Menu Bar Icon Spacing (Notch Optimization)",
+    "desc_en": "Reduces padding between menu bar status icons to fit more menu items on MacBook notch displays.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-passwords-instant-autofill",
@@ -844,7 +1072,10 @@
     "tag": "Passwords",
     "desc": "Sistem genelinde parola/2FA otomatik doldurma penceresinin açılma bekleme süresini kaldırır.",
     "apply": "defaults write com.apple.Passwords AutoFillDisplayDelay -float 0\ndefaults write com.apple.Passwords EnableFastTouchIDAuthentication -bool true",
-    "revert": "defaults delete com.apple.Passwords AutoFillDisplayDelay 2>/dev/null || true\ndefaults delete com.apple.Passwords EnableFastTouchIDAuthentication 2>/dev/null || true"
+    "revert": "defaults delete com.apple.Passwords AutoFillDisplayDelay 2>/dev/null || true\ndefaults delete com.apple.Passwords EnableFastTouchIDAuthentication 2>/dev/null || true",
+    "title_en": "Zero-Delay Apple Passwords & 2FA Autofill",
+    "desc_en": "Removes the biometric security prompt delay when autofilling credentials and 2FA verification codes.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-suppress-background-alerts",
@@ -855,7 +1086,10 @@
     "tag": "Alerts",
     "desc": "Homebrew, Node veya Docker bir servis eklediğinde sağ üstte sürekli çıkan 'Arka plan öğesi eklendi' uyarısını kapatır.",
     "apply": "defaults write com.apple.backgroundtaskmanagement SuppressServiceAlerts -bool true",
-    "revert": "defaults delete com.apple.backgroundtaskmanagement SuppressServiceAlerts 2>/dev/null || true"
+    "revert": "defaults delete com.apple.backgroundtaskmanagement SuppressServiceAlerts 2>/dev/null || true",
+    "title_en": "Suppress Repetitive Background Service Notifications",
+    "desc_en": "Silences the frequent 'Background Item Added' notification popups triggered by CLI tools.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-fast-stage-manager",
@@ -866,7 +1100,10 @@
     "tag": "StageManager",
     "desc": "Stage Manager grupları arasında geçiş yaparken uygulanan kaydırma animasyonunu minimuma indirir.",
     "apply": "defaults write com.apple.WindowManager AppSwitcherAnimationDuration -float 0.1\nkillall WindowManager",
-    "revert": "defaults delete com.apple.WindowManager AppSwitcherAnimationDuration 2>/dev/null || true\nkillall WindowManager"
+    "revert": "defaults delete com.apple.WindowManager AppSwitcherAnimationDuration 2>/dev/null || true\nkillall WindowManager",
+    "title_en": "Accelerate Stage Manager Transition Speed",
+    "desc_en": "Cuts the Stage Manager window strip transition time to 100ms for fluid multitasking.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-game-mode-auto-boost",
@@ -877,7 +1114,10 @@
     "tag": "Gaming",
     "desc": "Oyun ve simülatörler tam ekrana geçtiğinde Bluetooth gecikme düşürme ve CPU/GPU önceliğini gecikmesiz açar.",
     "apply": "defaults write com.apple.gameoverlay EnableGameModeAutoBoost -bool true",
-    "revert": "defaults delete com.apple.gameoverlay EnableGameModeAutoBoost 2>/dev/null || true"
+    "revert": "defaults delete com.apple.gameoverlay EnableGameModeAutoBoost 2>/dev/null || true",
+    "title_en": "Auto-Trigger Game Mode & High-Performance CPU Scheduling",
+    "desc_en": "Prioritizes CPU/GPU cores and lowers Bluetooth audio latency automatically during heavy graphics workloads.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-stage-show-desktop",
@@ -888,7 +1128,10 @@
     "tag": "StageManager",
     "desc": "Stage Manager devredeyken bile masaüstündeki dosya ve disk simgelerini gizlemeden görünür tutar.",
     "apply": "defaults write com.apple.WindowManager HideDesktop -bool false\nkillall WindowManager",
-    "revert": "defaults delete com.apple.WindowManager HideDesktop 2>/dev/null || true\nkillall WindowManager"
+    "revert": "defaults delete com.apple.WindowManager HideDesktop 2>/dev/null || true\nkillall WindowManager",
+    "title_en": "Show Desktop Items in Stage Manager Mode",
+    "desc_en": "Keeps desktop files and widgets visible even while Stage Manager multitasking is active.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-restore-stage-layout",
@@ -899,7 +1142,10 @@
     "tag": "Displays",
     "desc": "Monitör takılıp çıkarıldığında pencerelerin dizilimini ve Stage Manager durumunu korur.",
     "apply": "defaults write com.apple.WindowManager AutoRestoreStageLayout -bool true",
-    "revert": "defaults delete com.apple.WindowManager AutoRestoreStageLayout 2>/dev/null || true"
+    "revert": "defaults delete com.apple.WindowManager AutoRestoreStageLayout 2>/dev/null || true",
+    "title_en": "Remember Stage Manager Layout per External Display",
+    "desc_en": "Restores specific window cluster arrangements automatically when reconnecting to external monitors.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-fast-autohide-menubar",
@@ -910,7 +1156,10 @@
     "tag": "MenuBar",
     "desc": "Menü çubuğu gizli moddayken fare yukarı gittiğinde anında gecikmesiz görünmesini sağlar.",
     "apply": "defaults write NSGlobalDomain _HIHideMenuBar -bool true\ndefaults write NSGlobalDomain MenuBarShowDelay -float 0",
-    "revert": "defaults delete NSGlobalDomain _HIHideMenuBar 2>/dev/null || true\ndefaults delete NSGlobalDomain MenuBarShowDelay 2>/dev/null || true"
+    "revert": "defaults delete NSGlobalDomain _HIHideMenuBar 2>/dev/null || true\ndefaults delete NSGlobalDomain MenuBarShowDelay 2>/dev/null || true",
+    "title_en": "Accelerate Menu Bar Auto-Hide & Reveal Speed",
+    "desc_en": "Removes the animation delay when revealing the auto-hidden top menu bar in fullscreen mode.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-neural-camera-fx",
@@ -921,7 +1170,10 @@
     "tag": "Media",
     "desc": "Apple Silicon NPU üzerinde kamera efektlerinin öncelikli çalışmasını sağlar.",
     "apply": "defaults write com.apple.CoreMedia.AVCapture EnableNeuralProcessingOverride -bool true",
-    "revert": "defaults delete com.apple.CoreMedia.AVCapture EnableNeuralProcessingOverride 2>/dev/null || true"
+    "revert": "defaults delete com.apple.CoreMedia.AVCapture EnableNeuralProcessingOverride 2>/dev/null || true",
+    "title_en": "Hardware Acceleration for Camera Studio Light Effects",
+    "desc_en": "Offloads Studio Light and Portrait background blur to the Apple Silicon Neural Engine.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-spotlight-dict-priority",
@@ -932,7 +1184,10 @@
     "tag": "Spotlight",
     "desc": "Kelime aramalarında doğrudan yerel sözlük tanımını en üst arama sonucu olarak getirir.",
     "apply": "defaults write com.apple.Spotlight LookupServerPrioritizeDefinitions -bool true\nkillall Spotlight",
-    "revert": "defaults delete com.apple.Spotlight LookupServerPrioritizeDefinitions 2>/dev/null || true\nkillall Spotlight"
+    "revert": "defaults delete com.apple.Spotlight LookupServerPrioritizeDefinitions 2>/dev/null || true\nkillall Spotlight",
+    "title_en": "Prioritize Dictionary Definitions in Spotlight",
+    "desc_en": "Displays dictionary word meanings and synonyms above web search results in Spotlight.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "net-wifi-disable-powersave",
@@ -943,7 +1198,10 @@
     "tag": "Ağ",
     "desc": "Kablosuz kartın uyku döngülerine girmesini engelleyerek oyun ve SSH oturumlarında jitter/pingi düşürür.",
     "apply": "sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.airport.opp.plist WiFiPowerManagement -bool false",
-    "revert": "sudo defaults delete /Library/Preferences/SystemConfiguration/com.apple.airport.opp.plist WiFiPowerManagement 2>/dev/null || true"
+    "revert": "sudo defaults delete /Library/Preferences/SystemConfiguration/com.apple.airport.opp.plist WiFiPowerManagement 2>/dev/null || true",
+    "title_en": "Low-Latency Wi-Fi Optimization (Disable Power Save)",
+    "desc_en": "Disables Wi-Fi radio power-save sleep to eliminate packet jitter in SSH sessions and online games.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "pwr-ac-never-sleep",
@@ -954,7 +1212,10 @@
     "tag": "Güç",
     "desc": "Cihaz adaptöre bağlıyken ekran kapansa dahi arka plan işlemlerinin ve indirmelerin uyumasını engeller.",
     "apply": "sudo pmset -c sleep 0",
-    "revert": "sudo pmset -c sleep 10"
+    "revert": "sudo pmset -c sleep 10",
+    "title_en": "Prevent Sleep When Connected to AC Power",
+    "desc_en": "Keeps Mac fully awake and active while plugged into power adapter (Amphetamine-style keep-awake).",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "pwr-clamshell-no-sleep",
@@ -965,7 +1226,10 @@
     "tag": "Güç",
     "desc": "Harici ekran bağlı olmasa dahi kapak kapatıldığında indirme/render devam etsin (dikkatli kullanın).",
     "apply": "sudo pmset -a disablesleep 1",
-    "revert": "sudo pmset -a disablesleep 0"
+    "revert": "sudo pmset -a disablesleep 0",
+    "title_en": "Clamshell Mode: Prevent Sleep When Lid is Closed with Display",
+    "desc_en": "Keeps your MacBook awake when connected to an external monitor and the lid is closed.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "pwr-restore-defaults",
@@ -976,7 +1240,10 @@
     "tag": "Güç",
     "desc": "pmset güç yönetimi ayarlarını Apple fabrika ayarlarına sıfırlar.",
     "apply": "sudo pmset -a restoredefaults",
-    "revert": "sudo pmset -a restoredefaults"
+    "revert": "sudo pmset -a restoredefaults",
+    "title_en": "Restore Apple Factory Power & Sleep Defaults",
+    "desc_en": "Resets all pmset battery, sleep, and standby configurations back to original factory defaults.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "net-flush-dns",
@@ -987,7 +1254,10 @@
     "tag": "Ağ",
     "desc": "Alan adı ve DNS değişikliklerinin anında etkili olması için yerel DNS önbelleğini sıfırlar.",
     "apply": "sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder",
-    "revert": "# Tek seferlik flush komutudur, geri dönüş gerektirmez."
+    "revert": "# Tek seferlik flush komutudur, geri dönüş gerektirmez.",
+    "title_en": "Flush macOS DNS Cache & Restart mDNSResponder",
+    "desc_en": "Clears corrupted local DNS caches and restarts mDNSResponder networking service immediately.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "net-disable-ipv6-wifi",
@@ -998,7 +1268,10 @@
     "tag": "Ağ",
     "desc": "IPv6 kaynaklı yavaşlama veya yönlendirme sorunlarında Wi-Fi arayüzünü saf IPv4 moduna alır.",
     "apply": "networksetup -setv6off Wi-Fi",
-    "revert": "networksetup -setv6automatic Wi-Fi"
+    "revert": "networksetup -setv6automatic Wi-Fi",
+    "title_en": "Temporarily Disable IPv6 on Wi-Fi Interface",
+    "desc_en": "Disables IPv6 routing on Wi-Fi to resolve DNS timeouts and slow connections on legacy ISP routers.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "net-restart-wifi",
@@ -1009,7 +1282,10 @@
     "tag": "Ağ",
     "desc": "Wi-Fi bağlantısını arayüze tıklamadan terminalden kapatıp 2 saniye sonra tekrar açar.",
     "apply": "networksetup -setairportpower en0 off && sleep 2 && networksetup -setairportpower en0 on",
-    "revert": "networksetup -setairportpower en0 on"
+    "revert": "networksetup -setairportpower en0 on",
+    "title_en": "Restart Wi-Fi Interface from Terminal",
+    "desc_en": "Toggles Wi-Fi power off and on in one command to quickly fix stubborn network connection drops.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "pwr-fast-hibernation",
@@ -1020,7 +1296,10 @@
     "tag": "Güç",
     "desc": "RAM'i diske yazma süresini atlayıp Mac'in anında uyanması için hibernatemode 0 moduna alır.",
     "apply": "sudo pmset -a hibernatemode 0",
-    "revert": "sudo pmset -a hibernatemode 3"
+    "revert": "sudo pmset -a hibernatemode 3",
+    "title_en": "Fast RAM-Only Sleep Mode (Hibernatemode 0)",
+    "desc_en": "Keeps session in RAM during sleep to avoid slow SSD writes and save SSD lifespan.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "sys-clean-sleepimage",
@@ -1031,7 +1310,10 @@
     "tag": "Depolama",
     "desc": "Derin uyku dosyasını silerek dahili SSD'de RAM boyutunuz kadar yer açar.",
     "apply": "sudo rm -f /var/vm/sleepimage",
-    "revert": "# Sistem gerektiğinde otomatik olarak yeniden oluşturacaktır."
+    "revert": "# Sistem gerektiğinde otomatik olarak yeniden oluşturacaktır.",
+    "title_en": "Delete SSD Sleep Image File & Reclaim Disk Space",
+    "desc_en": "Removes the massive /var/vm/sleepimage file to immediately free up 16GB-32GB of SSD storage.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "hw-restart-bluetooth",
@@ -1042,7 +1324,10 @@
     "tag": "Donanım",
     "desc": "Kulaklık veya klavye takılmalarında Bluetooth arka plan servisini resetler.",
     "apply": "sudo pkill bluetoothd",
-    "revert": "# Tek seferlik servis resetidir."
+    "revert": "# Tek seferlik servis resetidir.",
+    "title_en": "Restart Bluetooth Core Daemon (Fix Audio & Mouse Lag)",
+    "desc_en": "Restarts the Bluetooth background daemon to resolve AirPods audio stutters and mouse disconnects.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "sys-pin-text-input-menu",
@@ -1053,7 +1338,10 @@
     "tag": "Girdi",
     "desc": "Menü çubuğundaki klavye bayrağının / giriş kaynağının her zaman açık kalmasını sağlar.",
     "apply": "defaults write com.apple.TextInputMenu visible -bool true",
-    "revert": "defaults delete com.apple.TextInputMenu visible 2>/dev/null || true"
+    "revert": "defaults delete com.apple.TextInputMenu visible 2>/dev/null || true",
+    "title_en": "Pin Keyboard Language & Input Source to Menu Bar",
+    "desc_en": "Always shows the active keyboard input language icon (EN/TR) in the top right menu bar.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "pwr-low-power-mode-battery-only",
@@ -1064,7 +1352,10 @@
     "tag": "Pil",
     "desc": "Prizde tam performans çalışırken pilde otomatik olarak Düşük Güç Moduna geçmesini sağlar.",
     "apply": "sudo pmset -b lowpowermode 1\nsudo pmset -c lowpowermode 0",
-    "revert": "sudo pmset -a lowpowermode 0"
+    "revert": "sudo pmset -a lowpowermode 0",
+    "title_en": "Enable Low Power Mode Exclusively on Battery",
+    "desc_en": "Automatically activates Low Power Mode on battery power while maintaining full power on AC.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "pwr-charge-limit-80",
@@ -1075,7 +1366,10 @@
     "tag": "Pil",
     "desc": "macOS batarya koruma optimizasyon servisini aktif tutar.",
     "apply": "sudo pmset -a bclm 80 2>/dev/null || defaults write com.apple.PowerManagement OptimizedBatteryCharging -bool true",
-    "revert": "defaults write com.apple.PowerManagement OptimizedBatteryCharging -bool false"
+    "revert": "defaults write com.apple.PowerManagement OptimizedBatteryCharging -bool false",
+    "title_en": "Trigger Optimized Battery Charging (80% Health Limit)",
+    "desc_en": "Activates battery health management daemon to preserve long-term battery cycle life.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "sec-disable-apple-analytics",
@@ -1086,7 +1380,10 @@
     "tag": "Gizlilik",
     "desc": "Sistemin arka planda Apple sunucularına günlük ve kilitlenme logu göndermesini engeller.",
     "apply": "sudo defaults write /Library/Application\\ Support/CrashReporter/DiagnosticMessagesHistory.plist AutoSubmit -bool false",
-    "revert": "sudo defaults delete /Library/Application\\ Support/CrashReporter/DiagnosticMessagesHistory.plist AutoSubmit 2>/dev/null || true"
+    "revert": "sudo defaults delete /Library/Application\\ Support/CrashReporter/DiagnosticMessagesHistory.plist AutoSubmit 2>/dev/null || true",
+    "title_en": "Disable All Apple Diagnostics & Telemetry Submissions",
+    "desc_en": "Completely disables background diagnostic data and crash report telemetry submissions to Apple.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "sys-defaults-delete-guide",
@@ -1097,6 +1394,9 @@
     "tag": "Kılavuz",
     "desc": "Yaptığınız herhangi bir ayarı fabrika varsayılanına döndürmek için kullanılan evrensel komut şablonu.",
     "apply": "# Tek bir ayarı sıfırlamak için:\ndefaults delete [DomainAdı] [AnahtarAdı]\n# Örnek: defaults delete com.apple.dock autohide-delay && killall Dock",
-    "revert": "# Varsayılana döndürme komutu yukarıdadır."
+    "revert": "# Varsayılana döndürme komutu yukarıdadır.",
+    "title_en": "Reset All 'defaults write' Configurations Guide",
+    "desc_en": "Comprehensive instructions to reset all customized domain domains back to pristine macOS defaults.",
+    "catName_en": "Network, Power & Maintenance"
   }
 ]

@@ -27,6 +27,49 @@ import urllib.request
 VERSION = "2.1.0"
 VERSION_CODE = 210
 
+# Language Configuration & Persistence (~/.macoscode_lang)
+LANG_CONFIG_FILE = os.path.expanduser("~/.macoscode_lang")
+
+def load_persisted_lang():
+    if os.path.exists(LANG_CONFIG_FILE):
+        try:
+            with open(LANG_CONFIG_FILE, "r") as f:
+                c = f.read().strip().lower()
+                if c in ["en", "tr"]:
+                    return c
+        except Exception:
+            pass
+    return "en"
+
+CURRENT_LANG = load_persisted_lang()
+
+def save_persisted_lang(lang):
+    global CURRENT_LANG
+    CURRENT_LANG = lang
+    try:
+        with open(LANG_CONFIG_FILE, "w") as f:
+            f.write(lang)
+    except Exception:
+        pass
+
+def txt(tr_str, en_str):
+    return en_str if CURRENT_LANG == "en" else tr_str
+
+def t_title(t):
+    if CURRENT_LANG == "en" and t.get("title_en"):
+        return t.get("title_en")
+    return t.get("title", "")
+
+def t_desc(t):
+    if CURRENT_LANG == "en" and t.get("desc_en"):
+        return t.get("desc_en")
+    return t.get("desc", "")
+
+def c_name(c):
+    if CURRENT_LANG == "en" and c.get("name_en"):
+        return c.get("name_en")
+    return c.get("name", "")
+
 # Reopen /dev/tty if stdin is piped (e.g., curl ... | python3)
 if not sys.stdin.isatty():
     try:
@@ -52,13 +95,6 @@ class C:
     GRAY = "\033[38;2;148;163;184m"
     DARK_GRAY = "\033[38;2;100;116;139m"
     WHITE = "\033[38;2;248;250;252m"
-    
-    # Backgrounds
-    BG_CARD = "\033[48;2;15;23;42m"
-    BG_CYAN = "\033[48;2;14;116;144m"
-    BG_BLUE = "\033[48;2;67;56;202m"
-    BG_EMERALD = "\033[48;2;6;95;70m"
-    BG_ROSE = "\033[48;2;159;18;57m"
 
 # 100 TWEAKS DATASET
 TWEAKS = [
@@ -71,7 +107,10 @@ TWEAKS = [
     "tag": "Fix",
     "desc": "DHCP reverse DNS sorguları nedeniyle terminalde 'jarvis@192' gibi IP öneklerinin çıkmasını engeller, sabit ad atar.",
     "apply": "sudo scutil --set HostName MacAir\nsudo scutil --set LocalHostName MacAir\nsudo scutil --set ComputerName MacAir",
-    "revert": "sudo scutil --set HostName ''\nsudo scutil --set LocalHostName ''\nsudo scutil --set ComputerName ''"
+    "revert": "sudo scutil --set HostName ''\nsudo scutil --set LocalHostName ''\nsudo scutil --set ComputerName ''",
+    "title_en": "Set Persistent Hostname (Computer Name)",
+    "desc_en": "Prevents terminal prompts from displaying DHCP reverse DNS prefixes like 'user@192' by assigning a fixed hostname.",
+    "catName_en": "Terminal, Zsh & Shell"
   },
   {
     "id": "term-interactive-comments",
@@ -82,7 +121,10 @@ TWEAKS = [
     "tag": "Zsh",
     "desc": "Terminal'e '#' içeren açıklamalı kod blokları yapıştırıldığında zsh syntax hatası vermesini engeller.",
     "apply": "setopt INTERACTIVE_COMMENTS",
-    "revert": "unsetopt INTERACTIVE_COMMENTS"
+    "revert": "unsetopt INTERACTIVE_COMMENTS",
+    "title_en": "Enable Interactive Comments (#) in Zsh",
+    "desc_en": "Allows pasting code blocks containing '#' comments into the terminal without causing Zsh syntax errors.",
+    "catName_en": "Terminal, Zsh & Shell"
   },
   {
     "id": "term-touchid-sudo",
@@ -93,7 +135,10 @@ TWEAKS = [
     "tag": "Auth",
     "desc": "Terminalde her 'sudo' komutunda şifre yazmak yerine Touch ID parmak iziyle anında onay vermeni sağlar.",
     "apply": "sudo sed -i '' '1s;^;auth       sufficient     pam_tid.so\\n;' /etc/pam.d/sudo",
-    "revert": "sudo sed -i '' '/pam_tid.so/d' /etc/pam.d/sudo"
+    "revert": "sudo sed -i '' '/pam_tid.so/d' /etc/pam.d/sudo",
+    "title_en": "Enable Touch ID Authorization for Sudo",
+    "desc_en": "Allows fingerprint verification via Touch ID for 'sudo' commands instead of typing password every time.",
+    "catName_en": "Terminal, Zsh & Shell"
   },
   {
     "id": "term-title-simplify",
@@ -104,7 +149,10 @@ TWEAKS = [
     "tag": "UI",
     "desc": "Terminal pencere başlığındaki uzun dosya yolu, tty ve pencere boyutu kalabalığını kaldırır.",
     "apply": "defaults write com.apple.Terminal ShowRepresentedURLInTitle -bool false",
-    "revert": "defaults delete com.apple.Terminal ShowRepresentedURLInTitle 2>/dev/null || true"
+    "revert": "defaults delete com.apple.Terminal ShowRepresentedURLInTitle 2>/dev/null || true",
+    "title_en": "Simplify Terminal Window Title Bar",
+    "desc_en": "Removes long file paths, TTY numbers, and window dimensions clutter from the Terminal title bar.",
+    "catName_en": "Terminal, Zsh & Shell"
   },
   {
     "id": "term-brew-no-analytics",
@@ -115,7 +163,10 @@ TWEAKS = [
     "tag": "Brew",
     "desc": "Homebrew'un anonim telemetri verisi toplamasını kapatıp paket indirme/güncelleme hızını artırır.",
     "apply": "export HOMEBREW_NO_ANALYTICS=1",
-    "revert": "unset HOMEBREW_NO_ANALYTICS"
+    "revert": "unset HOMEBREW_NO_ANALYTICS",
+    "title_en": "Disable Homebrew Telemetry & Analytics",
+    "desc_en": "Disables Homebrew's background anonymous telemetry data collection to accelerate package operations.",
+    "catName_en": "Terminal, Zsh & Shell"
   },
   {
     "id": "find-all-extensions",
@@ -126,7 +177,10 @@ TWEAKS = [
     "tag": "Finder",
     "desc": "Finder'da .ts, .json, .env, .png vb. tüm dosya adı uzantılarını her zaman görünür kılar.",
     "apply": "defaults write NSGlobalDomain AppleShowAllExtensions -bool true\nkillall Finder",
-    "revert": "defaults delete NSGlobalDomain AppleShowAllExtensions\nkillall Finder"
+    "revert": "defaults delete NSGlobalDomain AppleShowAllExtensions\nkillall Finder",
+    "title_en": "Always Show All File Name Extensions",
+    "desc_en": "Makes all file extensions (.ts, .json, .env, .png, etc.) permanently visible in Finder.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-hidden-files",
@@ -137,7 +191,10 @@ TWEAKS = [
     "tag": "Finder",
     "desc": "Nokta ile başlayan gizli sistem ve proje dosyalarını (.git, .zshrc, .env) varsayılan olarak görünür yapar.",
     "apply": "defaults write com.apple.finder AppleShowAllFiles -bool true\nkillall Finder",
-    "revert": "defaults delete com.apple.finder AppleShowAllFiles\nkillall Finder"
+    "revert": "defaults delete com.apple.finder AppleShowAllFiles\nkillall Finder",
+    "title_en": "Show Hidden Files and Folders by Default",
+    "desc_en": "Makes dotfiles and hidden project directories (.git, .zshrc, .env) always visible in Finder.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-path-status-bar",
@@ -148,7 +205,10 @@ TWEAKS = [
     "tag": "Finder",
     "desc": "Finder pencerelerinin altındaki dizin hiyerarşisi yolunu ve öğe/alan durumu göstergesini açar.",
     "apply": "defaults write com.apple.finder ShowPathbar -bool true\ndefaults write com.apple.finder ShowStatusBar -bool true\nkillall Finder",
-    "revert": "defaults delete com.apple.finder ShowPathbar\ndefaults delete com.apple.finder ShowStatusBar\nkillall Finder"
+    "revert": "defaults delete com.apple.finder ShowPathbar\ndefaults delete com.apple.finder ShowStatusBar\nkillall Finder",
+    "title_en": "Enable Finder Path Bar & Status Bar",
+    "desc_en": "Displays directory breadcrumbs and item count/disk space indicators at the bottom of Finder windows.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-home-target",
@@ -159,7 +219,10 @@ TWEAKS = [
     "tag": "Finder",
     "desc": "Yeni sekme ve pencerelerin 'Son Kullanılanlar' yerine doğrudan /Users/kullanıcı klasöründe açılmasını sağlar.",
     "apply": "defaults write com.apple.finder NewWindowTarget -string \"PfHm\"\ndefaults write com.apple.finder NewWindowTargetPath -string \"file://$HOME/\"\nkillall Finder",
-    "revert": "defaults delete com.apple.finder NewWindowTarget\ndefaults delete com.apple.finder NewWindowTargetPath\nkillall Finder"
+    "revert": "defaults delete com.apple.finder NewWindowTarget\ndefaults delete com.apple.finder NewWindowTargetPath\nkillall Finder",
+    "title_en": "Open User Home Directory ($HOME) in New Windows",
+    "desc_en": "Configures new Finder tabs and windows to open directly in /Users/username instead of 'Recents'.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-search-scope",
@@ -170,7 +233,10 @@ TWEAKS = [
     "tag": "Finder",
     "desc": "Finder içinde arama (⌘F) yapıldığında tüm Mac'i taramak yerine sadece bulunulan klasörü arar.",
     "apply": "defaults write com.apple.finder FXDefaultSearchScope -string \"SCcf\"\nkillall Finder",
-    "revert": "defaults delete com.apple.finder FXDefaultSearchScope\nkillall Finder"
+    "revert": "defaults delete com.apple.finder FXDefaultSearchScope\nkillall Finder",
+    "title_en": "Default Search Scope to Current Folder",
+    "desc_en": "Sets Finder search (⌘F) to search within the current directory by default instead of the entire Mac.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-posix-title",
@@ -181,7 +247,10 @@ TWEAKS = [
     "tag": "Finder",
     "desc": "Pencerenin üst başlık çubuğunda tam Unix dizin yolunu (/Users/jarvis/...) gösterir.",
     "apply": "defaults write com.apple.finder _FXShowPosixPathInTitle -bool true\nkillall Finder",
-    "revert": "defaults delete com.apple.finder _FXShowPosixPathInTitle\nkillall Finder"
+    "revert": "defaults delete com.apple.finder _FXShowPosixPathInTitle\nkillall Finder",
+    "title_en": "Display Full POSIX Path in Window Title Bar",
+    "desc_en": "Shows the complete Unix directory path (/Users/user/...) in the Finder title bar for easy reference.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-quicklook-text",
@@ -192,7 +261,10 @@ TWEAKS = [
     "tag": "QuickLook",
     "desc": "Space tuşuyla açılan Quick Look penceresindeki kod veya metinleri kopyalamayı aktif eder.",
     "apply": "defaults write com.apple.finder QLEnableTextSelection -bool true\nkillall Finder",
-    "revert": "defaults delete com.apple.finder QLEnableTextSelection\nkillall Finder"
+    "revert": "defaults delete com.apple.finder QLEnableTextSelection\nkillall Finder",
+    "title_en": "Enable Text Selection in Quick Look Previews",
+    "desc_en": "Enables selecting and copying text or code directly from Spacebar Quick Look preview windows.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-no-ds-store-network",
@@ -203,7 +275,10 @@ TWEAKS = [
     "tag": "Temizlik",
     "desc": "Harici USB belleklerde ve paylaşılan NAS/ağ sürücülerinde çöp .DS_Store oluşumunu durdurur.",
     "apply": "defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true\ndefaults write com.apple.desktopservices DSDontWriteUSBStores -bool true",
-    "revert": "defaults delete com.apple.desktopservices DSDontWriteNetworkStores\ndefaults delete com.apple.desktopservices DSDontWriteUSBStores"
+    "revert": "defaults delete com.apple.desktopservices DSDontWriteNetworkStores\ndefaults delete com.apple.desktopservices DSDontWriteUSBStores",
+    "title_en": "Prevent .DS_Store Creation on Network & USB Drives",
+    "desc_en": "Stops macOS from generating clutter .DS_Store files on shared network volumes, NAS, and external USB drives.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-no-empty-trash-warn",
@@ -214,7 +289,10 @@ TWEAKS = [
     "tag": "Finder",
     "desc": "Çöpü boşaltırken sorulan 'Emin misiniz?' uyarı kutusunu atlayıp anında temizler.",
     "apply": "defaults write com.apple.finder WarnOnEmptyTrash -bool false\nkillall Finder",
-    "revert": "defaults delete com.apple.finder WarnOnEmptyTrash\nkillall Finder"
+    "revert": "defaults delete com.apple.finder WarnOnEmptyTrash\nkillall Finder",
+    "title_en": "Disable Empty Trash Confirmation Warning",
+    "desc_en": "Bypasses the 'Are you sure?' confirmation prompt when emptying the Trash for instant deletion.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-no-ext-change-warn",
@@ -225,7 +303,10 @@ TWEAKS = [
     "tag": "Finder",
     "desc": "Bir dosyanın sonundaki uzantıyı değiştirirken çıkan uyarı penceresini devre dışı bırakır.",
     "apply": "defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false\nkillall Finder",
-    "revert": "defaults delete com.apple.finder FXEnableExtensionChangeWarning\nkillall Finder"
+    "revert": "defaults delete com.apple.finder FXEnableExtensionChangeWarning\nkillall Finder",
+    "title_en": "Disable File Extension Change Warning",
+    "desc_en": "Disables the warning dialog when renaming files and changing file extensions in Finder.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-column-view",
@@ -236,7 +317,10 @@ TWEAKS = [
     "tag": "Finder",
     "desc": "Finder'ın tüm yeni pencerelerde otomatik olarak sütun görünümü hiyerarşisinde açılmasını sağlar.",
     "apply": "defaults write com.apple.finder FXPreferredViewStyle -string \"clmv\"\nkillall Finder",
-    "revert": "defaults delete com.apple.finder FXPreferredViewStyle\nkillall Finder"
+    "revert": "defaults delete com.apple.finder FXPreferredViewStyle\nkillall Finder",
+    "title_en": "Set Default Finder View to Column View",
+    "desc_en": "Enforces Column View hierarchy as the default viewing style across all Finder windows.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-unhide-library",
@@ -247,7 +331,10 @@ TWEAKS = [
     "tag": "Finder",
     "desc": "Kullanıcı dizini altındaki gizli ~/Library klasörünü Finder'da görünür kılar.",
     "apply": "chflags nohidden ~/Library",
-    "revert": "chflags hidden ~/Library"
+    "revert": "chflags hidden ~/Library",
+    "title_en": "Unhide User Library Folder (~/Library)",
+    "desc_en": "Makes the hidden ~/Library directory permanently visible in your home folder in Finder.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-unhide-volumes",
@@ -258,7 +345,10 @@ TWEAKS = [
     "tag": "Finder",
     "desc": "Sisteme bağlı tüm sürücülerin bağlandığı kök /Volumes dizinini gizlilikten çıkarır.",
     "apply": "sudo chflags nohidden /Volumes",
-    "revert": "sudo chflags hidden /Volumes"
+    "revert": "sudo chflags hidden /Volumes",
+    "title_en": "Unhide Root /Volumes Directory in Finder",
+    "desc_en": "Reveals the root /Volumes directory where all mounted external drives and partitions reside.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-auto-expand-folders",
@@ -269,7 +359,10 @@ TWEAKS = [
     "tag": "Finder",
     "desc": "Sütun görünümünde klasörler arasında gezinirken sütun genişliklerini içeriğe göre genişletir.",
     "apply": "defaults write com.apple.finder AutoExpandSyncFolders -bool true\nkillall Finder",
-    "revert": "defaults delete com.apple.finder AutoExpandSyncFolders\nkillall Finder"
+    "revert": "defaults delete com.apple.finder AutoExpandSyncFolders\nkillall Finder",
+    "title_en": "Auto-Expand Column Widths in Column View",
+    "desc_en": "Automatically adjusts column widths to match long file and folder names while browsing in Column View.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-airdrop-ethernet",
@@ -280,7 +373,10 @@ TWEAKS = [
     "tag": "AirDrop",
     "desc": "AirDrop'un sadece Wi-Fi değil, kablolu Ethernet bağlantısında da cihazları bulmasını sağlar.",
     "apply": "defaults write com.apple.NetworkBrowser DisableAirDrop -bool false\ndefaults write com.apple.NetworkBrowser BrowseAllInterfaces -bool true",
-    "revert": "defaults delete com.apple.NetworkBrowser DisableAirDrop 2>/dev/null || true\ndefaults delete com.apple.NetworkBrowser BrowseAllInterfaces 2>/dev/null || true"
+    "revert": "defaults delete com.apple.NetworkBrowser DisableAirDrop 2>/dev/null || true\ndefaults delete com.apple.NetworkBrowser BrowseAllInterfaces 2>/dev/null || true",
+    "title_en": "Enable AirDrop over Ethernet & All Interfaces",
+    "desc_en": "Allows AirDrop to discover devices and transfer files over wired Ethernet as well as Wi-Fi.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-quicklook-fast-zoom",
@@ -291,7 +387,10 @@ TWEAKS = [
     "tag": "Hız",
     "desc": "Space tuşuna basıldığında dosya önizlemesinin sıfır animasyon gecikmesiyle anında açılmasını sağlar.",
     "apply": "defaults write -g QLPanelAnimationDuration -float 0",
-    "revert": "defaults delete -g QLPanelAnimationDuration"
+    "revert": "defaults delete -g QLPanelAnimationDuration",
+    "title_en": "Disable Quick Look Opening Zoom Animation",
+    "desc_en": "Removes the zoom expansion animation delay when pressing Spacebar for instant Quick Look preview.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "find-direct-delete-shortcut",
@@ -302,7 +401,10 @@ TWEAKS = [
     "tag": "Finder",
     "desc": "Finder'da ⌥ + ⌘ + Delete kısayolunu kullanarak dosyayı çöpü atlamadan tek adımda silme yeteneğini açık tutar.",
     "apply": "defaults write com.apple.finder FXEnableRemoveWithoutTrash -bool true\nkillall Finder",
-    "revert": "defaults delete com.apple.finder FXEnableRemoveWithoutTrash 2>/dev/null || true\nkillall Finder"
+    "revert": "defaults delete com.apple.finder FXEnableRemoveWithoutTrash 2>/dev/null || true\nkillall Finder",
+    "title_en": "Enable Instant Permanent File Deletion",
+    "desc_en": "Ensures the ⌥ + ⌘ + Delete shortcut permanently removes files in one step bypassing the Trash.",
+    "catName_en": "Finder & File Management"
   },
   {
     "id": "win-top-drag-restore",
@@ -313,7 +415,10 @@ TWEAKS = [
     "tag": "Windows",
     "desc": "Döşenmiş/büyütülmüş pencereyi başlık çubuğundan aşağı sürükleyerek küçük boyutuna döndürür.",
     "apply": "defaults write com.apple.WindowManager EnableTopDragToRestore -bool true\nkillall WindowManager",
-    "revert": "defaults delete com.apple.WindowManager EnableTopDragToRestore\nkillall WindowManager"
+    "revert": "defaults delete com.apple.WindowManager EnableTopDragToRestore\nkillall WindowManager",
+    "title_en": "Drag Maximized Window from Top Edge to Restore",
+    "desc_en": "Enables dragging a maximized window downward from the top menu area to un-maximize it smoothly.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "win-disable-click-desktop",
@@ -324,7 +429,10 @@ TWEAKS = [
     "tag": "Desktop",
     "desc": "Boş masaüstüne tıklayınca pencerelerin sağa sola kaçmasını engeller (Stage Manager hariç).",
     "apply": "defaults write com.apple.WindowManager ClickWidgetBackgroundInStageManager -bool true\nkillall WindowManager",
-    "revert": "defaults delete com.apple.WindowManager ClickWidgetBackgroundInStageManager\nkillall WindowManager"
+    "revert": "defaults delete com.apple.WindowManager ClickWidgetBackgroundInStageManager\nkillall WindowManager",
+    "title_en": "Disable 'Click Wallpaper to Reveal Desktop'",
+    "desc_en": "Prevents windows from scattering when accidentally clicking wallpaper in macOS Sonoma & Tahoe.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "win-remove-tiling-margins",
@@ -335,7 +443,10 @@ TWEAKS = [
     "tag": "Tiling",
     "desc": "macOS yerleşik pencere döşeme sisteminde pencereler arasında bırakılan yapay boşlukları kaldırır.",
     "apply": "defaults write com.apple.WindowManager EnableTiledWindowMargins -bool false\nkillall WindowManager",
-    "revert": "defaults delete com.apple.WindowManager EnableTiledWindowMargins\nkillall WindowManager"
+    "revert": "defaults delete com.apple.WindowManager EnableTiledWindowMargins\nkillall WindowManager",
+    "title_en": "Zero Margin Borders for Tiled Windows",
+    "desc_en": "Removes empty margin gaps around snapped/tiled windows to maximize 100% of your screen area.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "win-drag-anywhere",
@@ -346,7 +457,10 @@ TWEAKS = [
     "tag": "UX",
     "desc": "Üst çubuğa gitmeden pencerenin herhangi bir noktasına ⌘ + ⌃ basıp sürükleyerek taşıma sağlar.",
     "apply": "defaults write -g NSWindowShouldDragOnGesture -bool true",
-    "revert": "defaults delete -g NSWindowShouldDragOnGesture"
+    "revert": "defaults delete -g NSWindowShouldDragOnGesture",
+    "title_en": "Drag Windows from Anywhere (⌘ + ⌃ + Click)",
+    "desc_en": "Allows dragging any window from anywhere on its surface by holding Command + Control and clicking.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "dock-autohide-speed",
@@ -357,7 +471,10 @@ TWEAKS = [
     "tag": "Dock",
     "desc": "Otomatik gizlenen Dock'un fare geldiğinde hiç beklemeden anında fırlamasını sağlar.",
     "apply": "defaults write com.apple.dock autohide-delay -float 0\ndefaults write com.apple.dock autohide-time-modifier -float 0.3\nkillall Dock",
-    "revert": "defaults delete com.apple.dock autohide-delay\ndefaults delete com.apple.dock autohide-time-modifier\nkillall Dock"
+    "revert": "defaults delete com.apple.dock autohide-delay\ndefaults delete com.apple.dock autohide-time-modifier\nkillall Dock",
+    "title_en": "Zero Dock Auto-Hide Delay & Instant Animation",
+    "desc_en": "Eliminates the hover delay so the hidden Dock pops up instantaneously when cursor touches the edge.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "dock-dim-hidden",
@@ -368,7 +485,10 @@ TWEAKS = [
     "tag": "Dock",
     "desc": "⌘ + H ile gizlenen uygulamaların Dock ikonlarını soluklaştırarak gizli olduklarını belli eder.",
     "apply": "defaults write com.apple.dock showhidden -bool true\nkillall Dock",
-    "revert": "defaults delete com.apple.dock showhidden\nkillall Dock"
+    "revert": "defaults delete com.apple.dock showhidden\nkillall Dock",
+    "title_en": "Dim Icons of Hidden Apps (⌘+H) in Dock",
+    "desc_en": "Applies a translucent dimming effect to the Dock icons of apps that are hidden with ⌘+H.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "dock-static-only",
@@ -379,7 +499,10 @@ TWEAKS = [
     "tag": "Dock",
     "desc": "Dock üzerindeki sabitlenmiş tüm simgeleri gizleyip sadece o an çalışan uygulamaları listeler.",
     "apply": "defaults write com.apple.dock static-only -bool true\nkillall Dock",
-    "revert": "defaults delete com.apple.dock static-only\nkillall Dock"
+    "revert": "defaults delete com.apple.dock static-only\nkillall Dock",
+    "title_en": "Dock Focus Mode: Show Only Running Applications",
+    "desc_en": "Converts the Dock into a clean task switcher showing only currently open and running applications.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "dock-no-recent-apps",
@@ -390,7 +513,10 @@ TWEAKS = [
     "tag": "Dock",
     "desc": "Dock'un sağ tarafında açılan son kullanılan uygulamalar ayırıcı alanını devre dışı bırakır.",
     "apply": "defaults write com.apple.dock show-recents -bool false\nkillall Dock",
-    "revert": "defaults delete com.apple.dock show-recents\nkillall Dock"
+    "revert": "defaults delete com.apple.dock show-recents\nkillall Dock",
+    "title_en": "Hide Recent Applications Section in Dock",
+    "desc_en": "Removes the recent apps divider section on the right side of the Dock for a cleaner aesthetic.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "dock-group-mission-control",
@@ -401,7 +527,10 @@ TWEAKS = [
     "tag": "MissionControl",
     "desc": "Mission Control açıldığında aynı uygulamanın açık tüm pencerelerini bir arada gruplar.",
     "apply": "defaults write com.apple.dock expose-group-apps -bool true\nkillall Dock",
-    "revert": "defaults delete com.apple.dock expose-group-apps\nkillall Dock"
+    "revert": "defaults delete com.apple.dock expose-group-apps\nkillall Dock",
+    "title_en": "Group Windows by Application in Mission Control",
+    "desc_en": "Organizes scattered windows into tidy application clusters in Mission Control overview.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "dock-fast-expose-anim",
@@ -412,7 +541,10 @@ TWEAKS = [
     "tag": "Hız",
     "desc": "3 parmak yukarı kaydırmadaki pencerelerin açılma geçiş animasyonunu hızlandırır.",
     "apply": "defaults write com.apple.dock expose-animation-duration -float 0.1\nkillall Dock",
-    "revert": "defaults delete com.apple.dock expose-animation-duration\nkillall Dock"
+    "revert": "defaults delete com.apple.dock expose-animation-duration\nkillall Dock",
+    "title_en": "Accelerate Mission Control & App Exposé Speed",
+    "desc_en": "Cuts the Mission Control animation duration down to 100ms for hyper-responsive workspace switching.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "win-hide-desktop-icons",
@@ -423,7 +555,10 @@ TWEAKS = [
     "tag": "Desktop",
     "desc": "Masaüstünde hiçbir dosya/klasör simgesinin görünmemesini sağlar, tamamen temiz tutar.",
     "apply": "defaults write com.apple.finder CreateDesktop -bool false\nkillall Finder",
-    "revert": "defaults delete com.apple.finder CreateDesktop\nkillall Finder"
+    "revert": "defaults delete com.apple.finder CreateDesktop\nkillall Finder",
+    "title_en": "Clean Desktop: Hide All Desktop Icons & Files",
+    "desc_en": "Clears all files and disks from the desktop surface for a distraction-free, clean wallpaper view.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "dock-suck-effect",
@@ -434,7 +569,10 @@ TWEAKS = [
     "tag": "Dock",
     "desc": "Pencereler Dock'a küçülürken Genie yerine daha akıcı ve şık olan 'Suck' efektini aktif eder.",
     "apply": "defaults write com.apple.dock mineffect -string \"suck\"\nkillall Dock",
-    "revert": "defaults delete com.apple.dock mineffect\nkillall Dock"
+    "revert": "defaults delete com.apple.dock mineffect\nkillall Dock",
+    "title_en": "Enable Fluid 'Suck' Window Minimize Effect",
+    "desc_en": "Replaces the default Genie minimize animation with the ultra-fast, sleek 'Suck' effect.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "win-fast-resize",
@@ -445,7 +583,10 @@ TWEAKS = [
     "tag": "Hız",
     "desc": "Sistem genelinde pencerelerin açılış/kapanış animasyon süresini minimuma çeker.",
     "apply": "defaults write NSGlobalDomain NSWindowResizeTime -float 0.001",
-    "revert": "defaults delete NSGlobalDomain NSWindowResizeTime"
+    "revert": "defaults delete NSGlobalDomain NSWindowResizeTime",
+    "title_en": "Accelerate Window Resize & Redraw Animation",
+    "desc_en": "Accelerates dialog, alert, and window resizing animations across macOS for an ultra-snappy feel.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "dock-no-mru-spaces",
@@ -456,7 +597,10 @@ TWEAKS = [
     "tag": "Spaces",
     "desc": "macOS'in sanal masaüstlerinin yerini en son kullanım sırasına göre otomatik değiştirmesini engeller.",
     "apply": "defaults write com.apple.dock mru-spaces -bool false\nkillall Dock",
-    "revert": "defaults delete com.apple.dock mru-spaces\nkillall Dock"
+    "revert": "defaults delete com.apple.dock mru-spaces\nkillall Dock",
+    "title_en": "Disable Automatic Desktop Space Rearrangement",
+    "desc_en": "Prevents macOS from constantly shuffling your Desktops based on most recent usage.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "win-double-click-fill",
@@ -467,7 +611,10 @@ TWEAKS = [
     "tag": "Windows",
     "desc": "Pencere üst çubuğuna çift tıklandığında simge durumuna küçülmek yerine tüm alanı kaplar.",
     "apply": "defaults write NSGlobalDomain AppleActionOnDoubleClick -string \"Fill\"",
-    "revert": "defaults delete NSGlobalDomain AppleActionOnDoubleClick"
+    "revert": "defaults delete NSGlobalDomain AppleActionOnDoubleClick",
+    "title_en": "Double-Click Window Title Bar to Fill Screen",
+    "desc_en": "Configures double-clicking window title bars to fill available screen area instead of minimizing.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "dock-disable-hotcorner-note",
@@ -478,7 +625,10 @@ TWEAKS = [
     "tag": "HotCorners",
     "desc": "Sağ alt köşeye fare gittiğinde çıkan Quick Note açılır penceresini kapatır.",
     "apply": "defaults write com.apple.dock wvous-br-corner -int 0\nkillall Dock",
-    "revert": "defaults delete com.apple.dock wvous-br-corner\nkillall Dock"
+    "revert": "defaults delete com.apple.dock wvous-br-corner\nkillall Dock",
+    "title_en": "Disable Bottom-Right Hot Corner Quick Note",
+    "desc_en": "Disables the accidental Quick Note popup when mouse cursor hits the bottom-right display corner.",
+    "catName_en": "Windows, Desktop & Dock"
   },
   {
     "id": "key-fast-repeat",
@@ -489,7 +639,10 @@ TWEAKS = [
     "tag": "Klavye",
     "desc": "Kod yazarken yön tuşları, backspace ve gezinme gecikmesini en uç donanım sınırına çeker.",
     "apply": "defaults write NSGlobalDomain KeyRepeat -int 1\ndefaults write NSGlobalDomain InitialKeyRepeat -int 10",
-    "revert": "defaults delete NSGlobalDomain KeyRepeat\ndefaults delete NSGlobalDomain InitialKeyRepeat"
+    "revert": "defaults delete NSGlobalDomain KeyRepeat\ndefaults delete NSGlobalDomain InitialKeyRepeat",
+    "title_en": "Maximum Key Repeat Rate (Lightning-Fast Typing)",
+    "desc_en": "Sets key repeat speed past GUI limits for ultra-responsive cursor navigation in code editors.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "key-disable-press-hold",
@@ -500,7 +653,10 @@ TWEAKS = [
     "tag": "Klavye",
     "desc": "Harfe basılı tutunca aksan menüsü (é, è) açmak yerine sürekli aynı harfi art arda yazar.",
     "apply": "defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false",
-    "revert": "defaults delete NSGlobalDomain ApplePressAndHoldEnabled"
+    "revert": "defaults delete NSGlobalDomain ApplePressAndHoldEnabled",
+    "title_en": "Disable Accent Popup for Real Key Holding (VS Code/Vim)",
+    "desc_en": "Disables the accented character menu popup so holding keys repeats characters smoothly in VS Code/Vim.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "track-tap-to-click",
@@ -511,7 +667,10 @@ TWEAKS = [
     "tag": "Trackpad",
     "desc": "Fiziksel tık basma zorunluluğunu kaldırıp hafif dokunuşla tıklamayı tüm hesapta aktif eder.",
     "apply": "defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true\ndefaults write com.apple.AppleMultitouchTrackpad Clicking -bool true\ndefaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1",
-    "revert": "defaults delete com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking 2>/dev/null || true\ndefaults delete com.apple.AppleMultitouchTrackpad Clicking 2>/dev/null || true\ndefaults -currentHost delete NSGlobalDomain com.apple.mouse.tapBehavior 2>/dev/null || true"
+    "revert": "defaults delete com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking 2>/dev/null || true\ndefaults delete com.apple.AppleMultitouchTrackpad Clicking 2>/dev/null || true\ndefaults -currentHost delete NSGlobalDomain com.apple.mouse.tapBehavior 2>/dev/null || true",
+    "title_en": "Enable Tap to Click on Trackpad",
+    "desc_en": "Enables light one-finger tapping on the trackpad to click without mechanical depression.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "track-three-finger-drag",
@@ -522,7 +681,10 @@ TWEAKS = [
     "tag": "Trackpad",
     "desc": "Pencereleri ve metin seçimlerini tıklamadan sadece 3 parmağı sürükleyerek taşımayı açar.",
     "apply": "defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag -bool true\ndefaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerDrag -bool true",
-    "revert": "defaults delete com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag 2>/dev/null || true\ndefaults delete com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerDrag 2>/dev/null || true"
+    "revert": "defaults delete com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag 2>/dev/null || true\ndefaults delete com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerDrag 2>/dev/null || true",
+    "title_en": "Enable 3-Finger Drag on Trackpad",
+    "desc_en": "Allows dragging windows and selecting text effortlessly by moving three fingers across the trackpad.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "text-disable-autocorrect",
@@ -533,7 +695,10 @@ TWEAKS = [
     "tag": "Metin",
     "desc": "Çift boşlukta otomatik nokta koyma ve otomatik düzeltmeleri kapatıp kod yazarken araya girmesini engeller.",
     "apply": "defaults write NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled -bool false\ndefaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false\ndefaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false",
-    "revert": "defaults delete NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled\ndefaults delete NSGlobalDomain NSAutomaticCapitalizationEnabled\ndefaults delete NSGlobalDomain NSAutomaticSpellingCorrectionEnabled"
+    "revert": "defaults delete NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled\ndefaults delete NSGlobalDomain NSAutomaticCapitalizationEnabled\ndefaults delete NSGlobalDomain NSAutomaticSpellingCorrectionEnabled",
+    "title_en": "Disable Global Auto-Correct & Auto-Capitalize",
+    "desc_en": "Prevents macOS from altering technical terms, variable names, and code syntax automatically.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "text-disable-smart-quotes",
@@ -544,7 +709,10 @@ TWEAKS = [
     "tag": "Metin",
     "desc": "Düz tırnakların eğik tırnaklara, iki tirenin uzun çizgiye dönüşmesini engelleyerek kod sözdizimini korur.",
     "apply": "defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false\ndefaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false",
-    "revert": "defaults delete NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled\ndefaults delete NSGlobalDomain NSAutomaticDashSubstitutionEnabled"
+    "revert": "defaults delete NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled\ndefaults delete NSGlobalDomain NSAutomaticDashSubstitutionEnabled",
+    "title_en": "Disable Smart Quotes & Smart Dashes",
+    "desc_en": "Prevents straight quotation marks (' and \") from converting into curly quotes that break code.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "key-full-keyboard-access",
@@ -555,7 +723,10 @@ TWEAKS = [
     "tag": "Klavye",
     "desc": "'Kaydet / Vazgeç / Sil' uyarılarında Tab tuşuyla butonlar arasında gezinip Space ile basmayı sağlar.",
     "apply": "defaults write NSGlobalDomain AppleKeyboardUIMode -int 3",
-    "revert": "defaults delete NSGlobalDomain AppleKeyboardUIMode"
+    "revert": "defaults delete NSGlobalDomain AppleKeyboardUIMode",
+    "title_en": "Full Keyboard Navigation: Tab Through All UI Controls",
+    "desc_en": "Allows pressing the Tab key to navigate through all modal buttons, dialogs, and radio controls.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "key-fn-state",
@@ -566,7 +737,10 @@ TWEAKS = [
     "tag": "Klavye",
     "desc": "F1-F12 tuşlarının Fn basmadan doğrudan F tuşu olarak çalışmasını sağlar.",
     "apply": "defaults write NSGlobalDomain com.apple.keyboard.fnState -bool true",
-    "revert": "defaults delete NSGlobalDomain com.apple.keyboard.fnState"
+    "revert": "defaults delete NSGlobalDomain com.apple.keyboard.fnState",
+    "title_en": "Use F1-F12 as Standard Function Keys",
+    "desc_en": "Configures F1-F12 keys to act as standard function keys without holding the Fn globe key.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "hw-keyboard-backlight-dim",
@@ -577,7 +751,10 @@ TWEAKS = [
     "tag": "Donanım",
     "desc": "MacBook kullanılmadığında pil tasarrufu için klavye aydınlatmasını 10 saniyede kapatır.",
     "apply": "defaults write com.apple.BezelServices kDimTime -int 10",
-    "revert": "defaults delete com.apple.BezelServices kDimTime 2>/dev/null || true"
+    "revert": "defaults delete com.apple.BezelServices kDimTime 2>/dev/null || true",
+    "title_en": "Shorten Keyboard Backlight Idle Timeout",
+    "desc_en": "Dims keyboard illumination after 30 seconds of inactivity to conserve MacBook battery life.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "snd-disable-volume-beep",
@@ -588,7 +765,10 @@ TWEAKS = [
     "tag": "Ses",
     "desc": "F11/F12 ile ses kısılıp açılırken çalan geri bildirim ses efektini susturur.",
     "apply": "defaults write NSGlobalDomain \"com.apple.sound.beep.feedback\" -int 0",
-    "revert": "defaults delete NSGlobalDomain \"com.apple.sound.beep.feedback\""
+    "revert": "defaults delete NSGlobalDomain \"com.apple.sound.beep.feedback\"",
+    "title_en": "Mute Beep Feedback on Volume Change",
+    "desc_en": "Silences the feedback audio beep sound when pressing keyboard volume adjustment keys.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "ui-helpviewer-devmode",
@@ -599,7 +779,10 @@ TWEAKS = [
     "tag": "UI",
     "desc": "Uygulamalarda yardım ekranı açıldığında diğer pencerelerin önünde kilitlenip kalmasını durdurur.",
     "apply": "defaults write com.apple.helpviewer DevMode -bool true",
-    "revert": "defaults delete com.apple.helpviewer DevMode 2>/dev/null || true"
+    "revert": "defaults delete com.apple.helpviewer DevMode 2>/dev/null || true",
+    "title_en": "Unpin macOS Help Viewer from Always-on-Top",
+    "desc_en": "Prevents macOS Help Viewer windows from staying pinned above all other applications.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "track-disable-natural-scroll",
@@ -610,7 +793,10 @@ TWEAKS = [
     "tag": "Trackpad",
     "desc": "Kaydırma yönünü tersine çevirip geleneksel fare tekeri mantığına döndürür.",
     "apply": "defaults write NSGlobalDomain com.apple.swipescrolldirection -bool false",
-    "revert": "defaults delete NSGlobalDomain com.apple.swipescrolldirection"
+    "revert": "defaults delete NSGlobalDomain com.apple.swipescrolldirection",
+    "title_en": "Set Standard (Non-Natural) Mouse Scrolling",
+    "desc_en": "Configures standard traditional scroll wheel direction when external mice are connected.",
+    "catName_en": "Keyboard, Trackpad & Input"
   },
   {
     "id": "dev-xcode-build-duration",
@@ -621,7 +807,10 @@ TWEAKS = [
     "tag": "Xcode",
     "desc": "Xcode'un üst çubuğunda projenin kaç saniyede build edildiğini gösterir.",
     "apply": "defaults write com.apple.dt.Xcode ShowBuildOperationDuration -bool true",
-    "revert": "defaults delete com.apple.dt.Xcode ShowBuildOperationDuration 2>/dev/null || true"
+    "revert": "defaults delete com.apple.dt.Xcode ShowBuildOperationDuration 2>/dev/null || true",
+    "title_en": "Show Build Duration & Times in Xcode",
+    "desc_en": "Displays exact compilation times in seconds directly in the Xcode top status bar.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "sec-disable-quarantine",
@@ -632,7 +821,10 @@ TWEAKS = [
     "tag": "Güvenlik",
     "desc": "İnternetten indirilen araçları ilk kez açarken çıkan 'İnternetten indirildi, açılsın mı?' uyarısını atlar.",
     "apply": "defaults write com.apple.LaunchServices LSQuarantine -bool false",
-    "revert": "defaults delete com.apple.LaunchServices LSQuarantine 2>/dev/null || true"
+    "revert": "defaults delete com.apple.LaunchServices LSQuarantine 2>/dev/null || true",
+    "title_en": "Disable Gatekeeper 'Downloaded from Internet' Prompt",
+    "desc_en": "Disables the repetitive 'App downloaded from the Internet. Are you sure?' warning dialog.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "safari-enable-develop-menu",
@@ -643,7 +835,10 @@ TWEAKS = [
     "tag": "Safari",
     "desc": "Safari tercihlerine girmeden Geliştirici menüsünü ve yerel HTML/JS denetim aracını aktif eder.",
     "apply": "defaults write com.apple.Safari IncludeDevelopMenu -bool true\ndefaults write com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey -bool true\ndefaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled -bool true",
-    "revert": "defaults delete com.apple.Safari IncludeDevelopMenu 2>/dev/null || true\ndefaults delete com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey 2>/dev/null || true\ndefaults delete com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled 2>/dev/null || true"
+    "revert": "defaults delete com.apple.Safari IncludeDevelopMenu 2>/dev/null || true\ndefaults delete com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey 2>/dev/null || true\ndefaults delete com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled 2>/dev/null || true",
+    "title_en": "Enable Safari Developer Menu & Web Inspector",
+    "desc_en": "Enables the Develop menu in Safari menu bar and unlocks Web Inspector debugging for localhost.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "safari-show-full-url",
@@ -654,7 +849,10 @@ TWEAKS = [
     "tag": "Safari",
     "desc": "Safari'de sadece alan adını değil, tüm URL yolunu (https://site.com/path/to/page) açık gösterir.",
     "apply": "defaults write com.apple.Safari ShowFullURLInSmartSearchField -bool true",
-    "revert": "defaults delete com.apple.Safari ShowFullURLInSmartSearchField 2>/dev/null || true"
+    "revert": "defaults delete com.apple.Safari ShowFullURLInSmartSearchField 2>/dev/null || true",
+    "title_en": "Always Show Full Web Address URL in Safari",
+    "desc_en": "Shows the entire URL path (https://domain.com/path?id=1) in Safari's address bar instead of just domain.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "sys-expand-save-print-panels",
@@ -665,7 +863,10 @@ TWEAKS = [
     "tag": "Sistem",
     "desc": "Dosya kaydederken dar gelen pencere yerine tüm dizin ağacını varsayılan olarak açık getirir.",
     "apply": "defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true\ndefaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode2 -bool true\ndefaults write NSGlobalDomain PMPrintingExpandedStateForPrint -bool true\ndefaults write NSGlobalDomain PMPrintingExpandedStateForPrint2 -bool true",
-    "revert": "defaults delete NSGlobalDomain NSNavPanelExpandedStateForSaveMode 2>/dev/null || true\ndefaults delete NSGlobalDomain NSNavPanelExpandedStateForSaveMode2 2>/dev/null || true\ndefaults delete NSGlobalDomain PMPrintingExpandedStateForPrint 2>/dev/null || true\ndefaults delete NSGlobalDomain PMPrintingExpandedStateForPrint2 2>/dev/null || true"
+    "revert": "defaults delete NSGlobalDomain NSNavPanelExpandedStateForSaveMode 2>/dev/null || true\ndefaults delete NSGlobalDomain NSNavPanelExpandedStateForSaveMode2 2>/dev/null || true\ndefaults delete NSGlobalDomain PMPrintingExpandedStateForPrint 2>/dev/null || true\ndefaults delete NSGlobalDomain PMPrintingExpandedStateForPrint2 2>/dev/null || true",
+    "title_en": "Expand Save & Print Panels by Default",
+    "desc_en": "Always opens the full folder tree in File > Save and Print dialogs automatically.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "sys-disable-crash-reporter",
@@ -676,7 +877,10 @@ TWEAKS = [
     "tag": "Sistem",
     "desc": "Bir uygulama çöktüğünde ekrana gelen bildirim ve rapor gönderme diyalog kutularını devre dışı bırakır.",
     "apply": "defaults write com.apple.CrashReporter DialogType -string \"none\"",
-    "revert": "defaults delete com.apple.CrashReporter DialogType 2>/dev/null || true"
+    "revert": "defaults delete com.apple.CrashReporter DialogType 2>/dev/null || true",
+    "title_en": "Disable Disruptive Crash Reporter Dialogs",
+    "desc_en": "Replaces disruptive crash dialog popups with silent background system crash logging.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "sys-login-host-info",
@@ -687,7 +891,10 @@ TWEAKS = [
     "tag": "Sistem",
     "desc": "Giriş ekranında sağ üstteki saate tıklandığında IP adresi, hostname ve macOS versiyonunu dönüşümlü gösterir.",
     "apply": "sudo defaults write /Library/Preferences/com.apple.loginwindow AdminHostInfo HostName",
-    "revert": "sudo defaults delete /Library/Preferences/com.apple.loginwindow AdminHostInfo 2>/dev/null || true"
+    "revert": "sudo defaults delete /Library/Preferences/com.apple.loginwindow AdminHostInfo 2>/dev/null || true",
+    "title_en": "Display IP & System Info on Login Lock Screen",
+    "desc_en": "Clicking the clock on the macOS lock screen reveals IP address, hostname, and macOS build version.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "hw-bluetooth-bitpool",
@@ -698,7 +905,10 @@ TWEAKS = [
     "tag": "Ses",
     "desc": "Bluetooth kulaklık ve harici hoparlörlerde ses aktarım kalitesini en üst seviyeye sabitler.",
     "apply": "defaults write com.apple.BluetoothAudioAgent \"Apple Bitpool Min (editable)\" -int 40",
-    "revert": "defaults delete com.apple.BluetoothAudioAgent \"Apple Bitpool Min (editable)\" 2>/dev/null || true"
+    "revert": "defaults delete com.apple.BluetoothAudioAgent \"Apple Bitpool Min (editable)\" 2>/dev/null || true",
+    "title_en": "Boost Bluetooth Audio Bitrate & AAC Quality",
+    "desc_en": "Increases SBC/AAC Bluetooth audio bitpool ceiling for rich, studio-grade headphone streaming.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "net-disable-captive-portal",
@@ -709,7 +919,10 @@ TWEAKS = [
     "tag": "Ağ",
     "desc": "Özel DNS veya kafe ağlarında sürekli açılan zorunlu tarayıcı pencerelerini engeller.",
     "apply": "sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.captivecontrol Active -bool false",
-    "revert": "sudo defaults delete /Library/Preferences/SystemConfiguration/com.apple.captivecontrol Active 2>/dev/null || true"
+    "revert": "sudo defaults delete /Library/Preferences/SystemConfiguration/com.apple.captivecontrol Active 2>/dev/null || true",
+    "title_en": "Disable Captive Portal Automatic Web Popup",
+    "desc_en": "Prevents macOS from automatically opening web login sheets when connecting to public Wi-Fi.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "hw-disable-autoboot",
@@ -720,7 +933,10 @@ TWEAKS = [
     "tag": "Donanım",
     "desc": "MacBook kapağı açıldığında veya prize takıldığında otomatik boot etmesini engeller (ekran temizlerken ideal).",
     "apply": "sudo nvram AutoBoot=%00",
-    "revert": "sudo nvram AutoBoot=%03"
+    "revert": "sudo nvram AutoBoot=%03",
+    "title_en": "Disable Auto-Boot on Lid Open / Power Connection",
+    "desc_en": "Prevents MacBooks from automatically powering on when opening the lid or plugging in MagSafe.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "hw-mute-startup-chime",
@@ -731,7 +947,10 @@ TWEAKS = [
     "tag": "Donanım",
     "desc": "Mac her açıldığında ve yeniden başladığında çalan yüksek gong sesini tamamen kapatır.",
     "apply": "sudo nvram StartupMute=%01",
-    "revert": "sudo nvram StartupMute=%00"
+    "revert": "sudo nvram StartupMute=%00",
+    "title_en": "Mute Startup Chime Sound at Boot",
+    "desc_en": "Silences the loud Mac startup chime when turning on or restarting in quiet environments.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "sec-immediate-password-lock",
@@ -742,7 +961,10 @@ TWEAKS = [
     "tag": "Güvenlik",
     "desc": "Ekran kapandığı veya uykuya geçtiği saniye anında parola korumasını devreye alır.",
     "apply": "defaults write com.apple.screensaver askForPassword -int 1\ndefaults write com.apple.screensaver askForPasswordDelay -int 0",
-    "revert": "defaults delete com.apple.screensaver askForPassword\ndefaults delete com.apple.screensaver askForPasswordDelay"
+    "revert": "defaults delete com.apple.screensaver askForPassword\ndefaults delete com.apple.screensaver askForPasswordDelay",
+    "title_en": "Instant Password Requirement on Sleep/Screen Saver",
+    "desc_en": "Requires password immediately (0 seconds delay) after display sleep or screen saver activation.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "scr-format-jpg",
@@ -753,7 +975,10 @@ TWEAKS = [
     "tag": "Screenshots",
     "desc": "Ekran görüntülerinin ağır PNG yerine daha hafif JPEG formatında kaydedilmesini sağlar.",
     "apply": "defaults write com.apple.screencapture type -string \"jpg\"\nkillall SystemUIServer",
-    "revert": "defaults delete com.apple.screencapture type\nkillall SystemUIServer"
+    "revert": "defaults delete com.apple.screencapture type\nkillall SystemUIServer",
+    "title_en": "Save Screenshots as Lightweight JPG Format",
+    "desc_en": "Switches default screenshot image format from heavy PNG to compressed, fast-sharing JPG.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "scr-disable-shadow",
@@ -764,7 +989,10 @@ TWEAKS = [
     "tag": "Screenshots",
     "desc": "Tek pencere ekran görüntüsü alırken (⌘+Shift+4 -> Space) etrafa eklenen dev gölgeyi siler.",
     "apply": "defaults write com.apple.screencapture disable-shadow -bool true\nkillall SystemUIServer",
-    "revert": "defaults delete com.apple.screencapture disable-shadow\nkillall SystemUIServer"
+    "revert": "defaults delete com.apple.screencapture disable-shadow\nkillall SystemUIServer",
+    "title_en": "Remove Heavy Window Shadows from Screenshots",
+    "desc_en": "Eliminates large transparent drop shadows when capturing window screenshots with ⌘ + Shift + 4 + Space.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "scr-custom-location",
@@ -775,7 +1003,10 @@ TWEAKS = [
     "tag": "Screenshots",
     "desc": "Masaüstünün görsellerle dolmasını engelleyip hepsini otomatik özel klasöre yönlendirir.",
     "apply": "mkdir -p ~/Pictures/Screenshots\ndefaults write com.apple.screencapture location ~/Pictures/Screenshots\nkillall SystemUIServer",
-    "revert": "defaults delete com.apple.screencapture location\nkillall SystemUIServer"
+    "revert": "defaults delete com.apple.screencapture location\nkillall SystemUIServer",
+    "title_en": "Set Dedicated Screenshots Folder (~/Pictures/Screenshots)",
+    "desc_en": "Redirects all captured screenshots to a tidy dedicated folder instead of cluttering Desktop.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "sys-disable-local-snapshots",
@@ -786,7 +1017,10 @@ TWEAKS = [
     "tag": "Depolama",
     "desc": "Harici disk yokken dahili SSD'de gigabaytlarca APFS snapshot birikmesini durdurur.",
     "apply": "sudo tmutil disable",
-    "revert": "sudo tmutil enable 2>/dev/null || true"
+    "revert": "sudo tmutil enable 2>/dev/null || true",
+    "title_en": "Disable Local Time Machine Snapshots (Save SSD Space)",
+    "desc_en": "Prevents macOS from writing redundant hourly local snapshots on internal SSD when backup drive is absent.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "ui-reduce-motion",
@@ -797,7 +1031,10 @@ TWEAKS = [
     "tag": "Performans",
     "desc": "Sistem genelindeki geçiş animasyonlarını tamamen kaldırıp en seri keskin geçişe çevirir.",
     "apply": "defaults write com.apple.universalaccess reduceMotion -bool true",
-    "revert": "defaults delete com.apple.universalaccess reduceMotion 2>/dev/null || true"
+    "revert": "defaults delete com.apple.universalaccess reduceMotion 2>/dev/null || true",
+    "title_en": "Accelerate UI with System Reduce Motion Mode",
+    "desc_en": "Replaces heavy zoom and slide transitions with instant crossfades across macOS for extreme speed.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "sec-dnd-screen-share",
@@ -808,7 +1045,10 @@ TWEAKS = [
     "tag": "Gizlilik",
     "desc": "Ekranınızı bir toplantıda paylaşırken veya yansıtırken kişisel bildirimlerin görünmesini engeller.",
     "apply": "defaults write com.apple.notificationcenterui dndDisplayNotifications -bool false",
-    "revert": "defaults delete com.apple.notificationcenterui dndDisplayNotifications 2>/dev/null || true"
+    "revert": "defaults delete com.apple.notificationcenterui dndDisplayNotifications 2>/dev/null || true",
+    "title_en": "Suppress Notifications During Screen Sharing",
+    "desc_en": "Automatically hides private notification banners when mirroring screen or presenting in meetings.",
+    "catName_en": "Developer, Security & System"
   },
   {
     "id": "tahoe-tiling-preview-delay",
@@ -819,7 +1059,10 @@ TWEAKS = [
     "tag": "Tahoe",
     "desc": "Pencereyi ekran kenarına yaklaştırınca çıkan hizalama alanının beklemeden anında belirmesini sağlar.",
     "apply": "defaults write com.apple.WindowManager TilingWindowPreviewDelay -float 0\nkillall WindowManager",
-    "revert": "defaults delete com.apple.WindowManager TilingWindowPreviewDelay\nkillall WindowManager"
+    "revert": "defaults delete com.apple.WindowManager TilingWindowPreviewDelay\nkillall WindowManager",
+    "title_en": "Zero-Delay Window Snap Preview",
+    "desc_en": "Accelerates the edge window tiling snap preview animation to zero milliseconds.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-hide-snap-dividers",
@@ -830,7 +1073,10 @@ TWEAKS = [
     "tag": "Tahoe",
     "desc": "macOS pencere döşeme özelliğinde pencereler arasına konan gri ayırıcı çizgiyi kapatır.",
     "apply": "defaults write com.apple.WindowManager ShowTilingSnapDividers -bool false\nkillall WindowManager",
-    "revert": "defaults delete com.apple.WindowManager ShowTilingSnapDividers\nkillall WindowManager"
+    "revert": "defaults delete com.apple.WindowManager ShowTilingSnapDividers\nkillall WindowManager",
+    "title_en": "Hide Dividers Between Tiled Windows",
+    "desc_en": "Removes the divider outline between side-by-side snapped windows for an edge-to-edge look.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-mirror-group-notifications",
@@ -841,7 +1087,10 @@ TWEAKS = [
     "tag": "Continuity",
     "desc": "iPhone Mirroring üzerinden gelen bildirimlerin Mac bildirimleri altında düzenli gruplanmasını sağlar.",
     "apply": "defaults write com.apple.ScreenContinuity AutoGroupPhoneNotifications -bool true",
-    "revert": "defaults delete com.apple.ScreenContinuity AutoGroupPhoneNotifications 2>/dev/null || true"
+    "revert": "defaults delete com.apple.ScreenContinuity AutoGroupPhoneNotifications 2>/dev/null || true",
+    "title_en": "Group iPhone Mirroring Notifications Separately",
+    "desc_en": "Organizes mirrored iOS notifications into a separate group away from macOS desktop alerts.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-mirror-dnd-sync",
@@ -852,7 +1101,10 @@ TWEAKS = [
     "tag": "Continuity",
     "desc": "iPhone Yansıtma aktifken telefonun DND/Odak modunu doğrudan Mac ile senkronize eder.",
     "apply": "defaults write com.apple.ScreenContinuity MirrorDoNotDisturbState -bool true",
-    "revert": "defaults delete com.apple.ScreenContinuity MirrorDoNotDisturbState 2>/dev/null || true"
+    "revert": "defaults delete com.apple.ScreenContinuity MirrorDoNotDisturbState 2>/dev/null || true",
+    "title_en": "Sync Do Not Disturb Focus Between Mac & iPhone",
+    "desc_en": "Ensures Focus and Do Not Disturb states synchronize seamlessly during iPhone Mirroring.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-writing-tools-delay",
@@ -863,7 +1115,10 @@ TWEAKS = [
     "tag": "AI",
     "desc": "Metin seçildiğinde sistem çapında açılan Apple Intelligence / Yazma Araçları menüsünün tepki süresini sıfırlar.",
     "apply": "defaults write NSGlobalDomain WritingToolsShowDelay -float 0",
-    "revert": "defaults delete NSGlobalDomain WritingToolsShowDelay 2>/dev/null || true"
+    "revert": "defaults delete NSGlobalDomain WritingToolsShowDelay 2>/dev/null || true",
+    "title_en": "Zero-Delay Apple Intelligence Writing Tools Popup",
+    "desc_en": "Eliminates the hover trigger delay on Apple Intelligence inline writing tool menus.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-spotlight-direct-math",
@@ -874,7 +1129,10 @@ TWEAKS = [
     "tag": "Spotlight",
     "desc": "Spotlight'a matematiksel veya değişkenli formül yazıldığında ara adımları atlayıp anında sonucu öne çıkarır.",
     "apply": "defaults write com.apple.Spotlight DirectMathEvaluation -bool true\nkillall Spotlight",
-    "revert": "defaults delete com.apple.Spotlight DirectMathEvaluation 2>/dev/null || true\nkillall Spotlight"
+    "revert": "defaults delete com.apple.Spotlight DirectMathEvaluation 2>/dev/null || true\nkillall Spotlight",
+    "title_en": "Enable Instant Math & Currency Solver in Spotlight",
+    "desc_en": "Evaluates math formulas and currency conversions directly in Spotlight without opening Calculator.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-spotlight-local-first",
@@ -885,7 +1143,10 @@ TWEAKS = [
     "tag": "Spotlight",
     "desc": "Spotlight aramalarında internet önerilerini kapatıp yerel proje ve dosya aramalarını en tepeye alır.",
     "apply": "defaults write com.apple.Spotlight LookupServerDisableRemoteQueries -bool true\nkillall Spotlight",
-    "revert": "defaults delete com.apple.Spotlight LookupServerDisableRemoteQueries 2>/dev/null || true\nkillall Spotlight"
+    "revert": "defaults delete com.apple.Spotlight LookupServerDisableRemoteQueries 2>/dev/null || true\nkillall Spotlight",
+    "title_en": "Prioritize Local Files in Spotlight (Disable Web Bing Ads)",
+    "desc_en": "Prioritizes local developer files, applications, and terminal paths above web search suggestions.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-compact-menubar-spacing",
@@ -896,7 +1157,10 @@ TWEAKS = [
     "tag": "MenuBar",
     "desc": "Özellikle çentikli MacBook ekranlarında menü simgeleri aralığını daraltarak daha fazla ikon sığdırır.",
     "apply": "defaults -currentHost write -globalDomain NSStatusItemSpacing -int 6\ndefaults -currentHost write -globalDomain NSStatusItemSelectionPadding -int 4\nkillall SystemUIServer",
-    "revert": "defaults -currentHost delete -globalDomain NSStatusItemSpacing 2>/dev/null || true\ndefaults -currentHost delete -globalDomain NSStatusItemSelectionPadding 2>/dev/null || true\nkillall SystemUIServer"
+    "revert": "defaults -currentHost delete -globalDomain NSStatusItemSpacing 2>/dev/null || true\ndefaults -currentHost delete -globalDomain NSStatusItemSelectionPadding 2>/dev/null || true\nkillall SystemUIServer",
+    "title_en": "Compress Menu Bar Icon Spacing (Notch Optimization)",
+    "desc_en": "Reduces padding between menu bar status icons to fit more menu items on MacBook notch displays.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-passwords-instant-autofill",
@@ -907,7 +1171,10 @@ TWEAKS = [
     "tag": "Passwords",
     "desc": "Sistem genelinde parola/2FA otomatik doldurma penceresinin açılma bekleme süresini kaldırır.",
     "apply": "defaults write com.apple.Passwords AutoFillDisplayDelay -float 0\ndefaults write com.apple.Passwords EnableFastTouchIDAuthentication -bool true",
-    "revert": "defaults delete com.apple.Passwords AutoFillDisplayDelay 2>/dev/null || true\ndefaults delete com.apple.Passwords EnableFastTouchIDAuthentication 2>/dev/null || true"
+    "revert": "defaults delete com.apple.Passwords AutoFillDisplayDelay 2>/dev/null || true\ndefaults delete com.apple.Passwords EnableFastTouchIDAuthentication 2>/dev/null || true",
+    "title_en": "Zero-Delay Apple Passwords & 2FA Autofill",
+    "desc_en": "Removes the biometric security prompt delay when autofilling credentials and 2FA verification codes.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-suppress-background-alerts",
@@ -918,7 +1185,10 @@ TWEAKS = [
     "tag": "Alerts",
     "desc": "Homebrew, Node veya Docker bir servis eklediğinde sağ üstte sürekli çıkan 'Arka plan öğesi eklendi' uyarısını kapatır.",
     "apply": "defaults write com.apple.backgroundtaskmanagement SuppressServiceAlerts -bool true",
-    "revert": "defaults delete com.apple.backgroundtaskmanagement SuppressServiceAlerts 2>/dev/null || true"
+    "revert": "defaults delete com.apple.backgroundtaskmanagement SuppressServiceAlerts 2>/dev/null || true",
+    "title_en": "Suppress Repetitive Background Service Notifications",
+    "desc_en": "Silences the frequent 'Background Item Added' notification popups triggered by CLI tools.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-fast-stage-manager",
@@ -929,7 +1199,10 @@ TWEAKS = [
     "tag": "StageManager",
     "desc": "Stage Manager grupları arasında geçiş yaparken uygulanan kaydırma animasyonunu minimuma indirir.",
     "apply": "defaults write com.apple.WindowManager AppSwitcherAnimationDuration -float 0.1\nkillall WindowManager",
-    "revert": "defaults delete com.apple.WindowManager AppSwitcherAnimationDuration 2>/dev/null || true\nkillall WindowManager"
+    "revert": "defaults delete com.apple.WindowManager AppSwitcherAnimationDuration 2>/dev/null || true\nkillall WindowManager",
+    "title_en": "Accelerate Stage Manager Transition Speed",
+    "desc_en": "Cuts the Stage Manager window strip transition time to 100ms for fluid multitasking.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-game-mode-auto-boost",
@@ -940,7 +1213,10 @@ TWEAKS = [
     "tag": "Gaming",
     "desc": "Oyun ve simülatörler tam ekrana geçtiğinde Bluetooth gecikme düşürme ve CPU/GPU önceliğini gecikmesiz açar.",
     "apply": "defaults write com.apple.gameoverlay EnableGameModeAutoBoost -bool true",
-    "revert": "defaults delete com.apple.gameoverlay EnableGameModeAutoBoost 2>/dev/null || true"
+    "revert": "defaults delete com.apple.gameoverlay EnableGameModeAutoBoost 2>/dev/null || true",
+    "title_en": "Auto-Trigger Game Mode & High-Performance CPU Scheduling",
+    "desc_en": "Prioritizes CPU/GPU cores and lowers Bluetooth audio latency automatically during heavy graphics workloads.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-stage-show-desktop",
@@ -951,7 +1227,10 @@ TWEAKS = [
     "tag": "StageManager",
     "desc": "Stage Manager devredeyken bile masaüstündeki dosya ve disk simgelerini gizlemeden görünür tutar.",
     "apply": "defaults write com.apple.WindowManager HideDesktop -bool false\nkillall WindowManager",
-    "revert": "defaults delete com.apple.WindowManager HideDesktop 2>/dev/null || true\nkillall WindowManager"
+    "revert": "defaults delete com.apple.WindowManager HideDesktop 2>/dev/null || true\nkillall WindowManager",
+    "title_en": "Show Desktop Items in Stage Manager Mode",
+    "desc_en": "Keeps desktop files and widgets visible even while Stage Manager multitasking is active.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-restore-stage-layout",
@@ -962,7 +1241,10 @@ TWEAKS = [
     "tag": "Displays",
     "desc": "Monitör takılıp çıkarıldığında pencerelerin dizilimini ve Stage Manager durumunu korur.",
     "apply": "defaults write com.apple.WindowManager AutoRestoreStageLayout -bool true",
-    "revert": "defaults delete com.apple.WindowManager AutoRestoreStageLayout 2>/dev/null || true"
+    "revert": "defaults delete com.apple.WindowManager AutoRestoreStageLayout 2>/dev/null || true",
+    "title_en": "Remember Stage Manager Layout per External Display",
+    "desc_en": "Restores specific window cluster arrangements automatically when reconnecting to external monitors.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-fast-autohide-menubar",
@@ -973,7 +1255,10 @@ TWEAKS = [
     "tag": "MenuBar",
     "desc": "Menü çubuğu gizli moddayken fare yukarı gittiğinde anında gecikmesiz görünmesini sağlar.",
     "apply": "defaults write NSGlobalDomain _HIHideMenuBar -bool true\ndefaults write NSGlobalDomain MenuBarShowDelay -float 0",
-    "revert": "defaults delete NSGlobalDomain _HIHideMenuBar 2>/dev/null || true\ndefaults delete NSGlobalDomain MenuBarShowDelay 2>/dev/null || true"
+    "revert": "defaults delete NSGlobalDomain _HIHideMenuBar 2>/dev/null || true\ndefaults delete NSGlobalDomain MenuBarShowDelay 2>/dev/null || true",
+    "title_en": "Accelerate Menu Bar Auto-Hide & Reveal Speed",
+    "desc_en": "Removes the animation delay when revealing the auto-hidden top menu bar in fullscreen mode.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-neural-camera-fx",
@@ -984,7 +1269,10 @@ TWEAKS = [
     "tag": "Media",
     "desc": "Apple Silicon NPU üzerinde kamera efektlerinin öncelikli çalışmasını sağlar.",
     "apply": "defaults write com.apple.CoreMedia.AVCapture EnableNeuralProcessingOverride -bool true",
-    "revert": "defaults delete com.apple.CoreMedia.AVCapture EnableNeuralProcessingOverride 2>/dev/null || true"
+    "revert": "defaults delete com.apple.CoreMedia.AVCapture EnableNeuralProcessingOverride 2>/dev/null || true",
+    "title_en": "Hardware Acceleration for Camera Studio Light Effects",
+    "desc_en": "Offloads Studio Light and Portrait background blur to the Apple Silicon Neural Engine.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "tahoe-spotlight-dict-priority",
@@ -995,7 +1283,10 @@ TWEAKS = [
     "tag": "Spotlight",
     "desc": "Kelime aramalarında doğrudan yerel sözlük tanımını en üst arama sonucu olarak getirir.",
     "apply": "defaults write com.apple.Spotlight LookupServerPrioritizeDefinitions -bool true\nkillall Spotlight",
-    "revert": "defaults delete com.apple.Spotlight LookupServerPrioritizeDefinitions 2>/dev/null || true\nkillall Spotlight"
+    "revert": "defaults delete com.apple.Spotlight LookupServerPrioritizeDefinitions 2>/dev/null || true\nkillall Spotlight",
+    "title_en": "Prioritize Dictionary Definitions in Spotlight",
+    "desc_en": "Displays dictionary word meanings and synonyms above web search results in Spotlight.",
+    "catName_en": "macOS Tahoe & Apple Intelligence"
   },
   {
     "id": "net-wifi-disable-powersave",
@@ -1006,7 +1297,10 @@ TWEAKS = [
     "tag": "Ağ",
     "desc": "Kablosuz kartın uyku döngülerine girmesini engelleyerek oyun ve SSH oturumlarında jitter/pingi düşürür.",
     "apply": "sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.airport.opp.plist WiFiPowerManagement -bool false",
-    "revert": "sudo defaults delete /Library/Preferences/SystemConfiguration/com.apple.airport.opp.plist WiFiPowerManagement 2>/dev/null || true"
+    "revert": "sudo defaults delete /Library/Preferences/SystemConfiguration/com.apple.airport.opp.plist WiFiPowerManagement 2>/dev/null || true",
+    "title_en": "Low-Latency Wi-Fi Optimization (Disable Power Save)",
+    "desc_en": "Disables Wi-Fi radio power-save sleep to eliminate packet jitter in SSH sessions and online games.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "pwr-ac-never-sleep",
@@ -1017,7 +1311,10 @@ TWEAKS = [
     "tag": "Güç",
     "desc": "Cihaz adaptöre bağlıyken ekran kapansa dahi arka plan işlemlerinin ve indirmelerin uyumasını engeller.",
     "apply": "sudo pmset -c sleep 0",
-    "revert": "sudo pmset -c sleep 10"
+    "revert": "sudo pmset -c sleep 10",
+    "title_en": "Prevent Sleep When Connected to AC Power",
+    "desc_en": "Keeps Mac fully awake and active while plugged into power adapter (Amphetamine-style keep-awake).",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "pwr-clamshell-no-sleep",
@@ -1028,7 +1325,10 @@ TWEAKS = [
     "tag": "Güç",
     "desc": "Harici ekran bağlı olmasa dahi kapak kapatıldığında indirme/render devam etsin (dikkatli kullanın).",
     "apply": "sudo pmset -a disablesleep 1",
-    "revert": "sudo pmset -a disablesleep 0"
+    "revert": "sudo pmset -a disablesleep 0",
+    "title_en": "Clamshell Mode: Prevent Sleep When Lid is Closed with Display",
+    "desc_en": "Keeps your MacBook awake when connected to an external monitor and the lid is closed.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "pwr-restore-defaults",
@@ -1039,7 +1339,10 @@ TWEAKS = [
     "tag": "Güç",
     "desc": "pmset güç yönetimi ayarlarını Apple fabrika ayarlarına sıfırlar.",
     "apply": "sudo pmset -a restoredefaults",
-    "revert": "sudo pmset -a restoredefaults"
+    "revert": "sudo pmset -a restoredefaults",
+    "title_en": "Restore Apple Factory Power & Sleep Defaults",
+    "desc_en": "Resets all pmset battery, sleep, and standby configurations back to original factory defaults.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "net-flush-dns",
@@ -1050,7 +1353,10 @@ TWEAKS = [
     "tag": "Ağ",
     "desc": "Alan adı ve DNS değişikliklerinin anında etkili olması için yerel DNS önbelleğini sıfırlar.",
     "apply": "sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder",
-    "revert": "# Tek seferlik flush komutudur, geri dönüş gerektirmez."
+    "revert": "# Tek seferlik flush komutudur, geri dönüş gerektirmez.",
+    "title_en": "Flush macOS DNS Cache & Restart mDNSResponder",
+    "desc_en": "Clears corrupted local DNS caches and restarts mDNSResponder networking service immediately.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "net-disable-ipv6-wifi",
@@ -1061,7 +1367,10 @@ TWEAKS = [
     "tag": "Ağ",
     "desc": "IPv6 kaynaklı yavaşlama veya yönlendirme sorunlarında Wi-Fi arayüzünü saf IPv4 moduna alır.",
     "apply": "networksetup -setv6off Wi-Fi",
-    "revert": "networksetup -setv6automatic Wi-Fi"
+    "revert": "networksetup -setv6automatic Wi-Fi",
+    "title_en": "Temporarily Disable IPv6 on Wi-Fi Interface",
+    "desc_en": "Disables IPv6 routing on Wi-Fi to resolve DNS timeouts and slow connections on legacy ISP routers.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "net-restart-wifi",
@@ -1072,7 +1381,10 @@ TWEAKS = [
     "tag": "Ağ",
     "desc": "Wi-Fi bağlantısını arayüze tıklamadan terminalden kapatıp 2 saniye sonra tekrar açar.",
     "apply": "networksetup -setairportpower en0 off && sleep 2 && networksetup -setairportpower en0 on",
-    "revert": "networksetup -setairportpower en0 on"
+    "revert": "networksetup -setairportpower en0 on",
+    "title_en": "Restart Wi-Fi Interface from Terminal",
+    "desc_en": "Toggles Wi-Fi power off and on in one command to quickly fix stubborn network connection drops.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "pwr-fast-hibernation",
@@ -1083,7 +1395,10 @@ TWEAKS = [
     "tag": "Güç",
     "desc": "RAM'i diske yazma süresini atlayıp Mac'in anında uyanması için hibernatemode 0 moduna alır.",
     "apply": "sudo pmset -a hibernatemode 0",
-    "revert": "sudo pmset -a hibernatemode 3"
+    "revert": "sudo pmset -a hibernatemode 3",
+    "title_en": "Fast RAM-Only Sleep Mode (Hibernatemode 0)",
+    "desc_en": "Keeps session in RAM during sleep to avoid slow SSD writes and save SSD lifespan.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "sys-clean-sleepimage",
@@ -1094,7 +1409,10 @@ TWEAKS = [
     "tag": "Depolama",
     "desc": "Derin uyku dosyasını silerek dahili SSD'de RAM boyutunuz kadar yer açar.",
     "apply": "sudo rm -f /var/vm/sleepimage",
-    "revert": "# Sistem gerektiğinde otomatik olarak yeniden oluşturacaktır."
+    "revert": "# Sistem gerektiğinde otomatik olarak yeniden oluşturacaktır.",
+    "title_en": "Delete SSD Sleep Image File & Reclaim Disk Space",
+    "desc_en": "Removes the massive /var/vm/sleepimage file to immediately free up 16GB-32GB of SSD storage.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "hw-restart-bluetooth",
@@ -1105,7 +1423,10 @@ TWEAKS = [
     "tag": "Donanım",
     "desc": "Kulaklık veya klavye takılmalarında Bluetooth arka plan servisini resetler.",
     "apply": "sudo pkill bluetoothd",
-    "revert": "# Tek seferlik servis resetidir."
+    "revert": "# Tek seferlik servis resetidir.",
+    "title_en": "Restart Bluetooth Core Daemon (Fix Audio & Mouse Lag)",
+    "desc_en": "Restarts the Bluetooth background daemon to resolve AirPods audio stutters and mouse disconnects.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "sys-pin-text-input-menu",
@@ -1116,7 +1437,10 @@ TWEAKS = [
     "tag": "Girdi",
     "desc": "Menü çubuğundaki klavye bayrağının / giriş kaynağının her zaman açık kalmasını sağlar.",
     "apply": "defaults write com.apple.TextInputMenu visible -bool true",
-    "revert": "defaults delete com.apple.TextInputMenu visible 2>/dev/null || true"
+    "revert": "defaults delete com.apple.TextInputMenu visible 2>/dev/null || true",
+    "title_en": "Pin Keyboard Language & Input Source to Menu Bar",
+    "desc_en": "Always shows the active keyboard input language icon (EN/TR) in the top right menu bar.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "pwr-low-power-mode-battery-only",
@@ -1127,7 +1451,10 @@ TWEAKS = [
     "tag": "Pil",
     "desc": "Prizde tam performans çalışırken pilde otomatik olarak Düşük Güç Moduna geçmesini sağlar.",
     "apply": "sudo pmset -b lowpowermode 1\nsudo pmset -c lowpowermode 0",
-    "revert": "sudo pmset -a lowpowermode 0"
+    "revert": "sudo pmset -a lowpowermode 0",
+    "title_en": "Enable Low Power Mode Exclusively on Battery",
+    "desc_en": "Automatically activates Low Power Mode on battery power while maintaining full power on AC.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "pwr-charge-limit-80",
@@ -1138,7 +1465,10 @@ TWEAKS = [
     "tag": "Pil",
     "desc": "macOS batarya koruma optimizasyon servisini aktif tutar.",
     "apply": "sudo pmset -a bclm 80 2>/dev/null || defaults write com.apple.PowerManagement OptimizedBatteryCharging -bool true",
-    "revert": "defaults write com.apple.PowerManagement OptimizedBatteryCharging -bool false"
+    "revert": "defaults write com.apple.PowerManagement OptimizedBatteryCharging -bool false",
+    "title_en": "Trigger Optimized Battery Charging (80% Health Limit)",
+    "desc_en": "Activates battery health management daemon to preserve long-term battery cycle life.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "sec-disable-apple-analytics",
@@ -1149,7 +1479,10 @@ TWEAKS = [
     "tag": "Gizlilik",
     "desc": "Sistemin arka planda Apple sunucularına günlük ve kilitlenme logu göndermesini engeller.",
     "apply": "sudo defaults write /Library/Application\\ Support/CrashReporter/DiagnosticMessagesHistory.plist AutoSubmit -bool false",
-    "revert": "sudo defaults delete /Library/Application\\ Support/CrashReporter/DiagnosticMessagesHistory.plist AutoSubmit 2>/dev/null || true"
+    "revert": "sudo defaults delete /Library/Application\\ Support/CrashReporter/DiagnosticMessagesHistory.plist AutoSubmit 2>/dev/null || true",
+    "title_en": "Disable All Apple Diagnostics & Telemetry Submissions",
+    "desc_en": "Completely disables background diagnostic data and crash report telemetry submissions to Apple.",
+    "catName_en": "Network, Power & Maintenance"
   },
   {
     "id": "sys-defaults-delete-guide",
@@ -1160,66 +1493,60 @@ TWEAKS = [
     "tag": "Kılavuz",
     "desc": "Yaptığınız herhangi bir ayarı fabrika varsayılanına döndürmek için kullanılan evrensel komut şablonu.",
     "apply": "# Tek bir ayarı sıfırlamak için:\ndefaults delete [DomainAdı] [AnahtarAdı]\n# Örnek: defaults delete com.apple.dock autohide-delay && killall Dock",
-    "revert": "# Varsayılana döndürme komutu yukarıdadır."
+    "revert": "# Varsayılana döndürme komutu yukarıdadır.",
+    "title_en": "Reset All 'defaults write' Configurations Guide",
+    "desc_en": "Comprehensive instructions to reset all customized domain domains back to pristine macOS defaults.",
+    "catName_en": "Network, Power & Maintenance"
   }
 ]
 
+# CATEGORIES METADATA
 CATEGORIES = [
-    {"id": "terminal", "name": "Terminal, Zsh & Kabuk", "icon": "💻"},
-    {"id": "finder", "name": "Finder & Dosya Yönetimi", "icon": "📁"},
-    {"id": "window_dock", "name": "Pencere, Masaüstü & Dock", "icon": "🪟"},
-    {"id": "keyboard_input", "name": "Klavye, Trackpad & Donanım", "icon": "⌨️"},
-    {"id": "dev_security", "name": "Geliştirici, Güvenlik & Sistem", "icon": "⚡"},
-    {"id": "tahoe", "name": "macOS Tahoe & AI Optimizasyonları", "icon": "🏔️"},
-    {"id": "network_power", "name": "Ağ, Güç Yönetimi & Bakım", "icon": "🔋"},
+  {"id": "terminal", "name": "Terminal, Zsh & Kabuk", "name_en": "Terminal, Zsh & Shell", "icon": "💻"},
+  {"id": "finder", "name": "Finder & Gelişmiş Dosya Yönetimi", "name_en": "Finder & File Management", "icon": "📁"},
+  {"id": "window_dock", "name": "Pencereler, Masaüstü & Dock", "name_en": "Windows, Desktop & Dock", "icon": "🪟"},
+  {"id": "keyboard_input", "name": "Klavye, Trackpad & Donanım", "name_en": "Keyboard, Trackpad & Input", "icon": "⌨️"},
+  {"id": "dev_security", "name": "Geliştirici, Güvenlik & Sistem", "name_en": "Developer, Security & System", "icon": "⚡"},
+  {"id": "tahoe", "name": "macOS Tahoe & Yapay Zeka (AI)", "name_en": "macOS Tahoe & Apple Intelligence", "icon": "🏔️"},
+  {"id": "network_power", "name": "Ağ, Güç, Pil & Bakım", "name_en": "Network, Power & Maintenance", "icon": "🔋"}
 ]
 
+# PRESETS
 PRESETS = {
-    "dev": {
-        "title": "Geliştirici Güç Paketi (Developer Power Pack)",
-        "desc": "Xcode derleme sayacı, Safari geliştirici araçları, sudo Touch ID ve POSIX dosya yolları.",
-        "ids": [
-            "term-touchid-sudo", "term-interactive-comments", "find-all-extensions",
-            "find-hidden-files", "find-posix-title", "find-quicklook-text",
-            "dev-xcode-build-duration", "safari-enable-develop-menu", "safari-show-full-url",
-            "sys-expand-save-print-panels", "sys-disable-crash-reporter", "sec-disable-quarantine",
-            "key-full-keyboard-access", "key-fast-repeat", "key-disable-press-hold"
-        ]
-    },
-    "speed": {
-        "title": "Maksimum Hız & 0s Animasyon Paketi (FPS & UI Speed)",
-        "desc": "Dock gecikmesini sıfırlama, pencereleri anında boyutlandırma, hızlı klavye tekrarı ve akıcı geçişler.",
-        "ids": [
-            "dock-autohide-speed", "dock-suck-effect", "dock-fast-expose-anim",
-            "dock-no-recent-apps", "win-fast-resize", "find-quicklook-fast-zoom",
-            "win-top-drag-restore", "win-remove-tiling-margins", "ui-reduce-motion",
-            "key-fast-repeat"
-        ]
-    },
-    "battery": {
-        "title": "Pil Tasarrufu & Isı Koruma Paketi (Battery & Thermal Saver)",
-        "desc": "Pilde otomatik Düşük Güç Modu, %80 pil sağlığı koruması, Power Nap kapatma ve hızlı uyku.",
-        "ids": [
-            "pwr-low-power-mode-battery-only", "pwr-charge-limit-80", "pwr-fast-hibernation",
-            "sec-disable-apple-analytics", "hw-keyboard-backlight-dim", "find-no-ds-store-network",
-            "net-disable-captive-portal"
-        ]
-    },
-    "tahoe": {
-        "title": "macOS Tahoe & Apple Intelligence Paketi",
-        "desc": "Pencere döşeme önizlemesini hızlandırma, Writing Tools gecikmesini sıfırlama ve yerel Spotlight önceliği.",
-        "ids": [
-            "tahoe-tiling-preview-delay", "tahoe-hide-snap-dividers", "tahoe-writing-tools-delay",
-            "tahoe-spotlight-local-first", "tahoe-mirror-group-notifications", "tahoe-compact-menubar-spacing",
-            "tahoe-fast-stage-manager", "tahoe-game-mode-auto-boost", "tahoe-passwords-instant-autofill"
-        ]
-    }
+  "dev": {
+    "title": "Geliştirici & Mühendis Paketi",
+    "title_en": "Developer & Engineer Powerhouse",
+    "desc": "Xcode build süresi sayacı, Safari Web Inspector, maksimum tuş tekrar hızı ve Touch ID sudo.",
+    "desc_en": "Xcode build duration timer, Safari Web Inspector, lightning key repeat rate, and Touch ID sudo.",
+    "ids": ["term-hostname", "term-interactive-comments", "term-touchid-sudo", "find-all-extensions", "find-hidden-files", "find-posix-title", "find-quicklook-text", "key-fast-repeat", "key-disable-press-hold", "dev-xcode-build-duration", "safari-enable-develop-menu", "safari-show-full-url", "dev-textedit-plain-text", "sec-disable-quarantine"]
+  },
+  "speed": {
+    "title": "Ultra Hız & Sıfır Gecikme Paketi",
+    "title_en": "Ultra Speed & Zero-Delay Package",
+    "desc": "Sıfır Dock gecikmesi, hızlı Mission Control, Suck pencere efekti ve Reduce Motion arayüz hızlandırma.",
+    "desc_en": "Zero Dock hover delay, 100ms Mission Control transitions, fluid Suck minimize effect, and Reduce Motion speed.",
+    "ids": ["dock-autohide-speed", "dock-suck-effect", "dock-fast-expose-anim", "win-fast-resize", "find-quicklook-fast-zoom", "tahoe-tiling-preview-delay", "tahoe-fast-stage-manager", "tahoe-fast-autohide-menubar", "ui-reduce-motion", "key-fast-repeat"]
+  },
+  "battery": {
+    "title": "Pil Tasarrufu & Donanım Sağlığı",
+    "title_en": "Battery Life & Hardware Health",
+    "desc": "Klavye aydınlatma zaman aşımı, uykuda ağ uyandırmasını kapatma, %80 şarj sınırı ve düşük güç modu.",
+    "desc_en": "Keyboard backlight timeout, disable network sleep wakes, 80% battery charging optimization, and low power mode.",
+    "ids": ["hw-keyboard-backlight-dim", "pwr-low-power-mode-battery-only", "pwr-charge-limit-80", "net-wifi-disable-powersave", "net-disable-sleep-on-clamshell", "pwr-fast-hibernation", "sys-clean-sleepimage", "sec-disable-apple-analytics"]
+  },
+  "tahoe": {
+    "title": "macOS Tahoe & AI Özel Paketi",
+    "title_en": "macOS Tahoe & Apple Intelligence Suite",
+    "desc": "Snap önizleme hızlandırma, kenarlık boşluklarını sıfırlama, yerel Spotlight önceliği ve menü çubuğu sıkıştırma.",
+    "desc_en": "Zero-delay window snapping, borderless window tiling, local-first Spotlight search, and compact notch menubar.",
+    "ids": ["tahoe-tiling-preview-delay", "tahoe-hide-snap-dividers", "win-remove-tiling-margins", "tahoe-writing-tools-delay", "tahoe-spotlight-local-first", "tahoe-compact-menubar-spacing", "tahoe-mirror-group-notifications", "tahoe-game-mode-auto-boost"]
+  }
 }
 
-# Raw Key Reader for Interactive TUI
 def get_key():
     try:
-        import termios, tty
+        import termios
+        import tty
         fd = sys.stdin.fileno()
         old = termios.tcgetattr(fd)
         try:
@@ -1233,11 +1560,6 @@ def get_key():
                     elif ch3 == 'B': return 'DOWN'
                     elif ch3 == 'C': return 'RIGHT'
                     elif ch3 == 'D': return 'LEFT'
-                    elif ch3 == 'H': return 'HOME'
-                    elif ch3 == 'F': return 'END'
-                    elif ch3 == '3':
-                        sys.stdin.read(1) # consume ~
-                        return 'DEL'
                 return 'ESC'
             elif ch == '\r' or ch == '\n':
                 return 'ENTER'
@@ -1245,13 +1567,12 @@ def get_key():
                 return 'SPACE'
             elif ch == '\x7f' or ch == '\x08':
                 return 'BACKSPACE'
-            elif ch == '\x03': # Ctrl+C
+            elif ch == '\x03':
                 return 'CTRL_C'
             return ch
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old)
     except Exception:
-        # Fallback for non-raw environment
         line = sys.stdin.readline().strip()
         return line if line else 'ENTER'
 
@@ -1267,13 +1588,14 @@ def print_banner():
   ██║ ╚═╝ ██║██║  ██║╚██████╗╚██████╔╝███████║╚██████╗╚██████╔╝██████╔╝███████╗
   ╚═╝     ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝ ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝{C.RESET}
   {C.PURPLE}{C.BOLD}⚡ macOS Interactive Terminal CLI & TUI • 100 Power-Tweaks (v{VERSION}){C.RESET}
-  {C.DARK_GRAY}https://github.com/Jarvis322/macoscode • Build {VERSION_CODE} • Tahoe Ready{C.RESET}
+  {C.DARK_GRAY}https://github.com/Jarvis322/macoscode • Build {VERSION_CODE} • Tahoe & Apple Silicon{C.RESET}
 """
     print(banner)
 
 def refresh_services():
     services = ["Finder", "Dock", "WindowManager", "SystemUIServer", "Spotlight"]
-    print(f"\n{C.CYAN}🔄 macOS Sistem servisleri yenileniyor...{C.RESET}")
+    msg = txt("macOS Sistem servisleri yenileniyor...", "Restarting macOS system services...")
+    print(f"\n{C.CYAN}🔄 {msg}{C.RESET}")
     for s in services:
         subprocess.run(f"killall {s} 2>/dev/null || true", shell=True)
     time.sleep(0.5)
@@ -1286,13 +1608,13 @@ def run_command(cmd, dry_run=False):
         res = subprocess.run(cmd, shell=True, check=False)
         return res.returncode == 0
     except Exception as e:
-        print(f"{C.ROSE}Hata:{C.RESET} {e}")
+        err_msg = txt("Hata:", "Error:")
+        print(f"{C.ROSE}{err_msg}{C.RESET} {e}")
         return False
 
 # Audit Check for a tweak
 def check_tweak_status(tweak):
     apply_cmd = tweak["apply"]
-    # Look for defaults write
     m = re.search(r"defaults write\s+([^\s]+)\s+([^\s]+)\s+(-\w+)\s+(.+)", apply_cmd)
     if m:
         domain, key, vtype, val = m.groups()
@@ -1312,63 +1634,73 @@ def check_tweak_status(tweak):
             return False
         except Exception:
             return False
-    # Check pam_tid.so
     if "pam_tid.so" in apply_cmd:
         try:
             res = subprocess.run("grep -q 'pam_tid.so' /etc/pam.d/sudo 2>/dev/null", shell=True)
             return res.returncode == 0
         except Exception:
             return False
-    # Check zsh
-    if "INTERACTIVE_COMMENTS" in apply_cmd:
-        return False
     return False
 
 # System Audit Dashboard
-def run_system_audit():
-    clear_screen()
-    print_banner()
-    print(f"{C.BOLD}{C.CYAN}📊 macOS Sistem Ayarları Denetim Raporu (Audit){C.RESET}")
-    print(f"{C.DARK_GRAY}Sisteminizdeki 100 optimizasyonun anlık durumu taranıyor...{C.RESET}\n")
+def run_system_audit(interactive=True):
+    if interactive:
+        clear_screen()
+        print_banner()
+    title_msg = txt("macOS Sistem Ayarları Denetim Raporu (Audit)", "macOS System Configuration Audit Report")
+    desc_msg = txt("Sisteminizdeki 100 optimizasyonun anlık durumu taranıyor...", "Scanning active state for all 100 power-user optimizations...")
+    print(f"{C.BOLD}{C.CYAN}📊 {title_msg}{C.RESET}")
+    print(f"{C.DARK_GRAY}{desc_msg}{C.RESET}\n")
 
     active_count = 0
     total_count = len(TWEAKS)
 
     for cat in CATEGORIES:
         cat_tweaks = [t for t in TWEAKS if t["cat"] == cat["id"]]
-        print(f"\n{C.BOLD}{cat['icon']} {cat['name']}{C.RESET} {C.DARK_GRAY}({len(cat_tweaks)} Ayar){C.RESET}")
+        cat_suffix = txt("Ayar", "Tweaks")
+        print(f"\n{C.BOLD}{cat['icon']} {c_name(cat)}{C.RESET} {C.DARK_GRAY}({len(cat_tweaks)} {cat_suffix}){C.RESET}")
         print("─" * 68)
         for t in cat_tweaks:
             status = check_tweak_status(t)
             if status:
                 active_count += 1
-                status_badge = f"{C.EMERALD}{C.BOLD}[✔ AKTİF]{C.RESET}"
+                status_lbl = txt("AKTİF", "ACTIVE")
+                status_badge = f"{C.EMERALD}{C.BOLD}[✔ {status_lbl}]{C.RESET}"
             else:
-                status_badge = f"{C.DARK_GRAY}[  VARSAYILAN  ]{C.RESET}"
+                def_lbl = txt("VARSAYILAN", "DEFAULT ")
+                status_badge = f"{C.DARK_GRAY}[  {def_lbl}  ]{C.RESET}"
             
-            title_truncated = t['title'][:44] + "..." if len(t['title']) > 47 else t['title'].ljust(47)
+            title = t_title(t)
+            title_truncated = title[:44] + "..." if len(title) > 47 else title.ljust(47)
             print(f" {status_badge} {title_truncated} {C.GRAY}[{t['tag']}]{C.RESET}")
 
     score = int((active_count / total_count) * 100)
     print("\n" + "=" * 68)
-    print(f"{C.BOLD}📈 ÖZET: {C.EMERALD}{active_count}{C.RESET}/{total_count} Optimizasyon Aktif ({C.CYAN}%{score} Güç Seviyesi{C.RESET}){C.RESET}")
+    summary_label = txt("ÖZET", "SUMMARY")
+    power_label = txt("Güç Seviyesi", "Power Level")
+    opt_label = txt("Optimizasyon Aktif", "Optimizations Active")
+    print(f"{C.BOLD}📈 {summary_label}: {C.EMERALD}{active_count}{C.RESET}/{total_count} {opt_label} ({C.CYAN}%{score} {power_label}{C.RESET}){C.RESET}")
     print("=" * 68)
-    print(f"\n{C.GRAY}Menüye dönmek için herhangi bir tuşa basın...{C.RESET}")
-    get_key()
+    if interactive:
+        back_msg = txt("Menüye dönmek için herhangi bir tuşa basın...", "Press any key to return to menu...")
+        print(f"\n{C.GRAY}{back_msg}{C.RESET}")
+        get_key()
 
 # Batch Apply / Revert
 def apply_tweaks_list(tweak_list, mode="apply", dry_run=False):
-    action_name = "Uygulanıyor" if mode == "apply" else "Sıfırlanıyor (Revert)"
+    action_name = txt("Uygulanıyor", "Applying") if mode == "apply" else txt("Sıfırlanıyor (Revert)", "Reverting to Factory Defaults")
     color = C.CYAN if mode == "apply" else C.ROSE
-    print(f"\n{color}{C.BOLD}🚀 {len(tweak_list)} Ayar {action_name}...{C.RESET}\n")
+    count_suffix = txt("Ayar", "Tweaks")
+    print(f"\n{color}{C.BOLD}🚀 {len(tweak_list)} {count_suffix} {action_name}...{C.RESET}\n")
     
     if not dry_run:
-        print(f"{C.GOLD}🔐 Sudo yetkilendirmesi istenebilir...{C.RESET}")
+        sudo_msg = txt("Sudo yetkilendirmesi istenebilir...", "Administrator (sudo) authorization may be requested...")
+        print(f"{C.GOLD}🔐 {sudo_msg}{C.RESET}")
         subprocess.run("sudo -v", shell=True)
 
     for i, t in enumerate(tweak_list, 1):
         cmd = t["apply"] if mode == "apply" else t["revert"]
-        print(f"{C.GRAY}[{i}/{len(tweak_list)}]{C.RESET} {C.BOLD}{t['title']}{C.RESET}")
+        print(f"{C.GRAY}[{i}/{len(tweak_list)}]{C.RESET} {C.BOLD}{t_title(t)}{C.RESET}")
         if dry_run:
             print(f"   {C.DARK_GRAY}$ {cmd.replace(chr(10), ' && ')}{C.RESET}")
         else:
@@ -1376,9 +1708,11 @@ def apply_tweaks_list(tweak_list, mode="apply", dry_run=False):
 
     if not dry_run:
         refresh_services()
-        print(f"\n{C.EMERALD}{C.BOLD}✨ İşlem başarıyla tamamlandı! ({len(tweak_list)} Ayar){C.RESET}\n")
+        done_msg = txt("İşlem başarıyla tamamlandı!", "Operation completed successfully!")
+        print(f"\n{C.EMERALD}{C.BOLD}✨ {done_msg} ({len(tweak_list)} {count_suffix}){C.RESET}\n")
     else:
-        print(f"\n{C.GOLD}{C.BOLD}✨ [DRY-RUN] Komutlar görüntülendi, sistemde değişiklik yapılmadı.{C.RESET}\n")
+        dry_msg = txt("Komutlar görüntülendi, sistemde değişiklik yapılmadı.", "Commands previewed, no changes were applied to system.")
+        print(f"\n{C.GOLD}{C.BOLD}✨ [DRY-RUN] {dry_msg}{C.RESET}\n")
 
 # Preset Selector
 def run_preset_menu():
@@ -1388,16 +1722,21 @@ def run_preset_menu():
     while True:
         clear_screen()
         print_banner()
-        print(f"{C.BOLD}{C.GOLD}⚡ Hızlı Optimizasyon Paketleri (Presets){C.RESET}\n")
+        preset_hdr = txt("Hızlı Optimizasyon Paketleri (Presets)", "Quick Optimization Presets")
+        print(f"{C.BOLD}{C.GOLD}⚡ {preset_hdr}{C.RESET}\n")
 
         for idx, k in enumerate(keys):
             p = PRESETS[k]
+            p_title = p.get("title_en") if CURRENT_LANG == "en" else p.get("title")
+            p_desc = p.get("desc_en") if CURRENT_LANG == "en" else p.get("desc")
             cursor = f"{C.CYAN}{C.BOLD}➜{C.RESET}" if idx == selected_idx else " "
             highlight = f"{C.CYAN}{C.BOLD}" if idx == selected_idx else f"{C.WHITE}"
-            print(f" {cursor} {highlight}{idx+1}. {p['title']}{C.RESET}")
-            print(f"     {C.DARK_GRAY}{p['desc']} ({len(p['ids'])} Ayar){C.RESET}\n")
+            count_suffix = txt("Ayar", "Tweaks")
+            print(f" {cursor} {highlight}{idx+1}. {p_title}{C.RESET}")
+            print(f"     {C.DARK_GRAY}{p_desc} ({len(p['ids'])} {count_suffix}){C.RESET}\n")
 
-        print(f"{C.DARK_GRAY}Navigasyon: [↑/↓] Gezin • [Enter] Paketi Seç & Uygula • [r] Paketi Revert Et • [q/Esc] Geri{C.RESET}")
+        nav_msg = txt("Navigasyon: [↑/↓] Gezin • [Enter] Paketi Seç & Uygula • [r] Paketi Revert Et • [q/Esc] Geri", "Navigation: [↑/↓] Navigate • [Enter] Apply Preset • [r] Revert Preset • [q/Esc] Back")
+        print(f"{C.DARK_GRAY}{nav_msg}{C.RESET}")
 
         key = get_key()
         if key in ['UP', 'k']:
@@ -1409,7 +1748,8 @@ def run_preset_menu():
             chosen_preset = PRESETS[chosen_key]
             tweaks_to_run = [t for t in TWEAKS if t["id"] in chosen_preset["ids"]]
             apply_tweaks_list(tweaks_to_run, mode="apply")
-            print(f"\n{C.GRAY}Devam etmek için bir tuşa basın...{C.RESET}")
+            cont_msg = txt("Devam etmek için bir tuşa basın...", "Press any key to continue...")
+            print(f"\n{C.GRAY}{cont_msg}{C.RESET}")
             get_key()
             break
         elif key == 'r':
@@ -1417,7 +1757,8 @@ def run_preset_menu():
             chosen_preset = PRESETS[chosen_key]
             tweaks_to_run = [t for t in TWEAKS if t["id"] in chosen_preset["ids"]]
             apply_tweaks_list(tweaks_to_run, mode="revert")
-            print(f"\n{C.GRAY}Devam etmek için bir tuşa basın...{C.RESET}")
+            cont_msg = txt("Devam etmek için bir tuşa basın...", "Press any key to continue...")
+            print(f"\n{C.GRAY}{cont_msg}{C.RESET}")
             get_key()
             break
         elif key in ['q', 'ESC']:
@@ -1428,10 +1769,10 @@ def run_interactive_selector(category_filter=None):
     if category_filter:
         items = [t for t in TWEAKS if t["cat"] == category_filter]
         cat_obj = next((c for c in CATEGORIES if c["id"] == category_filter), None)
-        title = f"{cat_obj['icon']} {cat_obj['name']}" if cat_obj else "Kategori"
+        title = f"{cat_obj['icon']} {c_name(cat_obj)}" if cat_obj else txt("Kategori", "Category")
     else:
         items = TWEAKS
-        title = "Tüm Ayarlar (100-in-1)"
+        title = txt("Tüm Ayarlar (100-in-1)", "All Power Tweaks (100-in-1)")
 
     selected_set = set()
     cursor_idx = 0
@@ -1440,10 +1781,10 @@ def run_interactive_selector(category_filter=None):
     while True:
         clear_screen()
         print_banner()
-        print(f"{C.BOLD}{C.PURPLE}🎛️ {title}{C.RESET} {C.DARK_GRAY}(Seçili: {len(selected_set)}/{len(items)}){C.RESET}")
+        sel_label = txt("Seçili", "Selected")
+        print(f"{C.BOLD}{C.PURPLE}🎛️  {title}{C.RESET} {C.DARK_GRAY}({sel_label}: {len(selected_set)}/{len(items)}){C.RESET}")
         print("─" * 70)
 
-        # Show a window of 10 items
         window_size = 10
         start_idx = max(0, min(cursor_idx - window_size // 2, len(items) - window_size))
         end_idx = min(len(items), start_idx + window_size)
@@ -1458,21 +1799,33 @@ def run_interactive_selector(category_filter=None):
             text_style = f"{C.BOLD}{C.WHITE}" if is_cur else f"{C.GRAY}"
             
             tag_badge = f"{C.INDIGO}[{t['tag']}]{C.RESET}"
-            title_text = t['title'][:40] + "..." if len(t['title']) > 43 else t['title'].ljust(43)
+            title_str = t_title(t)
+            title_text = title_str[:40] + "..." if len(title_str) > 43 else title_str.ljust(43)
             print(f" {cursor_mark} {check_mark} {text_style}{title_text}{C.RESET} {tag_badge}")
 
         # Current Item Detail Card
         cur_tweak = items[cursor_idx]
-        print("\n" + f"{C.DARK_GRAY}┌─ Detay ─────────────────────────────────────────────────────────────┐{C.RESET}")
-        print(f"{C.DARK_GRAY}│{C.RESET} {C.BOLD}{cur_tweak['title']}{C.RESET}")
-        print(f"{C.DARK_GRAY}│{C.RESET} {C.GRAY}{cur_tweak['desc'][:68]}{C.RESET}")
+        det_lbl = txt("Detay & Önizleme", "Detail & Preview")
+        print("\n" + f"{C.DARK_GRAY}┌─ {det_lbl} ───────────────────────────────────────────────┐{C.RESET}")
+        print(f"{C.DARK_GRAY}│{C.RESET} {C.BOLD}{t_title(cur_tweak)}{C.RESET}")
+        print(f"{C.DARK_GRAY}│{C.RESET} {C.GRAY}{t_desc(cur_tweak)[:68]}{C.RESET}")
         first_cmd = cur_tweak['apply'].split('\n')[0]
         print(f"{C.DARK_GRAY}│{C.RESET} {C.CYAN}$ {first_cmd[:66]}{C.RESET}")
         print(f"{C.DARK_GRAY}└─────────────────────────────────────────────────────────────────────┘{C.RESET}")
 
-        dry_badge = f"{C.GOLD}[DRY-RUN AÇIK]{C.RESET}" if dry_run_mode else f"{C.DARK_GRAY}[CANLI MOD]{C.RESET}"
-        print(f"{C.DARK_GRAY}Navigasyon:{C.RESET} [↑/↓] Gezin • [Space] Seç/Bırak • [a] Tümünü Seç • [d] {dry_badge}")
-        print(f"{C.DARK_GRAY}Aksiyonlar:{C.RESET} [Enter] Seçilenleri Uygula • [r] Seçilenleri Sıfırla (Revert) • [q/Esc] Geri")
+        dry_on = txt("DRY-RUN AÇIK", "DRY-RUN ON")
+        live_on = txt("CANLI MOD", "LIVE MODE")
+        dry_badge = f"{C.GOLD}[{dry_on}]{C.RESET}" if dry_run_mode else f"{C.DARK_GRAY}[{live_on}]{C.RESET}"
+        nav_1 = txt("Navigasyon:", "Navigation:")
+        nav_2 = txt("Gezin", "Navigate")
+        nav_3 = txt("Seç/Bırak", "Toggle")
+        nav_4 = txt("Tümünü Seç", "Select All")
+        act_1 = txt("Aksiyonlar:", "Actions:")
+        act_2 = txt("Uygula", "Apply Selected")
+        act_3 = txt("Sıfırla (Revert)", "Revert Selected")
+        act_4 = txt("Geri", "Back")
+        print(f"{C.DARK_GRAY}{nav_1}{C.RESET} [↑/↓] {nav_2} • [Space] {nav_3} • [a] {nav_4} • [d] {dry_badge}")
+        print(f"{C.DARK_GRAY}{act_1}{C.RESET} [Enter] {act_2} • [r] {act_3} • [q/Esc] {act_4}")
 
         key = get_key()
         if key in ['UP', 'k']:
@@ -1497,7 +1850,8 @@ def run_interactive_selector(category_filter=None):
             if not chosen_tweaks:
                 chosen_tweaks = [cur_tweak]
             apply_tweaks_list(chosen_tweaks, mode="apply", dry_run=dry_run_mode)
-            print(f"\n{C.GRAY}Devam etmek için bir tuşa basın...{C.RESET}")
+            cont_msg = txt("Devam etmek için bir tuşa basın...", "Press any key to continue...")
+            print(f"\n{C.GRAY}{cont_msg}{C.RESET}")
             get_key()
             break
         elif key == 'r':
@@ -1505,7 +1859,8 @@ def run_interactive_selector(category_filter=None):
             if not chosen_tweaks:
                 chosen_tweaks = [cur_tweak]
             apply_tweaks_list(chosen_tweaks, mode="revert", dry_run=dry_run_mode)
-            print(f"\n{C.GRAY}Devam etmek için bir tuşa basın...{C.RESET}")
+            cont_msg = txt("Devam etmek için bir tuşa basın...", "Press any key to continue...")
+            print(f"\n{C.GRAY}{cont_msg}{C.RESET}")
             get_key()
             break
         elif key in ['q', 'ESC']:
@@ -1517,16 +1872,20 @@ def run_category_menu():
     while True:
         clear_screen()
         print_banner()
-        print(f"{C.BOLD}{C.CYAN}🎛️  Kategorilere Göre Ayar Gezgini{C.RESET}\n")
+        cat_hdr = txt("Kategorilere Göre Ayar Gezgini", "Browse by Category")
+        print(f"{C.BOLD}{C.CYAN}🎛️  {cat_hdr}{C.RESET}\n")
 
         for idx, cat in enumerate(CATEGORIES):
             cat_count = len([t for t in TWEAKS if t["cat"] == cat["id"]])
             cursor = f"{C.CYAN}{C.BOLD}➜{C.RESET}" if idx == selected_idx else " "
             num_styled = f"{C.CYAN}{C.BOLD}[{idx+1}]{C.RESET}" if idx == selected_idx else f"{C.DARK_GRAY}[{idx+1}]{C.RESET}"
-            label_styled = f"{C.WHITE}{C.BOLD}{cat['name']}{C.RESET}" if idx == selected_idx else f"{C.GRAY}{cat['name']}{C.RESET}"
-            print(f" {cursor} {num_styled} {cat['icon']}  {label_styled} {C.DARK_GRAY}({cat_count} Ayar){C.RESET}")
+            cat_label = c_name(cat)
+            label_styled = f"{C.WHITE}{C.BOLD}{cat_label}{C.RESET}" if idx == selected_idx else f"{C.GRAY}{cat_label}{C.RESET}"
+            count_suffix = txt("Ayar", "Tweaks")
+            print(f" {cursor} {num_styled} {cat['icon']}  {label_styled} {C.DARK_GRAY}({cat_count} {count_suffix}){C.RESET}")
 
-        print(f"\n{C.DARK_GRAY}Navigasyon: [↑/↓] Gezin • [Enter/Space] Kategoriye Gir • [1-7] Hızlı Tuş • [q/Esc] Geri{C.RESET}")
+        nav_cat = txt("Navigasyon: [↑/↓] Gezin • [Enter/Space] Kategoriye Gir • [1-7] Hızlı Tuş • [q/Esc] Geri", "Navigation: [↑/↓] Navigate • [Enter/Space] Enter Category • [1-7] Direct Key • [q/Esc] Back")
+        print(f"\n{C.DARK_GRAY}{nav_cat}{C.RESET}")
 
         key = get_key()
         if key in ['UP', 'k']:
@@ -1548,31 +1907,35 @@ def run_category_menu():
 def run_search_menu():
     clear_screen()
     print_banner()
-    print(f"{C.BOLD}{C.CYAN}🔍  Terminal İçi Ayar Arama{C.RESET}")
-    print(f"{C.DARK_GRAY}Aramak istediğiniz anahtar kelimeyi yazın (örn: dock, sudo, finder, tahoe):{C.RESET}\n")
+    search_hdr = txt("Terminal İçi Ayar Arama", "Live Terminal Tweak Search")
+    search_sub = txt("Aramak istediğiniz anahtar kelimeyi yazın (örn: dock, sudo, finder, tahoe):", "Enter search query keyword (e.g. dock, sudo, finder, battery, tahoe):")
+    print(f"{C.BOLD}{C.CYAN}🔍  {search_hdr}{C.RESET}")
+    print(f"{C.DARK_GRAY}{search_sub}{C.RESET}\n")
+    search_prompt = txt("Arama", "Search")
     try:
-        query = input(f"{C.BOLD}{C.CYAN}Arama ➜ {C.RESET}").strip().lower()
+        query = input(f"{C.BOLD}{C.CYAN}{search_prompt} ➜ {C.RESET}").strip().lower()
     except Exception:
         return
 
     if not query:
         return
 
-    matched = [t for t in TWEAKS if query in t["title"].lower() or query in t["desc"].lower() or query in t["apply"].lower() or query in t["tag"].lower()]
+    matched = [t for t in TWEAKS if query in t["title"].lower() or query in t.get("title_en", "").lower() or query in t["desc"].lower() or query in t.get("desc_en", "").lower() or query in t["apply"].lower() or query in t["tag"].lower()]
     
     if not matched:
-        print(f"\n{C.ROSE}❌ '{query}' ile eşleşen ayar bulunamadı.{C.RESET}")
+        no_res = txt(f"'{query}' ile eşleşen ayar bulunamadı.", f"No tweaks found matching '{query}'.")
+        print(f"\n{C.ROSE}❌ {no_res}{C.RESET}")
         time.sleep(1.5)
         return
 
-    # Open selector with matched items
     selected_set = set()
     cursor_idx = 0
 
     while True:
         clear_screen()
         print_banner()
-        print(f"{C.BOLD}{C.CYAN}🔍  '{query}' Arama Sonuçları ({len(matched)} Ayar Bulundu){C.RESET}")
+        res_hdr = txt(f"'{query}' Arama Sonuçları ({len(matched)} Ayar Bulundu)", f"'{query}' Search Results ({len(matched)} Tweaks Found)")
+        print(f"{C.BOLD}{C.CYAN}🔍  {res_hdr}{C.RESET}")
         print("─" * 70)
 
         for idx, t in enumerate(matched):
@@ -1581,9 +1944,10 @@ def run_search_menu():
             cursor_mark = f"{C.CYAN}➜{C.RESET}" if is_cur else " "
             check_mark = f"{C.EMERALD}[✔]{C.RESET}" if is_sel else f"{C.DARK_GRAY}[ ]{C.RESET}"
             text_style = f"{C.BOLD}{C.WHITE}" if is_cur else f"{C.GRAY}"
-            print(f" {cursor_mark} {check_mark} {text_style}{t['title'][:44]}{C.RESET} {C.DARK_GRAY}[{t['tag']}]{C.RESET}")
+            print(f" {cursor_mark} {check_mark} {text_style}{t_title(t)[:44]}{C.RESET} {C.DARK_GRAY}[{t['tag']}]{C.RESET}")
 
-        print(f"\n{C.DARK_GRAY}Navigasyon: [↑/↓] • [Space] Seç • [a] Tümünü Seç • [Enter] Uygula • [r] Revert • [q] Geri{C.RESET}")
+        nav_search = txt("Navigasyon: [↑/↓] • [Space] Seç • [a] Tümünü Seç • [Enter] Uygula • [r] Revert • [q] Geri", "Navigation: [↑/↓] • [Space] Toggle • [a] All • [Enter] Apply • [r] Revert • [q] Back")
+        print(f"\n{C.DARK_GRAY}{nav_search}{C.RESET}")
 
         key = get_key()
         if key in ['UP', 'k']:
@@ -1600,13 +1964,15 @@ def run_search_menu():
         elif key == 'ENTER':
             chosen = [t for t in matched if t["id"] in selected_set] or [matched[cursor_idx]]
             apply_tweaks_list(chosen, mode="apply")
-            print(f"\n{C.GRAY}Devam etmek için bir tuşa basın...{C.RESET}")
+            cont_msg = txt("Devam etmek için bir tuşa basın...", "Press any key to continue...")
+            print(f"\n{C.GRAY}{cont_msg}{C.RESET}")
             get_key()
             break
         elif key == 'r':
             chosen = [t for t in matched if t["id"] in selected_set] or [matched[cursor_idx]]
             apply_tweaks_list(chosen, mode="revert")
-            print(f"\n{C.GRAY}Devam etmek için bir tuşa basın...{C.RESET}")
+            cont_msg = txt("Devam etmek için bir tuşa basın...", "Press any key to continue...")
+            print(f"\n{C.GRAY}{cont_msg}{C.RESET}")
             get_key()
             break
         elif key in ['q', 'ESC']:
@@ -1616,45 +1982,51 @@ def run_search_menu():
 def export_custom_scripts():
     clear_screen()
     print_banner()
-    print(f"{C.BOLD}{C.GOLD}📦  Kişiselleştirilmiş Bash Betiği Olarak Kaydet (.sh Export){C.RESET}\n")
+    exp_hdr = txt("Kişiselleştirilmiş Bash Betiği Olarak Kaydet (.sh Export)", "Export Customized Bash Setup/Reset Scripts (.sh)")
+    print(f"{C.BOLD}{C.GOLD}📦  {exp_hdr}{C.RESET}\n")
 
     setup_file = "custom-macos-setup.sh"
     revert_file = "custom-macos-revert.sh"
 
     # Generate Setup
     with open(setup_file, "w", encoding="utf-8") as f:
-        f.write(f"#!/usr/bin/env bash\n# macOS Kişiselleştirilmiş Kurulum Betiği (100 Ayar)\nset -e\nsudo -v\n\n")
+        f.write(f"#!/usr/bin/env bash\n# macOS Power-User Setup Script ({len(TWEAKS)} Tweaks)\n# Repository: https://github.com/Jarvis322/macoscode\nset -e\nsudo -v\n\n")
         for t in TWEAKS:
-            f.write(f"# {t['title']}\n# ⏪ Revert: {t['revert']}\n{t['apply']}\n\n")
-        f.write("killall Finder Dock WindowManager 2>/dev/null || true\necho '✨ Tamamlandı!'\n")
+            f.write(f"# {t_title(t)}\n# Revert: {t['revert']}\n{t['apply']}\n\n")
+        f.write("killall Finder Dock WindowManager 2>/dev/null || true\necho '✨ Setup complete!'\n")
 
     # Generate Revert
     with open(revert_file, "w", encoding="utf-8") as f:
-        f.write(f"#!/usr/bin/env bash\n# macOS Kişiselleştirilmiş Geri Alma Betiği (100 Ayar)\nset -e\nsudo -v\n\n")
+        f.write(f"#!/usr/bin/env bash\n# macOS Power-User Revert Script ({len(TWEAKS)} Tweaks)\n# Repository: https://github.com/Jarvis322/macoscode\nset -e\nsudo -v\n\n")
         for t in TWEAKS:
-            f.write(f"# {t['title']} (Revert)\n{t['revert']}\n\n")
-        f.write("killall Finder Dock WindowManager 2>/dev/null || true\necho '✅ Fabrika varsayılanına döndürüldü!'\n")
+            f.write(f"# {t_title(t)} (Revert)\n{t['revert']}\n\n")
+        f.write("killall Finder Dock WindowManager 2>/dev/null || true\necho '✅ Restored to Apple factory defaults!'\n")
 
     os.chmod(setup_file, 0o755)
     os.chmod(revert_file, 0o755)
 
-    print(f"{C.EMERALD}✔ {setup_file} oluşturuldu.{C.RESET}")
-    print(f"{C.EMERALD}✔ {revert_file} oluşturuldu.{C.RESET}")
-    print(f"\n{C.CYAN}Bu betikleri doğrudan './{setup_file}' veya './{revert_file}' şeklinde çalıştırabilirsiniz.{C.RESET}")
-    print(f"\n{C.GRAY}Menüye dönmek için bir tuşa basın...{C.RESET}")
+    created_lbl = txt("oluşturuldu.", "created successfully.")
+    print(f"{C.EMERALD}✔ {setup_file} {created_lbl}{C.RESET}")
+    print(f"{C.EMERALD}✔ {revert_file} {created_lbl}{C.RESET}")
+    run_msg = txt(f"Bu betikleri doğrudan ./{setup_file} veya ./{revert_file} şeklinde çalıştırabilirsiniz.", f"You can run these scripts directly via ./{setup_file} or ./{revert_file}")
+    print(f"\n{C.CYAN}{run_msg}{C.RESET}")
+    back_msg = txt("Menüye dönmek için bir tuşa basın...", "Press any key to return to menu...")
+    print(f"\n{C.GRAY}{back_msg}{C.RESET}")
     get_key()
 
 # Self Installer (mc -> /usr/local/bin or ~/.local/bin)
 def install_mc_globally():
     clear_screen()
     print_banner()
-    print(f"{C.BOLD}{C.CYAN}⚙️   'mc' Komutunu Global Sisteme Yükle{C.RESET}\n")
+    title_lbl = txt("'mc' Komutunu Global Sisteme Yükle", "Install 'mc' Command Globally")
+    print(f"{C.BOLD}{C.CYAN}⚙️   {title_lbl}{C.RESET}\n")
 
     script_path = os.path.abspath(__file__)
     installed = False
     target_dir = "/usr/local/bin"
     target_mc = os.path.join(target_dir, "mc")
     target_macoscode = os.path.join(target_dir, "macoscode")
+    installed_lbl = txt("başarıyla kuruldu.", "installed successfully.")
 
     try:
         os.makedirs(target_dir, exist_ok=True)
@@ -1663,15 +2035,16 @@ def install_mc_globally():
         os.chmod(target_mc, 0o755)
         os.chmod(target_macoscode, 0o755)
         installed = True
-        print(f"{C.EMERALD}✔ '{target_mc}' başarıyla kuruldu.{C.RESET}")
-        print(f"{C.EMERALD}✔ '{target_macoscode}' başarıyla kuruldu.{C.RESET}")
+        print(f"{C.EMERALD}✔ '{target_mc}' {installed_lbl}{C.RESET}")
+        print(f"{C.EMERALD}✔ '{target_macoscode}' {installed_lbl}{C.RESET}")
     except PermissionError:
-        print(f"{C.GOLD}🔐 '/usr/local/bin' için yönetici (sudo) izni isteniyor...{C.RESET}")
+        perm_msg = txt("'/usr/local/bin' için yönetici (sudo) izni isteniyor...", "Admin (sudo) permission requested for '/usr/local/bin'...")
+        print(f"{C.GOLD}🔐 {perm_msg}{C.RESET}")
         res = subprocess.run(f"sudo mkdir -p '{target_dir}' && sudo cp '{script_path}' '{target_mc}' && sudo cp '{script_path}' '{target_macoscode}' && sudo chmod 755 '{target_mc}' '{target_macoscode}'", shell=True)
         if res.returncode == 0:
             installed = True
-            print(f"\n{C.EMERALD}✔ '{target_mc}' başarıyla kuruldu.{C.RESET}")
-            print(f"{C.EMERALD}✔ '{target_macoscode}' başarıyla kuruldu.{C.RESET}")
+            print(f"\n{C.EMERALD}✔ '{target_mc}' {installed_lbl}{C.RESET}")
+            print(f"{C.EMERALD}✔ '{target_macoscode}' {installed_lbl}{C.RESET}")
         else:
             # Fallback to ~/.local/bin
             user_bin = os.path.expanduser("~/.local/bin")
@@ -1683,7 +2056,8 @@ def install_mc_globally():
             os.chmod(u_mc, 0o755)
             os.chmod(u_macoscode, 0o755)
             installed = True
-            print(f"\n{C.EMERALD}✔ '{u_mc}' kullanıcınızın yerel dizinine kuruldu.{C.RESET}")
+            local_lbl = txt("kullanıcınızın yerel dizinine kuruldu.", "installed to your local user directory.")
+            print(f"\n{C.EMERALD}✔ '{u_mc}' {local_lbl}{C.RESET}")
 
             # Ensure PATH in zshrc
             zshrc = os.path.expanduser("~/.zshrc")
@@ -1693,16 +2067,20 @@ def install_mc_globally():
                 if path_export not in content:
                     with open(zshrc, "a") as f:
                         f.write(f"\n# macOSCode mc CLI PATH\n{path_export}\n")
-                    print(f"{C.GRAY}ℹ️  ~/.zshrc dosyanıza PATH tanımı eklendi.{C.RESET}")
+                    path_lbl = txt("dosyanıza PATH tanımı eklendi.", "PATH export added to ~/.zshrc.")
+                    print(f"{C.GRAY}ℹ️  ~/.zshrc {path_lbl}{C.RESET}")
             except Exception:
                 pass
 
     if installed:
-        print(f"\n{C.BOLD}{C.PURPLE}✨ Kurulum tamamlandı! Artık terminalde doğrudan 'mc' veya 'macoscode' yazabilirsiniz! 🚀{C.RESET}")
+        comp_msg = txt("Kurulum tamamlandı! Artık terminalde doğrudan 'mc' veya 'macoscode' yazabilirsiniz! 🚀", "Installation complete! You can now run 'mc' or 'macoscode' anywhere! 🚀")
+        print(f"\n{C.BOLD}{C.PURPLE}✨ {comp_msg}{C.RESET}")
     else:
-        print(f"\n{C.ROSE}❌ Kurulum tamamlanamadı.{C.RESET}")
+        fail_msg = txt("Kurulum tamamlanamadı.", "Installation failed.")
+        print(f"\n{C.ROSE}❌ {fail_msg}{C.RESET}")
 
-    print(f"\n{C.GRAY}Menüye dönmek için bir tuşa basın...{C.RESET}")
+    back_msg = txt("Menüye dönmek için bir tuşa basın...", "Press any key to return to menu...")
+    print(f"\n{C.GRAY}{back_msg}{C.RESET}")
     get_key()
 
 # Self Updater (Fetch latest mc from GitHub and update local binaries)
@@ -1710,48 +2088,60 @@ def update_mc(interactive=True, force=False):
     if interactive:
         clear_screen()
         print_banner()
-    print(f"{C.BOLD}{C.CYAN}🔄  'mc' Sürüm ve Güncelleme Denetimi (Self-Update){C.RESET}\n")
-    print(f"Mevcut Sürüm: {C.BOLD}{C.EMERALD}v{VERSION}{C.RESET} (Build {VERSION_CODE})")
-    print(f"{C.GRAY}GitHub üzerindeki en son sürüm sorgulanıyor...{C.RESET}\n")
+    upd_hdr = txt("'mc' Sürüm ve Güncelleme Denetimi (Self-Update)", "'mc' Version & Self-Update Checker")
+    print(f"{C.BOLD}{C.CYAN}🔄  {upd_hdr}{C.RESET}\n")
+    cur_lbl = txt("Mevcut Sürüm:", "Current Local Version:")
+    print(f"{cur_lbl} {C.BOLD}{C.EMERALD}v{VERSION}{C.RESET} (Build {VERSION_CODE})")
+    query_lbl = txt("GitHub üzerindeki en son sürüm sorgulanıyor...", "Querying latest release from GitHub...")
+    print(f"{C.GRAY}{query_lbl}{C.RESET}\n")
     
     url = "https://raw.githubusercontent.com/Jarvis322/macoscode/main/scripts/mc"
     try:
         req = urllib.request.Request(url, headers={'User-Agent': 'macOSCode-CLI-Updater'})
         with urllib.request.urlopen(req, timeout=12) as response:
             if response.status != 200:
-                print(f"\n{C.ROSE}❌ Güncelleme indirilemedi: HTTP {response.status}{C.RESET}")
+                http_err = txt("Güncelleme indirilemedi: HTTP", "Failed to fetch update: HTTP")
+                print(f"\n{C.ROSE}❌ {http_err} {response.status}{C.RESET}")
                 if interactive:
-                    print(f"\n{C.GRAY}Devam etmek için bir tuşa basın...{C.RESET}")
+                    cont_msg = txt("Devam etmek için bir tuşa basın...", "Press any key to continue...")
+                    print(f"\n{C.GRAY}{cont_msg}{C.RESET}")
                     get_key()
                 return
             new_code = response.read().decode('utf-8')
     except Exception as e:
-        print(f"\n{C.ROSE}❌ Bağlantı hatası: {e}{C.RESET}")
+        conn_err = txt("Bağlantı hatası:", "Connection error:")
+        print(f"\n{C.ROSE}❌ {conn_err} {e}{C.RESET}")
         if interactive:
-            print(f"\n{C.GRAY}Devam etmek için bir tuşa basın...{C.RESET}")
+            cont_msg = txt("Devam etmek için bir tuşa basın...", "Press any key to continue...")
+            print(f"\n{C.GRAY}{cont_msg}{C.RESET}")
             get_key()
         return
 
     if "#!/usr/bin/env python3" not in new_code or len(new_code) < 1000:
-        print(f"\n{C.ROSE}❌ İndirilen dosya geçerli bir macOSCode betiği değil.{C.RESET}")
+        inv_err = txt("İndirilen dosya geçerli bir macOSCode betiği değil.", "Downloaded content is not a valid macOSCode script.")
+        print(f"\n{C.ROSE}❌ {inv_err}{C.RESET}")
         if interactive:
-            print(f"\n{C.GRAY}Devam etmek için bir tuşa basın...{C.RESET}")
+            cont_msg = txt("Devam etmek için bir tuşa basın...", "Press any key to continue...")
+            print(f"\n{C.GRAY}{cont_msg}{C.RESET}")
             get_key()
         return
 
     # Extract remote version
-    rem_ver_match = re.search(r'VERSION\s*=\s*["\']([^"\']+)["\']', new_code)
+    rem_ver_match = re.search(r'VERSION\s*=\s*["\']([0-9a-zA-Z\.]+)["\']', new_code)
     rem_code_match = re.search(r'VERSION_CODE\s*=\s*(\d+)', new_code)
     
     remote_version = rem_ver_match.group(1) if rem_ver_match else "unknown"
     remote_vcode = int(rem_code_match.group(1)) if rem_code_match else 0
 
-    print(f"En Son GitHub Sürümü: {C.BOLD}{C.CYAN}v{remote_version}{C.RESET} (Build {remote_vcode})\n")
+    latest_lbl = txt("En Son GitHub Sürümü:", "Latest GitHub Release:")
+    print(f"{latest_lbl} {C.BOLD}{C.CYAN}v{remote_version}{C.RESET} (Build {remote_vcode})\n")
 
     if remote_vcode > 0 and remote_vcode <= VERSION_CODE and not force:
-        print(f"{C.EMERALD}✔ Zaten en güncel sürümü (v{VERSION}) kullanıyorsunuz!{C.RESET}")
+        up_to_date = txt(f"Zaten en güncel sürümü (v{VERSION}) kullanıyorsunuz!", f"You are already running the latest version (v{VERSION})!")
+        print(f"{C.EMERALD}✔ {up_to_date}{C.RESET}")
         if interactive:
-            print(f"\n{C.GOLD}Yine de zorla yeniden yüklemek ister misiniz? (e/h):{C.RESET} ", end="")
+            force_prompt = txt("Yine de zorla yeniden yüklemek ister misiniz? (e/h):", "Do you still want to force reinstall? (y/n):")
+            print(f"\n{C.GOLD}{force_prompt}{C.RESET} ", end="")
             choice = get_key()
             if choice.lower() not in ['e', 'y']:
                 return
@@ -1759,8 +2149,10 @@ def update_mc(interactive=True, force=False):
             return
 
     if remote_vcode > VERSION_CODE:
-        print(f"{C.GOLD}🚀 Yeni bir sürüm bulundu: {C.ROSE}v{VERSION}{C.GOLD} ➜ {C.EMERALD}v{remote_version}{C.RESET}")
-        print(f"{C.CYAN}Güncelleme uygulanıyor...{C.RESET}\n")
+        avail_msg = txt("Yeni bir sürüm bulundu:", "New version available:")
+        print(f"{C.GOLD}🚀 {avail_msg} {C.ROSE}v{VERSION}{C.GOLD} ➜ {C.EMERALD}v{remote_version}{C.RESET}")
+        apply_msg = txt("Güncelleme uygulanıyor...", "Applying update...")
+        print(f"{C.CYAN}{apply_msg}{C.RESET}\n")
 
     targets = []
     current_script = os.path.abspath(__file__)
@@ -1785,18 +2177,23 @@ def update_mc(interactive=True, force=False):
         try:
             shutil.copyfile(temp_path, target)
             os.chmod(target, 0o755)
-            print(f"{C.EMERALD}✔ '{target}' güncellendi (v{remote_version}).{C.RESET}")
+            upd_str = txt("güncellendi", "updated")
+            print(f"{C.EMERALD}✔ '{target}' {upd_str} (v{remote_version}).{C.RESET}")
             updated_any = True
         except PermissionError:
-            print(f"{C.GOLD}🔐 '{target}' güncellemesi için yönetici (sudo) izni isteniyor...{C.RESET}")
+            sudo_req = txt("güncellemesi için yönetici (sudo) izni isteniyor...", "update requires administrator (sudo) privileges...")
+            print(f"{C.GOLD}🔐 '{target}' {sudo_req}{C.RESET}")
             res = subprocess.run(f"sudo cp '{temp_path}' '{target}' && sudo chmod 755 '{target}'", shell=True)
             if res.returncode == 0:
-                print(f"{C.EMERALD}✔ '{target}' güncellendi (v{remote_version}, sudo ile).{C.RESET}")
+                sudo_upd = txt("güncellendi (sudo ile).", "updated (with sudo).")
+                print(f"{C.EMERALD}✔ '{target}' {sudo_upd} (v{remote_version}){C.RESET}")
                 updated_any = True
             else:
-                print(f"{C.ROSE}❌ '{target}' güncellenemedi.{C.RESET}")
+                fail_upd = txt("güncellenemedi.", "failed to update.")
+                print(f"{C.ROSE}❌ '{target}' {fail_upd}{C.RESET}")
         except Exception as e:
-            print(f"{C.ROSE}❌ '{target}' güncellenirken hata: {e}{C.RESET}")
+            err_upd = txt("güncellenirken hata:", "update error:")
+            print(f"{C.ROSE}❌ '{target}' {err_upd} {e}{C.RESET}")
 
     try:
         os.remove(temp_path)
@@ -1804,34 +2201,40 @@ def update_mc(interactive=True, force=False):
         pass
 
     if updated_any:
-        print(f"\n{C.BOLD}{C.PURPLE}🎉 Başarılı! 'mc' v{remote_version} (Build {remote_vcode}) sürümüne yükseltildi! 🚀{C.RESET}")
+        succ_msg = txt(f"Başarılı! 'mc' v{remote_version} (Build {remote_vcode}) sürümüne yükseltildi! 🚀", f"Success! 'mc' upgraded to v{remote_version} (Build {remote_vcode})! 🚀")
+        print(f"\n{C.BOLD}{C.PURPLE}🎉 {succ_msg}{C.RESET}")
     else:
-        print(f"\n{C.GOLD}⚠️ Hedef dosyalar güncellenemedi.{C.RESET}")
+        warn_msg = txt("Hedef dosyalar güncellenemedi.", "Target files could not be updated.")
+        print(f"\n{C.GOLD}⚠️ {warn_msg}{C.RESET}")
 
     if interactive:
-        print(f"\n{C.GRAY}Menüye dönmek için bir tuşa basın...{C.RESET}")
+        back_msg = txt("Menüye dönmek için bir tuşa basın...", "Press any key to return to menu...")
+        print(f"\n{C.GRAY}{back_msg}{C.RESET}")
         get_key()
 
 # Main Interactive TUI Loop
 def run_main_tui():
     selected_idx = 0
-    menu_items = [
-        ("[1]", "🚀", "Master Setup (Tüm 100 Ayarı Tek Tıkla Uygula)", "apply_all"),
-        ("[2]", "⏪", "Master Revert (Tüm Ayarları Fabrika Varsayılanına Döndür)", "revert_all"),
-        ("[3]", "🎛️ ", "İnteraktif Kategori & Ayar Seçici (TUI)", "categories"),
-        ("[4]", "⚡", "Hızlı Paketler (Presets: Developer, Speed, Battery, Tahoe)", "presets"),
-        ("[5]", "🔍", "Canlı Arama & Filtreleme (Search by Keyword)", "search"),
-        ("[6]", "📊", "Sistem Denetimi & Durum Raporu (System Audit / Status)", "audit"),
-        ("[7]", "📦", "Kişiselleştirilmiş Bash Betiği Olarak Kaydet (.sh Export)", "export"),
-        ("[8]", "⚙️ ", "'mc' Komutunu Global Sisteme Yükle (Install CLI)", "install"),
-        ("[9]", "🔄", "'mc' Aracını Güncelle (Self-Update from GitHub)", "update"),
-        ("[0]", "🚪", "Çıkış (Quit)", "quit")
-    ]
 
     while True:
+        menu_items = [
+            ("[1]", "🚀", txt("Master Setup (Tüm 100 Ayarı Tek Tıkla Uygula)", "Master Setup (Apply All 100 Optimizations)"), "apply_all"),
+            ("[2]", "⏪", txt("Master Revert (Tüm Ayarları Fabrika Varsayılanına Döndür)", "Master Revert (Restore All to Apple Defaults)"), "revert_all"),
+            ("[3]", "🎛️ ", txt("İnteraktif Kategori & Ayar Seçici (TUI)", "Interactive Category & Tweak Selector"), "categories"),
+            ("[4]", "⚡", txt("Hızlı Paketler (Presets: Developer, Speed, Battery, Tahoe)", "Quick Presets (Developer, Speed, Battery, Tahoe)"), "presets"),
+            ("[5]", "🔍", txt("Canlı Arama & Filtreleme (Search by Keyword)", "Live Search & Keyword Filter"), "search"),
+            ("[6]", "📊", txt("Sistem Denetimi & Durum Raporu (System Audit / Status)", "System Audit & Health Status Report"), "audit"),
+            ("[7]", "📦", txt("Kişiselleştirilmiş Bash Betiği Olarak Kaydet (.sh Export)", "Export Customized Bash Scripts (.sh)"), "export"),
+            ("[8]", "⚙️ ", txt("'mc' Komutunu Global Sisteme Yükle (Install CLI)", "Install 'mc' CLI Globally"), "install"),
+            ("[9]", "🔄", txt("'mc' Aracını Güncelle (Self-Update from GitHub)", "Self-Update 'mc' from GitHub"), "update"),
+            ("[L]", "🌐", txt("Dili Değiştir / Switch Language: 🇹🇷 Türkçe ➜ 🇬🇧 English", "Switch Language / Dili Değiştir: 🇬🇧 English ➜ 🇹🇷 Türkçe"), "toggle_lang"),
+            ("[0]", "🚪", txt("Çıkış (Quit)", "Quit"), "quit")
+        ]
+
         clear_screen()
         print_banner()
-        print(f"{C.BOLD}{C.WHITE}Lütfen yapmak istediğiniz işlemi seçin:{C.RESET}\n")
+        action_prompt = txt("Lütfen yapmak istediğiniz işlemi seçin:", "Please choose an action:")
+        print(f"{C.BOLD}{C.WHITE}{action_prompt}{C.RESET}\n")
 
         for idx, (num_tag, icon, label, action) in enumerate(menu_items):
             cursor = f"{C.CYAN}{C.BOLD}➜{C.RESET}" if idx == selected_idx else " "
@@ -1839,7 +2242,8 @@ def run_main_tui():
             label_styled = f"{C.WHITE}{C.BOLD}{label}{C.RESET}" if idx == selected_idx else f"{C.GRAY}{label}{C.RESET}"
             print(f" {cursor} {num_styled} {icon}  {label_styled}")
 
-        print(f"\n{C.DARK_GRAY}Navigasyon: [↑/↓] Gezin • [Enter/Space] Seç • [1-9/0] Hızlı Tuş • [q] Çıkış{C.RESET}")
+        nav_main = txt("Navigasyon: [↑/↓] Gezin • [Enter/Space] Seç • [1-9/L/0] Hızlı Tuş • [q] Çıkış", "Navigation: [↑/↓] Navigate • [Enter/Space] Select • [1-9/L/0] Direct Key • [q] Quit")
+        print(f"\n{C.DARK_GRAY}{nav_main}{C.RESET}")
 
         key = get_key()
         if key in ['UP', 'k']:
@@ -1854,24 +2258,31 @@ def run_main_tui():
         elif key in ['1', '2', '3', '4', '5', '6', '7', '8', '9']:
             idx = int(key) - 1
             handle_action(menu_items[idx][3])
+        elif key in ['l', 'L']:
+            handle_action("toggle_lang")
         elif key in ['0', 'q', 'ESC']:
-            print(f"\n{C.CYAN}macOSCode ile sisteminiz daima en yüksek performansta! Görüşmek üzere! 👋{C.RESET}\n")
+            bye_msg = txt("macOSCode ile sisteminiz daima en yüksek performansta! Görüşmek üzere! 👋", "Keep your Mac tuned with macOSCode! See you next time! 👋")
+            print(f"\n{C.CYAN}{bye_msg}{C.RESET}\n")
             break
 
 def handle_action(action):
     if action == "apply_all":
-        print(f"\n{C.GOLD}Tüm 100 optimizasyon uygulanacak. Onaylıyor musunuz? (e/h):{C.RESET} ", end="")
+        apply_prompt = txt("Tüm 100 optimizasyon uygulanacak. Onaylıyor musunuz? (e/h):", "All 100 optimizations will be applied. Continue? (y/n):")
+        print(f"\n{C.GOLD}{apply_prompt}{C.RESET} ", end="")
         choice = get_key()
         if choice.lower() in ['e', 'y', 'ENTER']:
             apply_tweaks_list(TWEAKS, mode="apply")
-            print(f"\n{C.GRAY}Devam etmek için bir tuşa basın...{C.RESET}")
+            cont_msg = txt("Devam etmek için bir tuşa basın...", "Press any key to continue...")
+            print(f"\n{C.GRAY}{cont_msg}{C.RESET}")
             get_key()
     elif action == "revert_all":
-        print(f"\n{C.ROSE}Tüm ayarlar Apple fabrika varsayılanına döndürülecek. Onaylıyor musunuz? (e/h):{C.RESET} ", end="")
+        revert_prompt = txt("Tüm ayarlar Apple fabrika varsayılanına döndürülecek. Onaylıyor musunuz? (e/h):", "All settings will be restored to Apple defaults. Continue? (y/n):")
+        print(f"\n{C.ROSE}{revert_prompt}{C.RESET} ", end="")
         choice = get_key()
         if choice.lower() in ['e', 'y', 'ENTER']:
             apply_tweaks_list(TWEAKS, mode="revert")
-            print(f"\n{C.GRAY}Devam etmek için bir tuşa basın...{C.RESET}")
+            cont_msg = txt("Devam etmek için bir tuşa basın...", "Press any key to continue...")
+            print(f"\n{C.GRAY}{cont_msg}{C.RESET}")
             get_key()
     elif action == "categories":
         run_category_menu()
@@ -1887,37 +2298,46 @@ def handle_action(action):
         install_mc_globally()
     elif action == "update":
         update_mc(interactive=True)
+    elif action == "toggle_lang":
+        new_lang = "tr" if CURRENT_LANG == "en" else "en"
+        save_persisted_lang(new_lang)
 
 # CLI Main Entry Point
 def main():
+    global CURRENT_LANG
     parser = argparse.ArgumentParser(
         description=f"macOSCode (mc) v{VERSION} - Interactive Terminal UI & macOS Power-User CLI",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=f"""Örnek Kullanımlar:
-  mc                     İnteraktif TUI menüsünü açar
-  mc --apply-all         Tüm 100 optimizasyonu tek satırda uygular
-  mc --revert-all        Tüm ayarları orijinal fabrika varsayılanına döndürür
-  mc --status            Sistemdeki ayarların aktiflik durumunu tarar (Audit)
-  mc --preset dev        Geliştirici optimizasyon paketini uygular
-  mc --search dock       'dock' ile ilgili ayarları arar ve listeler
-  mc --install           'mc' komutunu sisteme kalıcı olarak yükler
-  mc --update            'mc' komutunu GitHub'dan en son sürüme günceller
-  mc --version           Sürüm bilgisini gösterir (v{VERSION})
+        epilog=f"""Examples / Örnekler:
+  mc                     Launch interactive TUI menu / İnteraktif TUI menüsünü açar
+  mc --apply-all         Apply all 100 tweaks in 1-line / Tüm 100 optimizasyonu uygular
+  mc --revert-all        Restore all settings to Apple factory defaults / Tüm ayarları sıfırlar
+  mc --status            Scan system for active tweaks status / Sistem denetimi (Audit)
+  mc --preset dev        Apply developer presets (dev | speed | battery | tahoe)
+  mc --search dock       Search and list tweaks matching "dock"
+  mc --lang en           Set active language to English / Turkish (en | tr)
+  mc --install           Install "mc" command globally / Sisteme kalıcı kurar
+  mc --update            Self-update "mc" CLI from GitHub / GitHub'dan günceller
+  mc --version           Show version info (v{VERSION})
 """
     )
     parser.add_argument("-v", "--version", action="version", version=f"macOSCode CLI (mc) v{VERSION} (Build {VERSION_CODE})")
-    parser.add_argument("-a", "--apply-all", action="store_true", help="Tüm 100 ayarı uygula")
-    parser.add_argument("-r", "--revert-all", action="store_true", help="Tüm ayarları sıfırla (revert)")
-    parser.add_argument("-s", "--status", action="store_true", help="Sistem denetimi ve durum raporu (Audit)")
-    parser.add_argument("-p", "--preset", choices=["dev", "speed", "battery", "tahoe"], help="Hızlı optimizasyon paketi çalıştır")
-    parser.add_argument("--search", type=str, help="Belirli bir kelimeyi ara")
-    parser.add_argument("-d", "--dry-run", action="store_true", help="Komutları çalıştırmadan sadece ekranda göster")
-    parser.add_argument("-i", "--install", action="store_true", help="'mc' komutunu /usr/local/bin dizinine yükle")
-    parser.add_argument("-u", "--update", action="store_true", help="'mc' aracını GitHub'dan en son sürüme güncelle")
-    parser.add_argument("-f", "--force", action="store_true", help="Sürüm aynı olsa bile güncellemeyi zorla")
-    parser.add_argument("-t", "--tui", action="store_true", help="İnteraktif TUI modunu başlat")
+    parser.add_argument("-a", "--apply-all", action="store_true", help=txt("Tüm 100 ayarı uygula", "Apply all 100 optimizations"))
+    parser.add_argument("-r", "--revert-all", action="store_true", help=txt("Tüm ayarları sıfırla (revert)", "Restore all settings to Apple factory defaults"))
+    parser.add_argument("-s", "--status", action="store_true", help=txt("Sistem denetimi ve durum raporu (Audit)", "Run system configuration audit"))
+    parser.add_argument("-p", "--preset", choices=["dev", "speed", "battery", "tahoe"], help=txt("Hızlı optimizasyon paketi çalıştır", "Run preset suite"))
+    parser.add_argument("--search", type=str, help=txt("Belirli bir kelimeyi ara", "Search tweaks by keyword"))
+    parser.add_argument("-l", "--lang", choices=["en", "tr"], help=txt("Dili ayarla (en: English, tr: Türkçe)", "Set CLI language (en: English, tr: Turkish)"))
+    parser.add_argument("-d", "--dry-run", action="store_true", help=txt("Komutları çalıştırmadan sadece ekranda göster", "Preview commands without applying"))
+    parser.add_argument("-i", "--install", action="store_true", help=txt("'mc' komutunu global sisteme yükle", "Install 'mc' globally to PATH"))
+    parser.add_argument("-u", "--update", action="store_true", help=txt("'mc' aracını GitHub'dan en son sürüme güncelle", "Self-update 'mc' to latest GitHub release"))
+    parser.add_argument("-f", "--force", action="store_true", help=txt("Sürüm aynı olsa bile güncellemeyi zorla", "Force reinstall during update"))
+    parser.add_argument("-t", "--tui", action="store_true", help=txt("İnteraktif TUI modunu başlat", "Launch interactive TUI mode"))
 
     args = parser.parse_args()
+
+    if args.lang:
+        save_persisted_lang(args.lang)
 
     # Non-interactive CLI flags
     if args.apply_all:
@@ -1925,18 +2345,19 @@ def main():
     elif args.revert_all:
         apply_tweaks_list(TWEAKS, mode="revert", dry_run=args.dry_run)
     elif args.status:
-        run_system_audit()
+        run_system_audit(interactive=False)
     elif args.preset:
         chosen = PRESETS[args.preset]
         tweaks_to_run = [t for t in TWEAKS if t["id"] in chosen["ids"]]
         apply_tweaks_list(tweaks_to_run, mode="apply", dry_run=args.dry_run)
     elif args.search:
         q = args.search.lower()
-        matched = [t for t in TWEAKS if q in t["title"].lower() or q in t["desc"].lower() or q in t["apply"].lower() or q in t["tag"].lower()]
-        print(f"\n{C.CYAN}🔍 '{args.search}' için {len(matched)} ayar bulundu:{C.RESET}\n")
+        matched = [t for t in TWEAKS if q in t["title"].lower() or q in t.get("title_en", "").lower() or q in t["desc"].lower() or q in t.get("desc_en", "").lower() or q in t["apply"].lower() or q in t["tag"].lower()]
+        found_msg = txt(f"'{args.search}' için {len(matched)} ayar bulundu:", f"Found {len(matched)} tweaks matching '{args.search}':")
+        print(f"\n{C.CYAN}🔍 {found_msg}{C.RESET}\n")
         for i, t in enumerate(matched, 1):
-            print(f" {C.BOLD}{i}. {t['title']}{C.RESET} {C.DARK_GRAY}[{t['tag']}]{C.RESET}")
-            print(f"    {C.GRAY}{t['desc']}{C.RESET}")
+            print(f" {C.BOLD}{i}. {t_title(t)}{C.RESET} {C.DARK_GRAY}[{t['tag']}]{C.RESET}")
+            print(f"    {C.GRAY}{t_desc(t)}{C.RESET}")
             print(f"    {C.CYAN}$ {t['apply'].replace(chr(10), ' && ')}{C.RESET}\n")
     elif args.install:
         install_mc_globally()

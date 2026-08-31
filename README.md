@@ -1,89 +1,94 @@
 # 🚀 macOS 100 Power-User Tweaks & Interactive CLI Cheatsheet (2026)
 
+[🇬🇧 English Documentation](README.md) • [🇹🇷 Türkçe Dokümantasyon](README_TR.md)
+
 [![GitHub Pages](https://img.shields.io/badge/Live-Web%20App-brightgreen?style=for-the-badge&logo=github)](https://jarvis322.github.io/macoscode/)
 [![Interactive TUI](https://img.shields.io/badge/Interactive-TUI%20%2F%20CLI-purple?style=for-the-badge&logo=gnubash)](scripts/mc)
 [![macOS Tahoe Ready](https://img.shields.io/badge/macOS-Tahoe%20%26%20Sequoia-blue?style=for-the-badge&logo=apple)](https://jarvis322.github.io/macoscode/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/Jarvis322/macoscode?style=for-the-badge)](https://github.com/Jarvis322/macoscode/stargazers)
 
-> **Web Uygulaması:** [https://jarvis322.github.io/macoscode/](https://jarvis322.github.io/macoscode/)  
-> **Terminal CLI (İnteraktif TUI):** `curl -sSL https://raw.githubusercontent.com/Jarvis322/macoscode/main/scripts/mc | python3`
+> **Live Web Application:** [https://jarvis322.github.io/macoscode/](https://jarvis322.github.io/macoscode/)  
+> **Terminal CLI (Interactive TUI):** `curl -sSL https://raw.githubusercontent.com/Jarvis322/macoscode/main/scripts/mc | python3`
 
-macOS sistem performansını, pencere yönetimini, Dock/Finder tepkiselliğini ve geliştirici deneyimini en üst seviyeye çıkaran **100 adet doğrulanmış `defaults write` ve Terminal optimizasyonu**.
+A curated, battle-tested collection of **100 verified `defaults write` and Terminal optimizations** to elevate macOS system performance, window management, Dock/Finder responsiveness, battery health, and developer ergonomics.
 
-Gelişmiş **İnteraktif Terminal Arayüzü (TUI/CLI)**, bağımsız tek tıkla **geri alma (revert)** desteği, tek satırlık **Master Setup/Reset** betikleri ve tarayıcıda çalışan **Kişiselleştirilmiş Betik Oluşturucu (Custom Script Builder)** içerir.
+Includes an **Interactive Terminal UI (TUI/CLI)** with instant self-update capabilities, standalone **1-click revert commands**, 1-line **Master Setup/Reset** scripts, and an in-browser **Custom Bash Script Generator** with inline revert comments.
 
 ---
 
-## ⚡ Hızlı Başlangıç
+## ⚡ Quick Start
 
-### 1. 🎛️ İnteraktif Terminal Arayüzü (TUI / CLI)
-Terminalinizde ok tuşlarıyla gezebileceğiniz, `Space` ile ayarları seçip `Enter` ile anında uygulayabileceğiniz veya geri alabileceğiniz interaktif arayüzü başlatın:
+### 1. 🎛️ Interactive Terminal UI (TUI / CLI)
+Launch the interactive terminal interface where you can navigate with arrow keys, select tweaks with `Space`, and apply or revert instantly with `Enter` or `r`:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/Jarvis322/macoscode/main/scripts/mc | python3
 ```
 
-> **İpucu (Kalıcı Kurulum):** `mc` komutunu terminalinize kalıcı olarak yüklemek için araç içinde `8` tuşuna basın, `python3 scripts/mc --install` komutunu çalıştırın veya tek satırda yükleyin:
+> **Tip (Permanent CLI Installation):** To install the `mc` CLI command globally, press `8` inside the TUI menu, run `python3 scripts/mc --install`, or install via 1-liner:
 > ```bash
 > mkdir -p ~/.local/bin && curl -sSL https://raw.githubusercontent.com/Jarvis322/macoscode/main/scripts/mc -o ~/.local/bin/mc && cp ~/.local/bin/mc ~/.local/bin/macoscode && chmod +x ~/.local/bin/mc ~/.local/bin/macoscode
 > ```
 
 ```bash
-mc                     # İnteraktif TUI menüsünü açar
-mc --apply-all         # Tüm 100 optimizasyonu tek satırda uygular
-mc --revert-all        # Tüm ayarları orijinal fabrika varsayılanına döndürür
-mc --status            # Sistemdeki ayarların aktiflik durumunu tarar (System Audit)
-mc --preset dev        # Geliştirici optimizasyon paketini uygular (dev | speed | battery | tahoe)
-mc --search dock       # 'dock' ile ilgili ayarları terminalden arar
-mc --update            # macOSCode CLI aracını en son sürüme günceller
-mc --dry-run           # Değişiklik yapmadan komutları önizler
+mc                     # Launch interactive TUI menu
+mc --apply-all         # Apply all 100 optimizations in a single command
+mc --revert-all        # Restore all settings to Apple factory defaults
+mc --status            # Scan system configuration status (Audit Report)
+mc --preset dev        # Run optimization suites (dev | speed | battery | tahoe)
+mc --search dock       # Search tweaks matching keyword in terminal
+mc --lang en           # Set active language preference (en | tr)
+mc --update            # Self-update 'mc' CLI to the latest GitHub release
+mc --dry-run           # Preview commands without executing changes
 ```
 
 ---
 
-### 2. Tek Satırlık Hızlı Kurulum & Sıfırlama Betikleri
+### 2. 1-Line Master Setup & Reset Scripts
 
-#### 🚀 Tüm 100 Ayarı Tek Seferde Uygula (Master Setup)
+#### 🚀 Apply All 100 Optimizations at Once (Master Setup)
 ```bash
 curl -sSL https://raw.githubusercontent.com/Jarvis322/macoscode/main/scripts/macos-power-setup.sh | bash
 ```
 
-#### ⏪ Yapılan Tüm Ayarları Orijinal Fabrika Varsayılanına Döndür (Master Reset)
+#### ⏪ Restore All Settings to Apple Factory Defaults (Master Reset)
 ```bash
 curl -sSL https://raw.githubusercontent.com/Jarvis322/macoscode/main/scripts/macos-power-revert.sh | bash
 ```
 
 ---
 
-## ✨ Öne Çıkan Özellikler
+## ✨ Key Features
 
-- 🎛️ **İnteraktif CLI (`mc`):** Terminal üzerinden ok tuşlarıyla gezinme, Space ile toggle, Audit durum raporu ve canlı arama.
-- 🚀 **100 İleri Düzey İnce Ayar:** Terminal, Finder, Dock, Klavye/Trackpad, Xcode, Safari, Gizlilik ve Tahoe optimizasyonları.
-- 🔐 **Touch ID ile Sudo Onayı:** Terminalde şifre yazma zorunluluğunu kaldırıp parmak iziyle anında yetkilendirme.
-- 🏔️ **macOS Tahoe & Apple Intelligence:** Writing Tools gecikme sıfırlama, yerel Spotlight önceliği, iPhone Mirroring bildirim gruplama.
-- 📦 **Kişiselleştirilmiş Betik Oluşturucu:** İstediğiniz ayarları seçip tek tıkla özel `custom-macos-setup.sh` (kurulum) ve `custom-macos-revert.sh` (geri alma) betiklerini indirme/kopyalama. Satır içi revert yorumları içerir.
-- ⭐ **Favoriler Sistemi:** En sık kullandığınız komutları yerel depolamada saklama.
-- 🔍 **Canlı Arama & Akıllı Filtreleme:** `⌘ + K` veya `/` ile anında komut arama ve mobilde yer kaplamayan katlanabilir filtreler.
-- 🎨 **Ultra-Premium Glassmorphism:** Apple Tahoe esintili modern koyu tema ve akıcı animasyonlar.
-
----
-
-## 📂 Kategoriler
-
-1. **💻 Terminal & Kabuk:** Hostname sabitleme, zsh yorum desteği, Touch ID sudo yetkisi, Homebrew telemetri kapatma.
-2. **📁 Finder & Dosya Yönetimi:** Tüm dosya uzantılarını gösterme, gizli dosyaları açma, `.DS_Store` engelleme, POSIX başlık yolu, Quick Look metin seçimi.
-3. **🪟 Pencere, Masaüstü & Dock:** Sıfır Dock gecikmesi, Suck küçülme efekti, Mission Control gruplama, döşeme kenarlık boşluklarını kaldırma.
-4. **⌨️ Klavye, Trackpad & Donanım:** Maksimum tuş tekrar hızı, aksan gecikmesini kaldırma, dokunarak tıklama, 3 parmakla sürükleme.
-5. **⚡ Geliştirici, Güvenlik & Sistem:** Xcode build süresi, Safari develop menüsü, açılış gong sesini susturma, JPG ekran görüntüleri, karantina onayını kapatma.
-6. **🏔️ macOS Tahoe & AI:** Snap döşeme önizleme hızlandırma, Stage Manager akıcı geçiş, menü çubuğu simge sıkıştırma, Game Mode optimizasyonu.
-7. **🔋 Ağ, Güç & Bakım:** Düşük ping Wi-Fi, clamshell uykuyu engelleme, DNS flush, hızlı hibernation, %80 pil koruma tetikleme.
+- 🎛️ **Interactive CLI (`mc`):** Arrow-key navigation, Space toggle selection, System Audit health checks, and live keyword search.
+- 🔄 **Self-Updating Engine:** Seamless `mc --update` checks GitHub releases and upgrades local binaries with version locking.
+- 🚀 **100 Verified Power-User Tweaks:** Curated for Terminal, Finder, Dock, Keyboard/Trackpad, Xcode, Safari, Privacy, and macOS Tahoe.
+- 🔐 **Touch ID for Sudo:** Instant biometric authentication in terminal without typing passwords.
+- 🏔️ **macOS Tahoe & Apple Intelligence:** Writing Tools delay removal, local-first Spotlight search, and iPhone Mirroring notification grouping.
+- 📦 **Custom Script Generator:** Select any tweak combination on the web app to download personalized `custom-macos-setup.sh` and `custom-macos-revert.sh` scripts.
+- ⭐ **Favorites System:** Bookmark your most-used commands locally in browser storage.
+- 🔍 **Live Search & Smart Filtering:** `⌘ + K` or `/` hotkeys to search commands with collapsible tag filters.
+- 🌐 **Full Bilingual Support:** Instant Turkish ⟷ English localization across the Web App, CLI, and Documentation.
+- 🎨 **Ultra-Premium Glassmorphic UI:** Inspired by macOS Tahoe aesthetics with responsive cards, micro-interactions, and dark mode.
 
 ---
 
-## 🛠️ Yerel Çalıştırma
+## 📂 Categories
 
-Projeyi yerel ortamınızda görüntülemek için:
+1. **💻 Terminal & Shell:** Persistent hostname, Zsh comment parsing, Touch ID sudo authorization, disable Homebrew analytics.
+2. **📁 Finder & File Management:** Show all file extensions, reveal hidden files, disable `.DS_Store` on USB/network shares, POSIX window paths, Quick Look text selection.
+3. **🪟 Windows, Desktop & Dock:** Zero Dock delay, fluid Suck minimize animation, Mission Control window grouping, borderless window tiling.
+4. **⌨️ Keyboard, Trackpad & Input:** Maximum key repeat rate, disable accent menu delays, tap-to-click, three-finger drag.
+5. **⚡ Developer, Security & System:** Xcode build timers, Safari Web Inspector, mute startup chime, JPG screenshots, disable quarantine popups.
+6. **🏔️ macOS Tahoe & AI:** Snap tiling preview speed, Stage Manager transition acceleration, notch menubar compression, Game Mode boost.
+7. **🔋 Network, Power & Maintenance:** Low-latency Wi-Fi, prevent clamshell sleep, instant DNS flush, fast hibernation, 80% charge limit optimization.
+
+---
+
+## 🛠️ Local Development
+
+To run the web application locally:
 
 ```bash
 git clone https://github.com/Jarvis322/macoscode.git
@@ -91,17 +96,17 @@ cd macoscode
 open index.html
 ```
 
-veya basit bir HTTP sunucusu ile:
+or with any static HTTP server:
 
 ```bash
 npx serve .
-# veya
+# or
 python3 -m http.server 8000
 ```
 
 ---
 
-## 📄 Lisans
+## 📄 License
 
-Bu proje [MIT](LICENSE) lisansı altında sunulmaktadır.
-Dilediğiniz gibi kullanabilir, özelleştirebilir ve paylaşabilirsiniz.
+This project is open-source under the [MIT](LICENSE) License.  
+Feel free to use, customize, and share!
