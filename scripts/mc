@@ -21,6 +21,7 @@ import subprocess
 import shutil
 import time
 import argparse
+import urllib.request
 
 # Reopen /dev/tty if stdin is piped (e.g., curl ... | python3)
 if not sys.stdin.isatty():
@@ -1700,6 +1701,89 @@ def install_mc_globally():
     print(f"\n{C.GRAY}Menüye dönmek için bir tuşa basın...{C.RESET}")
     get_key()
 
+# Self Updater (Fetch latest mc from GitHub and update local binaries)
+def update_mc(interactive=True):
+    if interactive:
+        clear_screen()
+        print_banner()
+    print(f"{C.BOLD}{C.CYAN}🔄  'mc' Otomatik Güncelleme (Self-Update){C.RESET}\n")
+    print(f"{C.GRAY}GitHub üzerindeki en son sürüm kontrol ediliyor...{C.RESET}")
+    
+    url = "https://raw.githubusercontent.com/Jarvis322/macoscode/main/scripts/mc"
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'macOSCode-CLI-Updater'})
+        with urllib.request.urlopen(req, timeout=12) as response:
+            if response.status != 200:
+                print(f"\n{C.ROSE}❌ Güncelleme indirilemedi: HTTP {response.status}{C.RESET}")
+                if interactive:
+                    print(f"\n{C.GRAY}Devam etmek için bir tuşa basın...{C.RESET}")
+                    get_key()
+                return
+            new_code = response.read().decode('utf-8')
+    except Exception as e:
+        print(f"\n{C.ROSE}❌ Bağlantı hatası: {e}{C.RESET}")
+        if interactive:
+            print(f"\n{C.GRAY}Devam etmek için bir tuşa basın...{C.RESET}")
+            get_key()
+        return
+
+    if "#!/usr/bin/env python3" not in new_code or len(new_code) < 1000:
+        print(f"\n{C.ROSE}❌ İndirilen dosya geçerli bir macOSCode betiği değil.{C.RESET}")
+        if interactive:
+            print(f"\n{C.GRAY}Devam etmek için bir tuşa basın...{C.RESET}")
+            get_key()
+        return
+
+    targets = []
+    current_script = os.path.abspath(__file__)
+    targets.append(current_script)
+
+    for candidate in [
+        "/usr/local/bin/mc",
+        "/usr/local/bin/macoscode",
+        os.path.expanduser("~/.local/bin/mc"),
+        os.path.expanduser("~/.local/bin/macoscode")
+    ]:
+        if os.path.exists(candidate) and candidate not in targets:
+            targets.append(candidate)
+
+    updated_any = False
+    temp_path = f"/tmp/mc_update_{int(time.time())}.py"
+    with open(temp_path, "w", encoding="utf-8") as f:
+        f.write(new_code)
+    os.chmod(temp_path, 0o755)
+
+    for target in targets:
+        try:
+            shutil.copyfile(temp_path, target)
+            os.chmod(target, 0o755)
+            print(f"{C.EMERALD}✔ '{target}' başarıyla güncellendi.{C.RESET}")
+            updated_any = True
+        except PermissionError:
+            print(f"{C.GOLD}🔐 '{target}' güncellemesi için yönetici (sudo) izni isteniyor...{C.RESET}")
+            res = subprocess.run(f"sudo cp '{temp_path}' '{target}' && sudo chmod 755 '{target}'", shell=True)
+            if res.returncode == 0:
+                print(f"{C.EMERALD}✔ '{target}' başarıyla güncellendi (sudo ile).{C.RESET}")
+                updated_any = True
+            else:
+                print(f"{C.ROSE}❌ '{target}' güncellenemedi.{C.RESET}")
+        except Exception as e:
+            print(f"{C.ROSE}❌ '{target}' güncellenirken hata: {e}{C.RESET}")
+
+    try:
+        os.remove(temp_path)
+    except Exception:
+        pass
+
+    if updated_any:
+        print(f"\n{C.BOLD}{C.PURPLE}🎉 Tebrikler! 'mc' başarıyla en güncel sürüme yükseltildi! 🚀{C.RESET}")
+    else:
+        print(f"\n{C.GOLD}⚠️ Hedef dosyalar güncellenemedi.{C.RESET}")
+
+    if interactive:
+        print(f"\n{C.GRAY}Menüye dönmek için bir tuşa basın...{C.RESET}")
+        get_key()
+
 # Main Interactive TUI Loop
 def run_main_tui():
     selected_idx = 0
@@ -1712,6 +1796,7 @@ def run_main_tui():
         ("[6]", "📊", "Sistem Denetimi & Durum Raporu (System Audit / Status)", "audit"),
         ("[7]", "📦", "Kişiselleştirilmiş Bash Betiği Olarak Kaydet (.sh Export)", "export"),
         ("[8]", "⚙️ ", "'mc' Komutunu Global Sisteme Yükle (Install CLI)", "install"),
+        ("[9]", "🔄", "'mc' Aracını Güncelle (Self-Update from GitHub)", "update"),
         ("[0]", "🚪", "Çıkış (Quit)", "quit")
     ]
 
@@ -1726,7 +1811,7 @@ def run_main_tui():
             label_styled = f"{C.WHITE}{C.BOLD}{label}{C.RESET}" if idx == selected_idx else f"{C.GRAY}{label}{C.RESET}"
             print(f" {cursor} {num_styled} {icon}  {label_styled}")
 
-        print(f"\n{C.DARK_GRAY}Navigasyon: [↑/↓] Gezin • [Enter/Space] Seç • [1-8/0] Hızlı Tuş • [q] Çıkış{C.RESET}")
+        print(f"\n{C.DARK_GRAY}Navigasyon: [↑/↓] Gezin • [Enter/Space] Seç • [1-9/0] Hızlı Tuş • [q] Çıkış{C.RESET}")
 
         key = get_key()
         if key in ['UP', 'k']:
@@ -1738,7 +1823,7 @@ def run_main_tui():
             handle_action(action)
             if action == 'quit':
                 break
-        elif key in ['1', '2', '3', '4', '5', '6', '7', '8']:
+        elif key in ['1', '2', '3', '4', '5', '6', '7', '8', '9']:
             idx = int(key) - 1
             handle_action(menu_items[idx][3])
         elif key in ['0', 'q', 'ESC']:
@@ -1772,6 +1857,8 @@ def handle_action(action):
         export_custom_scripts()
     elif action == "install":
         install_mc_globally()
+    elif action == "update":
+        update_mc(interactive=True)
 
 # CLI Main Entry Point
 def main():
@@ -1786,6 +1873,7 @@ def main():
   mc --preset dev        Geliştirici optimizasyon paketini uygular
   mc --search dock       'dock' ile ilgili ayarları arar ve listeler
   mc --install           'mc' komutunu sisteme kalıcı olarak yükler
+  mc --update            'mc' komutunu GitHub'dan en son sürüme günceller
 """
     )
     parser.add_argument("-a", "--apply-all", action="store_true", help="Tüm 100 ayarı uygula")
@@ -1795,6 +1883,7 @@ def main():
     parser.add_argument("--search", type=str, help="Belirli bir kelimeyi ara")
     parser.add_argument("-d", "--dry-run", action="store_true", help="Komutları çalıştırmadan sadece ekranda göster")
     parser.add_argument("-i", "--install", action="store_true", help="'mc' komutunu /usr/local/bin dizinine yükle")
+    parser.add_argument("-u", "--update", action="store_true", help="'mc' aracını GitHub'dan en son sürüme güncelle")
     parser.add_argument("-t", "--tui", action="store_true", help="İnteraktif TUI modunu başlat")
 
     args = parser.parse_args()
@@ -1820,6 +1909,8 @@ def main():
             print(f"    {C.CYAN}$ {t['apply'].replace(chr(10), ' && ')}{C.RESET}\n")
     elif args.install:
         install_mc_globally()
+    elif args.update:
+        update_mc(interactive=False)
     else:
         # Default: Launch Interactive TUI
         run_main_tui()

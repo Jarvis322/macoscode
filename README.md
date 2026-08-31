@@ -24,7 +24,10 @@ Terminalinizde ok tuşlarıyla gezebileceğiniz, `Space` ile ayarları seçip `E
 curl -sSL https://raw.githubusercontent.com/Jarvis322/macoscode/main/scripts/mc | python3
 ```
 
-> **İpucu:** `mc` komutunu terminalinize kalıcı olarak yüklemek için araç içinde `8` tuşuna basın veya `python3 scripts/mc --install` komutunu çalıştırın. Artık dilediğiniz zaman sadece **`mc`** yazabilirsiniz!
+> **İpucu (Kalıcı Kurulum):** `mc` komutunu terminalinize kalıcı olarak yüklemek için araç içinde `8` tuşuna basın, `python3 scripts/mc --install` komutunu çalıştırın veya tek satırda yükleyin:
+> ```bash
+> mkdir -p ~/.local/bin && curl -sSL https://raw.githubusercontent.com/Jarvis322/macoscode/main/scripts/mc -o ~/.local/bin/mc && cp ~/.local/bin/mc ~/.local/bin/macoscode && chmod +x ~/.local/bin/mc ~/.local/bin/macoscode
+> ```
 
 ```bash
 mc                     # İnteraktif TUI menüsünü açar
@@ -33,6 +36,7 @@ mc --revert-all        # Tüm ayarları orijinal fabrika varsayılanına döndü
 mc --status            # Sistemdeki ayarların aktiflik durumunu tarar (System Audit)
 mc --preset dev        # Geliştirici optimizasyon paketini uygular (dev | speed | battery | tahoe)
 mc --search dock       # 'dock' ile ilgili ayarları terminalden arar
+mc --update            # macOSCode CLI aracını en son sürüme günceller
 mc --dry-run           # Değişiklik yapmadan komutları önizler
 ```
 
