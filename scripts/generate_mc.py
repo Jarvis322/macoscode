@@ -418,15 +418,16 @@ def run_category_menu():
     while True:
         clear_screen()
         print_banner()
-        print(f"{C.BOLD}{C.CYAN}🎛️ Kategorilere Göre Ayar Gezgini{C.RESET}\n")
+        print(f"{C.BOLD}{C.CYAN}🎛️  Kategorilere Göre Ayar Gezgini{C.RESET}\n")
 
         for idx, cat in enumerate(CATEGORIES):
             cat_count = len([t for t in TWEAKS if t["cat"] == cat["id"]])
             cursor = f"{C.CYAN}{C.BOLD}➜{C.RESET}" if idx == selected_idx else " "
-            highlight = f"{C.CYAN}{C.BOLD}" if idx == selected_idx else f"{C.WHITE}"
-            print(f" {cursor} {highlight}{idx+1}. {cat['icon']} {cat['name']}{C.RESET} {C.DARK_GRAY}({cat_count} Ayar){C.RESET}")
+            num_styled = f"{C.CYAN}{C.BOLD}[{idx+1}]{C.RESET}" if idx == selected_idx else f"{C.DARK_GRAY}[{idx+1}]{C.RESET}"
+            label_styled = f"{C.WHITE}{C.BOLD}{cat['name']}{C.RESET}" if idx == selected_idx else f"{C.GRAY}{cat['name']}{C.RESET}"
+            print(f" {cursor} {num_styled} {cat['icon']}  {label_styled} {C.DARK_GRAY}({cat_count} Ayar){C.RESET}")
 
-        print(f"\n{C.DARK_GRAY}Navigasyon: [↑/↓] Gezin • [Enter/Space] Kategoriye Gir • [q/Esc] Geri{C.RESET}")
+        print(f"\n{C.DARK_GRAY}Navigasyon: [↑/↓] Gezin • [Enter/Space] Kategoriye Gir • [1-7] Hızlı Tuş • [q/Esc] Geri{C.RESET}")
 
         key = get_key()
         if key in ['UP', 'k']:
@@ -436,6 +437,11 @@ def run_category_menu():
         elif key in ['ENTER', 'SPACE']:
             chosen_cat = CATEGORIES[selected_idx]["id"]
             run_interactive_selector(category_filter=chosen_cat)
+        elif key in ['1', '2', '3', '4', '5', '6', '7']:
+            idx = int(key) - 1
+            if idx < len(CATEGORIES):
+                chosen_cat = CATEGORIES[idx]["id"]
+                run_interactive_selector(category_filter=chosen_cat)
         elif key in ['q', 'ESC']:
             break
 
@@ -443,7 +449,7 @@ def run_category_menu():
 def run_search_menu():
     clear_screen()
     print_banner()
-    print(f"{C.BOLD}{C.CYAN}🔍 Terminal İçi Ayar Arama{C.RESET}")
+    print(f"{C.BOLD}{C.CYAN}🔍  Terminal İçi Ayar Arama{C.RESET}")
     print(f"{C.DARK_GRAY}Aramak istediğiniz anahtar kelimeyi yazın (örn: dock, sudo, finder, tahoe):{C.RESET}\n")
     try:
         query = input(f"{C.BOLD}{C.CYAN}Arama ➜ {C.RESET}").strip().lower()
@@ -467,7 +473,7 @@ def run_search_menu():
     while True:
         clear_screen()
         print_banner()
-        print(f"{C.BOLD}{C.CYAN}🔍 '{query}' Arama Sonuçları ({len(matched)} Ayar Bulundu){C.RESET}")
+        print(f"{C.BOLD}{C.CYAN}🔍  '{query}' Arama Sonuçları ({len(matched)} Ayar Bulundu){C.RESET}")
         print("─" * 70)
 
         for idx, t in enumerate(matched):
@@ -511,7 +517,7 @@ def run_search_menu():
 def export_custom_scripts():
     clear_screen()
     print_banner()
-    print(f"{C.BOLD}{C.GOLD}📦 Kişiselleştirilmiş Bash Betiği Olarak Kaydet (.sh Export){C.RESET}\n")
+    print(f"{C.BOLD}{C.GOLD}📦  Kişiselleştirilmiş Bash Betiği Olarak Kaydet (.sh Export){C.RESET}\n")
 
     setup_file = "custom-macos-setup.sh"
     revert_file = "custom-macos-revert.sh"
@@ -543,26 +549,59 @@ def export_custom_scripts():
 def install_mc_globally():
     clear_screen()
     print_banner()
-    print(f"{C.BOLD}{C.CYAN}⚙️ 'mc' Komutunu Global Sisteme Yükle{C.RESET}\n")
+    print(f"{C.BOLD}{C.CYAN}⚙️   'mc' Komutunu Global Sisteme Yükle{C.RESET}\n")
 
     script_path = os.path.abspath(__file__)
-    target_dir = "/usr/local/bin" if os.access("/usr/local/bin", os.W_OK) else os.path.expanduser("~/.local/bin")
-    
-    os.makedirs(target_dir, exist_ok=True)
+    installed = False
+    target_dir = "/usr/local/bin"
     target_mc = os.path.join(target_dir, "mc")
     target_macoscode = os.path.join(target_dir, "macoscode")
 
     try:
+        os.makedirs(target_dir, exist_ok=True)
         shutil.copyfile(script_path, target_mc)
         shutil.copyfile(script_path, target_macoscode)
         os.chmod(target_mc, 0o755)
         os.chmod(target_macoscode, 0o755)
-        print(f"{C.EMERALD}✔ '{target_mc}' kuruldu.{C.RESET}")
-        print(f"{C.EMERALD}✔ '{target_macoscode}' kuruldu.{C.RESET}")
-        print(f"\n{C.BOLD}{C.PURPLE}Artık terminalinizde herhangi bir dizinde sadece 'mc' veya 'macoscode' yazarak çalıştırabilirsiniz! 🚀{C.RESET}")
-    except Exception as e:
-        print(f"{C.ROSE}Kurulum sırasında hata oluştu: {e}{C.RESET}")
-        print(f"{C.GRAY}Sudo ile çalıştırmayı deneyin: sudo cp {script_path} /usr/local/bin/mc{C.RESET}")
+        installed = True
+        print(f"{C.EMERALD}✔ '{target_mc}' başarıyla kuruldu.{C.RESET}")
+        print(f"{C.EMERALD}✔ '{target_macoscode}' başarıyla kuruldu.{C.RESET}")
+    except PermissionError:
+        print(f"{C.GOLD}🔐 '/usr/local/bin' için yönetici (sudo) izni isteniyor...{C.RESET}")
+        res = subprocess.run(f"sudo cp '{script_path}' '{target_mc}' && sudo cp '{script_path}' '{target_macoscode}' && sudo chmod 755 '{target_mc}' '{target_macoscode}'", shell=True)
+        if res.returncode == 0:
+            installed = True
+            print(f"\n{C.EMERALD}✔ '{target_mc}' başarıyla kuruldu.{C.RESET}")
+            print(f"{C.EMERALD}✔ '{target_macoscode}' başarıyla kuruldu.{C.RESET}")
+        else:
+            # Fallback to ~/.local/bin
+            user_bin = os.path.expanduser("~/.local/bin")
+            os.makedirs(user_bin, exist_ok=True)
+            u_mc = os.path.join(user_bin, "mc")
+            u_macoscode = os.path.join(user_bin, "macoscode")
+            shutil.copyfile(script_path, u_mc)
+            shutil.copyfile(script_path, u_macoscode)
+            os.chmod(u_mc, 0o755)
+            os.chmod(u_macoscode, 0o755)
+            installed = True
+            print(f"\n{C.EMERALD}✔ '{u_mc}' kullanıcınızın yerel dizinine kuruldu.{C.RESET}")
+
+            # Ensure PATH in zshrc
+            zshrc = os.path.expanduser("~/.zshrc")
+            path_export = 'export PATH="$HOME/.local/bin:$PATH"'
+            try:
+                content = open(zshrc).read() if os.path.exists(zshrc) else ""
+                if path_export not in content:
+                    with open(zshrc, "a") as f:
+                        f.write(f"\n# macOSCode mc CLI PATH\n{path_export}\n")
+                    print(f"{C.GRAY}ℹ️  ~/.zshrc dosyanıza PATH tanımı eklendi.{C.RESET}")
+            except Exception:
+                pass
+
+    if installed:
+        print(f"\n{C.BOLD}{C.PURPLE}✨ Kurulum tamamlandı! Artık terminalde doğrudan 'mc' veya 'macoscode' yazabilirsiniz! 🚀{C.RESET}")
+    else:
+        print(f"\n{C.ROSE}❌ Kurulum tamamlanamadı.{C.RESET}")
 
     print(f"\n{C.GRAY}Menüye dönmek için bir tuşa basın...{C.RESET}")
     get_key()
@@ -571,15 +610,15 @@ def install_mc_globally():
 def run_main_tui():
     selected_idx = 0
     menu_items = [
-        ("🚀 1. Master Setup (Tüm 100 Ayarı Tek Tıkla Uygula)", "apply_all"),
-        ("⏪ 2. Master Revert (Tüm Ayarları Fabrika Varsayılanına Döndür)", "revert_all"),
-        ("🎛️ 3. İnteraktif Kategori & Ayar Seçici (Mole Tarzı TUI)", "categories"),
-        ("⚡ 4. Hızlı Paketler (Presets: Developer, Speed, Battery, Tahoe)", "presets"),
-        ("🔍 5. Canlı Arama & Filtreleme (Search by Keyword)", "search"),
-        ("📊 6. Sistem Denetimi & Durum Raporu (System Audit / Status)", "audit"),
-        ("📦 7. Kişiselleştirilmiş Bash Betiği Olarak Kaydet (.sh Export)", "export"),
-        ("⚙️ 8. 'mc' Komutunu Global Sisteme Yükle (Install CLI)", "install"),
-        ("🚪 0. Çıkış (Quit)", "quit")
+        ("[1]", "🚀", "Master Setup (Tüm 100 Ayarı Tek Tıkla Uygula)", "apply_all"),
+        ("[2]", "⏪", "Master Revert (Tüm Ayarları Fabrika Varsayılanına Döndür)", "revert_all"),
+        ("[3]", "🎛️ ", "İnteraktif Kategori & Ayar Seçici (Mole Tarzı TUI)", "categories"),
+        ("[4]", "⚡", "Hızlı Paketler (Presets: Developer, Speed, Battery, Tahoe)", "presets"),
+        ("[5]", "🔍", "Canlı Arama & Filtreleme (Search by Keyword)", "search"),
+        ("[6]", "📊", "Sistem Denetimi & Durum Raporu (System Audit / Status)", "audit"),
+        ("[7]", "📦", "Kişiselleştirilmiş Bash Betiği Olarak Kaydet (.sh Export)", "export"),
+        ("[8]", "⚙️ ", "'mc' Komutunu Global Sisteme Yükle (Install CLI)", "install"),
+        ("[0]", "🚪", "Çıkış (Quit)", "quit")
     ]
 
     while True:
@@ -587,10 +626,11 @@ def run_main_tui():
         print_banner()
         print(f"{C.BOLD}{C.WHITE}Lütfen yapmak istediğiniz işlemi seçin:{C.RESET}\n")
 
-        for idx, (label, action) in enumerate(menu_items):
+        for idx, (num_tag, icon, label, action) in enumerate(menu_items):
             cursor = f"{C.CYAN}{C.BOLD}➜{C.RESET}" if idx == selected_idx else " "
-            highlight = f"{C.CYAN}{C.BOLD}" if idx == selected_idx else f"{C.WHITE}"
-            print(f" {cursor} {highlight}{label}{C.RESET}")
+            num_styled = f"{C.CYAN}{C.BOLD}{num_tag}{C.RESET}" if idx == selected_idx else f"{C.DARK_GRAY}{num_tag}{C.RESET}"
+            label_styled = f"{C.WHITE}{C.BOLD}{label}{C.RESET}" if idx == selected_idx else f"{C.GRAY}{label}{C.RESET}"
+            print(f" {cursor} {num_styled} {icon}  {label_styled}")
 
         print(f"\n{C.DARK_GRAY}Navigasyon: [↑/↓] Gezin • [Enter/Space] Seç • [1-8/0] Hızlı Tuş • [q] Çıkış{C.RESET}")
 
@@ -600,13 +640,13 @@ def run_main_tui():
         elif key in ['DOWN', 'j']:
             selected_idx = (selected_idx + 1) % len(menu_items)
         elif key in ['ENTER', 'SPACE']:
-            action = menu_items[selected_idx][1]
+            action = menu_items[selected_idx][3]
             handle_action(action)
             if action == 'quit':
                 break
         elif key in ['1', '2', '3', '4', '5', '6', '7', '8']:
             idx = int(key) - 1
-            handle_action(menu_items[idx][1])
+            handle_action(menu_items[idx][3])
         elif key in ['0', 'q', 'ESC']:
             print(f"\n{C.CYAN}macOSCode ile sisteminiz daima en yüksek performansta! Görüşmek üzere! 👋{C.RESET}\n")
             break
