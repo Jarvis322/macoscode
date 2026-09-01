@@ -779,6 +779,8 @@ class MenuBarAppDelegate: NSObject, NSApplicationDelegate {
         addToggle(to: finderMenu, title: "Ağ ve USB'ye .DS_Store Yazılmasını Engelle", state: dsActive, action: #selector(toggleDSStore))
         addToggle(to: finderMenu, title: "Çöp Kutusunu Boşaltırken Uyarıyı Kapat", state: warnTrashDisabled, action: #selector(toggleWarnTrash))
         addToggle(to: finderMenu, title: "Uzantı Değiştirme Uyarısını Kapat", state: warnExtDisabled, action: #selector(toggleWarnExt))
+        finderMenu.addItem(NSMenuItem.separator())
+        addLink(to: finderMenu, title: "⚙️ Masaüstü ve Finder Ayarlarını Aç", action: #selector(openDesktopDockSettings))
         
         let finderParent = NSMenuItem(title: "📁 Finder & Gelişmiş Dosya Yönetimi", action: nil, keyEquivalent: "")
         finderParent.submenu = finderMenu
@@ -796,6 +798,8 @@ class MenuBarAppDelegate: NSObject, NSApplicationDelegate {
         addToggle(to: winDockMenu, title: "Hareketi Azalt (Reduce Motion Hızlandırma)", state: reduceMotionActive, action: #selector(toggleReduceMotion))
         addToggle(to: winDockMenu, title: "Büyütülmüş Pencereyi Üstten Çekerek Geri Al", state: topDragActive, action: #selector(toggleTopDrag))
         addToggle(to: winDockMenu, title: "Dock'taki Son Kullanılan Uygulamaları Gizle", state: noRecents, action: #selector(toggleDockRecents))
+        winDockMenu.addItem(NSMenuItem.separator())
+        addLink(to: winDockMenu, title: "⚙️ Masaüstü ve Dock Sistem Ayarlarını Aç", action: #selector(openDesktopDockSettings))
         
         let winDockParent = NSMenuItem(title: "🪟 Pencereler, Masaüstü & Dock", action: nil, keyEquivalent: "")
         winDockParent.submenu = winDockMenu
@@ -812,9 +816,9 @@ class MenuBarAppDelegate: NSObject, NSApplicationDelegate {
         addToggle(to: inputMenu, title: "Otomatik Nokta, Büyük Harf ve Düzeltmeyi Kapat", state: autocorrectOff, action: #selector(toggleAutocorrect))
         addToggle(to: inputMenu, title: "Ses Seviyesi Değişirken Çıkan Bip Sesini Kapat", state: volumeBeepOff, action: #selector(toggleVolumeBeep))
         inputMenu.addItem(NSMenuItem.separator())
-        let tpSettingsItem = NSMenuItem(title: "⚙️ Trackpad Sistem Ayarlarını Aç", action: #selector(openTrackpadSettings), keyEquivalent: "")
-        tpSettingsItem.target = self
-        inputMenu.addItem(tpSettingsItem)
+        addLink(to: inputMenu, title: "⚙️ Trackpad Sistem Ayarlarını Aç (Anında Eşitle)", action: #selector(openTrackpadSettings))
+        addLink(to: inputMenu, title: "⚙️ Klavye Sistem Ayarlarını Aç", action: #selector(openKeyboardSettings))
+        addLink(to: inputMenu, title: "⚙️ Ses ve Geri Bildirim Ayarlarını Aç", action: #selector(openSoundSettings))
         
         let inputParent = NSMenuItem(title: "⌨️ Klavye, Trackpad & Donanım Girdileri", action: nil, keyEquivalent: "")
         inputParent.submenu = inputMenu
@@ -831,6 +835,8 @@ class MenuBarAppDelegate: NSObject, NSApplicationDelegate {
         addToggle(to: devMenu, title: "Çökme Raporu (Crash Reporter) Pencerelerini Kapat", state: crashDialogOff, action: #selector(toggleCrashReporter))
         addToggle(to: devMenu, title: "Bluetooth Yüksek Ses Kalitesi (Bitpool 40)", state: bitpoolBoost, action: #selector(toggleBluetoothBitpool))
         addToggle(to: devMenu, title: "Kayıt ve Yazdırma Pencerelerini Genişletilmiş Aç", state: expandPanels, action: #selector(toggleExpandPanels))
+        devMenu.addItem(NSMenuItem.separator())
+        addLink(to: devMenu, title: "⚙️ Gizlilik & Güvenlik Ayarlarını Aç", action: #selector(openPrivacySettings))
         
         let devParent = NSMenuItem(title: "⚡ Geliştirici, Güvenlik & Sistem", action: nil, keyEquivalent: "")
         devParent.submenu = devMenu
@@ -844,6 +850,9 @@ class MenuBarAppDelegate: NSObject, NSApplicationDelegate {
         addToggle(to: powerMenu, title: "Prizde İken Uykuyu Engelle (Never Sleep)", state: neverSleepAc, action: #selector(toggleAcNeverSleep))
         addToggle(to: powerMenu, title: "Kapak Kapalıyken Uyumayı Engelle (Clamshell)", state: clamshellNoSleep, action: #selector(toggleClamshellSleep))
         addToggle(to: powerMenu, title: "Mac Başlangıç Sesini (Startup Chime) Sustur", state: startupMute, action: #selector(toggleStartupMute))
+        powerMenu.addItem(NSMenuItem.separator())
+        addLink(to: powerMenu, title: "⚙️ Pil ve Güç Ayarlarını Aç", action: #selector(openBatterySettings))
+        addLink(to: powerMenu, title: "⚙️ Ağ ve Wi-Fi Ayarlarını Aç", action: #selector(openNetworkSettings))
         
         let powerParent = NSMenuItem(title: "🔋 Ağ, Güç Yönetimi & Donanım", action: nil, keyEquivalent: "")
         powerParent.submenu = powerMenu
@@ -859,6 +868,8 @@ class MenuBarAppDelegate: NSObject, NSApplicationDelegate {
         addToggle(to: tahoeMenu, title: "Spotlight Matematik Formüllerini Doğrudan Çözsün", state: spotDirectMath, action: #selector(toggleSpotlightDirectMath))
         addToggle(to: tahoeMenu, title: "Menü Çubuğu Simgelerini Sıkıştır (Notch Modu)", state: compactMenubar, action: #selector(toggleCompactMenubar))
         addToggle(to: tahoeMenu, title: "Yazma Araçları (Writing Tools) Gecikmesini Sıfırla", state: writingToolsFast, action: #selector(toggleWritingToolsDelay))
+        tahoeMenu.addItem(NSMenuItem.separator())
+        addLink(to: tahoeMenu, title: "⚙️ Spotlight Sistem Ayarlarını Aç", action: #selector(openSpotlightSettings))
         
         let tahoeParent = NSMenuItem(title: "🏔️ macOS Tahoe & Apple Intelligence", action: nil, keyEquivalent: "")
         tahoeParent.submenu = tahoeMenu
@@ -866,7 +877,27 @@ class MenuBarAppDelegate: NSObject, NSApplicationDelegate {
 
         menu.addItem(NSMenuItem.separator())
 
-        // 🛠️ SUBMENU 7: HIZLI SİSTEM ARAÇLARI
+        // ⚙️ SUBMENU 7: TÜM SİSTEM AYARLARI HUB'I
+        let settingsHubMenu = NSMenu()
+        settingsHubMenu.autoenablesItems = false
+        addLink(to: settingsHubMenu, title: "🖱️ Trackpad (İzleme Dörtgeni)", action: #selector(openTrackpadSettings))
+        addLink(to: settingsHubMenu, title: "⌨️ Klavye (Keyboard)", action: #selector(openKeyboardSettings))
+        addLink(to: settingsHubMenu, title: "🪟 Masaüstü ve Dock", action: #selector(openDesktopDockSettings))
+        addLink(to: settingsHubMenu, title: "🔊 Ses ve Bildirimler", action: #selector(openSoundSettings))
+        addLink(to: settingsHubMenu, title: "🔋 Pil ve Enerji Yönetimi", action: #selector(openBatterySettings))
+        addLink(to: settingsHubMenu, title: "📶 Ağ ve Wi-Fi", action: #selector(openNetworkSettings))
+        addLink(to: settingsHubMenu, title: "🔒 Gizlilik ve Güvenlik", action: #selector(openPrivacySettings))
+        addLink(to: settingsHubMenu, title: "🔍 Spotlight Arama", action: #selector(openSpotlightSettings))
+        addLink(to: settingsHubMenu, title: "🖥️ Ekranlar (Displays)", action: #selector(openDisplaysSettings))
+        addLink(to: settingsHubMenu, title: "🚪 Kilit Ekranı (Lock Screen)", action: #selector(openLockScreenSettings))
+        settingsHubMenu.addItem(NSMenuItem.separator())
+        addLink(to: settingsHubMenu, title: "⚙️ Tüm Sistem Ayarlarını Aç", action: #selector(openGeneralSettings))
+        
+        let settingsHubParent = NSMenuItem(title: "⚙️ Sistem Ayarları Kısayolları (Hızlı Eşitleme)", action: nil, keyEquivalent: "")
+        settingsHubParent.submenu = settingsHubMenu
+        menu.addItem(settingsHubParent)
+
+        // 🛠️ SUBMENU 8: HIZLI SİSTEM ARAÇLARI
         let toolsMenu = NSMenu()
         toolsMenu.autoenablesItems = false
         
@@ -911,6 +942,12 @@ class MenuBarAppDelegate: NSObject, NSApplicationDelegate {
         let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
         item.target = self
         item.state = state ? .on : .off
+        menu.addItem(item)
+    }
+    
+    private func addLink(to menu: NSMenu, title: String, action: Selector) {
+        let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
+        item.target = self
         menu.addItem(item)
     }
     
@@ -1408,6 +1445,46 @@ class MenuBarAppDelegate: NSObject, NSApplicationDelegate {
     
     @objc func openTrackpadSettings() {
         _ = shell("open 'x-apple.systempreferences:com.apple.Trackpad-Settings.extension' 2>/dev/null || open /System/Applications/System\\ Settings.app")
+    }
+    
+    @objc func openKeyboardSettings() {
+        _ = shell("open 'x-apple.systempreferences:com.apple.Keyboard-Settings.extension' 2>/dev/null || open /System/Applications/System\\ Settings.app")
+    }
+    
+    @objc func openDesktopDockSettings() {
+        _ = shell("open 'x-apple.systempreferences:com.apple.Desktop-Settings.extension' 2>/dev/null || open /System/Applications/System\\ Settings.app")
+    }
+    
+    @objc func openSoundSettings() {
+        _ = shell("open 'x-apple.systempreferences:com.apple.Sound-Settings.extension' 2>/dev/null || open /System/Applications/System\\ Settings.app")
+    }
+    
+    @objc func openBatterySettings() {
+        _ = shell("open 'x-apple.systempreferences:com.apple.Battery-Settings.extension' 2>/dev/null || open /System/Applications/System\\ Settings.app")
+    }
+    
+    @objc func openNetworkSettings() {
+        _ = shell("open 'x-apple.systempreferences:com.apple.Network-Settings.extension' 2>/dev/null || open /System/Applications/System\\ Settings.app")
+    }
+    
+    @objc func openPrivacySettings() {
+        _ = shell("open 'x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension' 2>/dev/null || open /System/Applications/System\\ Settings.app")
+    }
+    
+    @objc func openSpotlightSettings() {
+        _ = shell("open 'x-apple.systempreferences:com.apple.Spotlight-Settings.extension' 2>/dev/null || open /System/Applications/System\\ Settings.app")
+    }
+    
+    @objc func openDisplaysSettings() {
+        _ = shell("open 'x-apple.systempreferences:com.apple.Displays-Settings.extension' 2>/dev/null || open /System/Applications/System\\ Settings.app")
+    }
+    
+    @objc func openLockScreenSettings() {
+        _ = shell("open 'x-apple.systempreferences:com.apple.Lock-Screen-Settings.extension' 2>/dev/null || open /System/Applications/System\\ Settings.app")
+    }
+    
+    @objc func openGeneralSettings() {
+        _ = shell("open /System/Applications/System\\ Settings.app")
     }
     
     @objc func openTerminalMC() {
