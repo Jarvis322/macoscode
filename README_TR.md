@@ -20,13 +20,19 @@ Gelişmiş **İnteraktif Terminal Arayüzü (TUI/CLI)**, bağımsız tek tıkla 
 ## ⚡ Hızlı Başlangıç
 
 ### 1. 🎛️ İnteraktif Terminal Arayüzü (TUI / CLI)
-Terminalinizde ok tuşlarıyla gezebileceğiniz, `Space` ile ayarları seçip `Enter` ile anında uygulayabileceğiniz veya `r` ile geri alabileceğiniz interaktif arayüzü başlatın:
 
+#### 🍺 Homebrew ile Kurulum:
+```bash
+brew tap Jarvis322/macoscode
+brew install macoscode
+```
+
+#### ⚡ Veya Kurulum Yapmadan Anında Çalıştırın:
 ```bash
 curl -sSL https://raw.githubusercontent.com/Jarvis322/macoscode/main/scripts/mc | python3
 ```
 
-> **İpucu (Kalıcı Kurulum):** `mc` komutunu terminalinize kalıcı olarak yüklemek için araç içinde `8` tuşuna basın, `python3 scripts/mc --install` komutunu çalıştırın veya tek satırda yükleyin:
+> **İpucu (Alternatif Tek Satırlık Yükleyici):**
 > ```bash
 > mkdir -p ~/.local/bin && curl -sSL https://raw.githubusercontent.com/Jarvis322/macoscode/main/scripts/mc -o ~/.local/bin/mc && cp ~/.local/bin/mc ~/.local/bin/macoscode && chmod +x ~/.local/bin/mc ~/.local/bin/macoscode
 > ```
@@ -37,11 +43,21 @@ mc --apply-all         # Tüm 100 optimizasyonu tek satırda uygular
 mc --revert-all        # Tüm ayarları orijinal fabrika varsayılanına döndürür
 mc --status            # Sistemdeki ayarların aktiflik durumunu tarar (System Audit)
 mc --preset dev        # Geliştirici optimizasyon paketini uygular (dev | speed | battery | tahoe)
+mc --menubar           # Native macOS Menü Çubuğu (Menu Bar) hızlı aç/kapa aracını başlatır (⚡)
 mc --search dock       # 'dock' ile ilgili ayarları terminalden arar
 mc --lang tr           # Türkçe dilini seçer ve kalıcı yapar (en | tr)
 mc --update            # macOSCode CLI aracını en son sürüme günceller
 mc --dry-run           # Değişiklik yapmadan komutları önizler
 ```
+
+---
+
+### 2. ⚡ Native macOS Menü Çubuğu (Menu Bar) Hızlı Aç/Kapa Aracı
+Günlük geliştirici ayarlarını (Gizli Dosyalar, Uzantılar, Masaüstü Simgeleri, Reduce Motion, Dock Hızı) doğrudan macOS menü çubuğundaki **⚡** simgesinden tikleyerek yönetmek isterseniz:
+
+* **CLI ile Başlat:** `mc --menubar`
+* **Doğrudan Swift ile Çalıştır:** `swift scripts/macoscode-menubar.swift &`
+* **SwiftBar / xbar Eklentisi:** `scripts/macoscode.1m.sh` dosyasını SwiftBar eklenti klasörünüze kopyalayın.
 
 ---
 

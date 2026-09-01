@@ -19,7 +19,11 @@ sudo -v
 while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 
 echo "⚡ [1/7] Sudo Touch ID ve Kabuk Ayarları Sıfırlanıyor..."
+sudo rm -f /etc/pam.d/sudo_local 2>/dev/null || true
 sudo sed -i '' '/pam_tid.so/d' /etc/pam.d/sudo 2>/dev/null || true
+sed -i '' '/setopt INTERACTIVE_COMMENTS/d' ~/.zshrc 2>/dev/null || true
+brew analytics on 2>/dev/null || true
+sed -i '' '/HOMEBREW_NO_ANALYTICS/d' ~/.zprofile 2>/dev/null || true
 defaults delete com.apple.Terminal ShowRepresentedURLInTitle 2>/dev/null || true
 
 echo "📁 [2/7] Finder ve Dosya Ayarları Orijinal Durumuna Döndürülüyor..."

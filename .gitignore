@@ -2,3 +2,5 @@
 *.mov
 .DS_Store
 __pycache__/
+scripts/macoscode-menubar
+*.o

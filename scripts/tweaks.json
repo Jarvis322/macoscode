@@ -21,8 +21,8 @@
     "title": "Zsh Yorum Satırı (#) Yorumlama Desteği",
     "tag": "Zsh",
     "desc": "Terminal'e '#' içeren açıklamalı kod blokları yapıştırıldığında zsh syntax hatası vermesini engeller.",
-    "apply": "setopt INTERACTIVE_COMMENTS",
-    "revert": "unsetopt INTERACTIVE_COMMENTS",
+    "apply": "grep -q \"setopt INTERACTIVE_COMMENTS\" ~/.zshrc 2>/dev/null || echo \"setopt INTERACTIVE_COMMENTS\" >> ~/.zshrc",
+    "revert": "sed -i '' '/setopt INTERACTIVE_COMMENTS/d' ~/.zshrc 2>/dev/null || true",
     "title_en": "Enable Interactive Comments (#) in Zsh",
     "desc_en": "Allows pasting code blocks containing '#' comments into the terminal without causing Zsh syntax errors.",
     "catName_en": "Terminal, Zsh & Shell"
@@ -35,8 +35,8 @@
     "title": "Touch ID ile Sudo Yetkilendirmesi",
     "tag": "Auth",
     "desc": "Terminalde her 'sudo' komutunda şifre yazmak yerine Touch ID parmak iziyle anında onay vermeni sağlar.",
-    "apply": "sudo sed -i '' '1s;^;auth       sufficient     pam_tid.so\\n;' /etc/pam.d/sudo",
-    "revert": "sudo sed -i '' '/pam_tid.so/d' /etc/pam.d/sudo",
+    "apply": "if [ -f /etc/pam.d/sudo_local.template ]; then sudo sed -e 's/^#auth/auth/' /etc/pam.d/sudo_local.template | sudo tee /etc/pam.d/sudo_local >/dev/null; else sudo grep -q \"pam_tid.so\" /etc/pam.d/sudo || sudo sed -i '' '1s;^;auth       sufficient     pam_tid.so\\n;' /etc/pam.d/sudo; fi",
+    "revert": "sudo rm -f /etc/pam.d/sudo_local 2>/dev/null; sudo sed -i '' '/pam_tid.so/d' /etc/pam.d/sudo 2>/dev/null || true",
     "title_en": "Enable Touch ID Authorization for Sudo",
     "desc_en": "Allows fingerprint verification via Touch ID for 'sudo' commands instead of typing password every time.",
     "catName_en": "Terminal, Zsh & Shell"
@@ -63,8 +63,8 @@
     "title": "Homebrew Otomatik Analitik Gönderimini Kapatma",
     "tag": "Brew",
     "desc": "Homebrew'un anonim telemetri verisi toplamasını kapatıp paket indirme/güncelleme hızını artırır.",
-    "apply": "export HOMEBREW_NO_ANALYTICS=1",
-    "revert": "unset HOMEBREW_NO_ANALYTICS",
+    "apply": "brew analytics off 2>/dev/null || true\ngrep -q \"HOMEBREW_NO_ANALYTICS\" ~/.zprofile 2>/dev/null || echo \"export HOMEBREW_NO_ANALYTICS=1\" >> ~/.zprofile",
+    "revert": "brew analytics on 2>/dev/null || true\nsed -i '' '/HOMEBREW_NO_ANALYTICS/d' ~/.zprofile 2>/dev/null || true",
     "title_en": "Disable Homebrew Telemetry & Analytics",
     "desc_en": "Disables Homebrew's background anonymous telemetry data collection to accelerate package operations.",
     "catName_en": "Terminal, Zsh & Shell"

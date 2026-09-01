@@ -19,10 +19,13 @@ sudo -v
 while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 
 echo "⚡ [1/7] Terminal, Zsh ve Kabuk Optimizasyonları Yapılandırılıyor..."
-setopt INTERACTIVE_COMMENTS 2>/dev/null || true
+grep -q "setopt INTERACTIVE_COMMENTS" ~/.zshrc 2>/dev/null || echo "setopt INTERACTIVE_COMMENTS" >> ~/.zshrc
 defaults write com.apple.Terminal ShowRepresentedURLInTitle -bool false
-export HOMEBREW_NO_ANALYTICS=1
-if ! grep -q "pam_tid.so" /etc/pam.d/sudo 2>/dev/null; then
+brew analytics off 2>/dev/null || true
+grep -q "HOMEBREW_NO_ANALYTICS" ~/.zprofile 2>/dev/null || echo "export HOMEBREW_NO_ANALYTICS=1" >> ~/.zprofile
+if [ -f /etc/pam.d/sudo_local.template ]; then
+  sudo sed -e 's/^#auth/auth/' /etc/pam.d/sudo_local.template | sudo tee /etc/pam.d/sudo_local >/dev/null
+elif ! grep -q "pam_tid.so" /etc/pam.d/sudo 2>/dev/null; then
   sudo sed -i '' '1s;^;auth       sufficient     pam_tid.so\n;' /etc/pam.d/sudo 2>/dev/null || true
 fi
 

@@ -20,13 +20,19 @@ Includes an **Interactive Terminal UI (TUI/CLI)** with instant self-update capab
 ## ⚡ Quick Start
 
 ### 1. 🎛️ Interactive Terminal UI (TUI / CLI)
-Launch the interactive terminal interface where you can navigate with arrow keys, select tweaks with `Space`, and apply or revert instantly with `Enter` or `r`:
 
+#### 🍺 Install via Homebrew:
+```bash
+brew tap Jarvis322/macoscode
+brew install macoscode
+```
+
+#### ⚡ Or Run Instantly Without Installing:
 ```bash
 curl -sSL https://raw.githubusercontent.com/Jarvis322/macoscode/main/scripts/mc | python3
 ```
 
-> **Tip (Permanent CLI Installation):** To install the `mc` CLI command globally, press `8` inside the TUI menu, run `python3 scripts/mc --install`, or install via 1-liner:
+> **Tip (Alternative 1-Line Installer):**
 > ```bash
 > mkdir -p ~/.local/bin && curl -sSL https://raw.githubusercontent.com/Jarvis322/macoscode/main/scripts/mc -o ~/.local/bin/mc && cp ~/.local/bin/mc ~/.local/bin/macoscode && chmod +x ~/.local/bin/mc ~/.local/bin/macoscode
 > ```
@@ -37,11 +43,21 @@ mc --apply-all         # Apply all 100 optimizations in a single command
 mc --revert-all        # Restore all settings to Apple factory defaults
 mc --status            # Scan system configuration status (Audit Report)
 mc --preset dev        # Run optimization suites (dev | speed | battery | tahoe)
+mc --menubar           # Launch native macOS Menu Bar companion toggle app (⚡)
 mc --search dock       # Search tweaks matching keyword in terminal
 mc --lang en           # Set active language preference (en | tr)
 mc --update            # Self-update 'mc' CLI to the latest GitHub release
 mc --dry-run           # Preview commands without executing changes
 ```
+
+---
+
+### 2. ⚡ Native macOS Menu Bar Companion App
+Prefer toggling daily developer tweaks (Hidden Files, File Extensions, Desktop Icons, Reduce Motion, Dock Speed) right from your macOS status bar?
+
+* **Launch via CLI:** `mc --menubar`
+* **Or Run Directly in Swift:** `swift scripts/macoscode-menubar.swift &`
+* **SwiftBar / xbar Plugin:** Simply copy `scripts/macoscode.1m.sh` to your SwiftBar plugins folder.
 
 ---
 

@@ -121,8 +121,8 @@ def _load_tweaks():
         "title": "Zsh Yorum Satırı (#) Yorumlama Desteği",
         "tag": "Zsh",
         "desc": "Terminal'e '#' içeren açıklamalı kod blokları yapıştırıldığında zsh syntax hatası vermesini engeller.",
-        "apply": "setopt INTERACTIVE_COMMENTS",
-        "revert": "unsetopt INTERACTIVE_COMMENTS",
+        "apply": "grep -q \"setopt INTERACTIVE_COMMENTS\" ~/.zshrc 2>/dev/null || echo \"setopt INTERACTIVE_COMMENTS\" >> ~/.zshrc",
+        "revert": "sed -i '' '/setopt INTERACTIVE_COMMENTS/d' ~/.zshrc 2>/dev/null || true",
         "title_en": "Enable Interactive Comments (#) in Zsh",
         "desc_en": "Allows pasting code blocks containing '#' comments into the terminal without causing Zsh syntax errors.",
         "catName_en": "Terminal, Zsh & Shell"
@@ -135,8 +135,8 @@ def _load_tweaks():
         "title": "Touch ID ile Sudo Yetkilendirmesi",
         "tag": "Auth",
         "desc": "Terminalde her 'sudo' komutunda şifre yazmak yerine Touch ID parmak iziyle anında onay vermeni sağlar.",
-        "apply": "sudo sed -i '' '1s;^;auth       sufficient     pam_tid.so\\n;' /etc/pam.d/sudo",
-        "revert": "sudo sed -i '' '/pam_tid.so/d' /etc/pam.d/sudo",
+        "apply": "if [ -f /etc/pam.d/sudo_local.template ]; then sudo sed -e 's/^#auth/auth/' /etc/pam.d/sudo_local.template | sudo tee /etc/pam.d/sudo_local >/dev/null; else sudo grep -q \"pam_tid.so\" /etc/pam.d/sudo || sudo sed -i '' '1s;^;auth       sufficient     pam_tid.so\\n;' /etc/pam.d/sudo; fi",
+        "revert": "sudo rm -f /etc/pam.d/sudo_local 2>/dev/null; sudo sed -i '' '/pam_tid.so/d' /etc/pam.d/sudo 2>/dev/null || true",
         "title_en": "Enable Touch ID Authorization for Sudo",
         "desc_en": "Allows fingerprint verification via Touch ID for 'sudo' commands instead of typing password every time.",
         "catName_en": "Terminal, Zsh & Shell"
@@ -163,8 +163,8 @@ def _load_tweaks():
         "title": "Homebrew Otomatik Analitik Gönderimini Kapatma",
         "tag": "Brew",
         "desc": "Homebrew'un anonim telemetri verisi toplamasını kapatıp paket indirme/güncelleme hızını artırır.",
-        "apply": "export HOMEBREW_NO_ANALYTICS=1",
-        "revert": "unset HOMEBREW_NO_ANALYTICS",
+        "apply": "brew analytics off 2>/dev/null || true\ngrep -q \"HOMEBREW_NO_ANALYTICS\" ~/.zprofile 2>/dev/null || echo \"export HOMEBREW_NO_ANALYTICS=1\" >> ~/.zprofile",
+        "revert": "brew analytics on 2>/dev/null || true\nsed -i '' '/HOMEBREW_NO_ANALYTICS/d' ~/.zprofile 2>/dev/null || true",
         "title_en": "Disable Homebrew Telemetry & Analytics",
         "desc_en": "Disables Homebrew's background anonymous telemetry data collection to accelerate package operations.",
         "catName_en": "Terminal, Zsh & Shell"
@@ -1647,7 +1647,19 @@ def check_tweak_status(tweak):
             return False
     if "pam_tid.so" in apply_cmd:
         try:
-            res = subprocess.run("grep -q 'pam_tid.so' /etc/pam.d/sudo 2>/dev/null", shell=True)
+            res = subprocess.run("grep -q 'pam_tid.so' /etc/pam.d/sudo /etc/pam.d/sudo_local 2>/dev/null", shell=True)
+            return res.returncode == 0
+        except Exception:
+            return False
+    if "INTERACTIVE_COMMENTS" in apply_cmd:
+        try:
+            res = subprocess.run("grep -q 'setopt INTERACTIVE_COMMENTS' ~/.zshrc 2>/dev/null", shell=True)
+            return res.returncode == 0
+        except Exception:
+            return False
+    if "HOMEBREW_NO_ANALYTICS" in apply_cmd:
+        try:
+            res = subprocess.run("grep -q 'HOMEBREW_NO_ANALYTICS' ~/.zprofile ~/.zshrc 2>/dev/null", shell=True)
             return res.returncode == 0
         except Exception:
             return False
@@ -2025,6 +2037,35 @@ def export_custom_scripts():
     print(f"\n{C.GRAY}{back_msg}{C.RESET}")
     get_key()
 
+# Launch Swift Menu Bar Companion App
+def launch_menubar_app(interactive=True):
+    if interactive:
+        clear_screen()
+        print_banner()
+        title_lbl = txt("macOS Menu Bar Aracını Başlat", "Launch macOS Menu Bar Companion App")
+        print(f"{C.BOLD}{C.CYAN}🖥️   {title_lbl}{C.RESET}\n")
+
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    swift_script = os.path.join(script_dir, "macoscode-menubar.swift")
+
+    msg = txt("Menu Bar aracı (⚡) menü çubuğunuzda arka planda başlatılıyor...", "Starting Menu Bar companion app (⚡) in your top status bar...")
+    if interactive:
+        print(f"{C.EMERALD}{msg}{C.RESET}\n")
+
+    try:
+        subprocess.Popen(f"swift '{swift_script}' >/dev/null 2>&1 &", shell=True)
+        ok_msg = txt("✔ Menu Bar aracı başarıyla çalıştırıldı! Ekranınızın sağ üst köşesindeki ⚡ simgesine tıklayarak ayarları anında açıp kapatabilirsiniz.", "✔ Menu Bar companion app launched! Click the ⚡ icon in your top right menu bar to toggle tweaks with live checkmarks.")
+        if interactive:
+            print(f"{C.BOLD}{C.PURPLE}✨ {ok_msg}{C.RESET}")
+            back_msg = txt("Menüye dönmek için bir tuşa basın...", "Press any key to return to menu...")
+            print(f"\n{C.GRAY}{back_msg}{C.RESET}")
+            get_key()
+        else:
+            print(f"{C.EMERALD}{ok_msg}{C.RESET}")
+    except Exception as e:
+        err_msg = txt("Hata:", "Error:")
+        print(f"{C.ROSE}{err_msg} {e}{C.RESET}")
+
 # Self Installer (mc -> /usr/local/bin or ~/.local/bin)
 def install_mc_globally():
     clear_screen()
@@ -2237,7 +2278,8 @@ def run_main_tui():
             ("[6]", "📊", txt("Sistem Denetimi & Durum Raporu (System Audit / Status)", "System Audit & Health Status Report"), "audit"),
             ("[7]", "📦", txt("Kişiselleştirilmiş Bash Betiği Olarak Kaydet (.sh Export)", "Export Customized Bash Scripts (.sh)"), "export"),
             ("[8]", "⚙️ ", txt("'mc' Komutunu Global Sisteme Yükle (Install CLI)", "Install 'mc' CLI Globally"), "install"),
-            ("[9]", "🔄", txt("'mc' Aracını Güncelle (Self-Update from GitHub)", "Self-Update 'mc' from GitHub"), "update"),
+            ("[9]", "🖥️ ", txt("Menu Bar Hızlı Ayar Aracını Başlat (Menu Bar Companion)", "Launch Menu Bar Quick Toggle App"), "menubar"),
+            ("[U]", "🔄", txt("'mc' Aracını Güncelle (Self-Update from GitHub)", "Self-Update 'mc' from GitHub"), "update"),
             ("[L]", "🌐", txt("Dili Değiştir / Switch Language: 🇹🇷 Türkçe ➜ 🇬🇧 English", "Switch Language / Dili Değiştir: 🇬🇧 English ➜ 🇹🇷 Türkçe"), "toggle_lang"),
             ("[0]", "🚪", txt("Çıkış (Quit)", "Quit"), "quit")
         ]
@@ -2253,7 +2295,7 @@ def run_main_tui():
             label_styled = f"{C.WHITE}{C.BOLD}{label}{C.RESET}" if idx == selected_idx else f"{C.GRAY}{label}{C.RESET}"
             print(f" {cursor} {num_styled} {icon}  {label_styled}")
 
-        nav_main = txt("Navigasyon: [↑/↓] Gezin • [Enter/Space] Seç • [1-9/L/0] Hızlı Tuş • [q] Çıkış", "Navigation: [↑/↓] Navigate • [Enter/Space] Select • [1-9/L/0] Direct Key • [q] Quit")
+        nav_main = txt("Navigasyon: [↑/↓] Gezin • [Enter/Space] Seç • [1-9/U/L/0] Hızlı Tuş • [q] Çıkış", "Navigation: [↑/↓] Navigate • [Enter/Space] Select • [1-9/U/L/0] Direct Key • [q] Quit")
         print(f"\n{C.DARK_GRAY}{nav_main}{C.RESET}")
 
         key = get_key()
@@ -2269,6 +2311,10 @@ def run_main_tui():
         elif key in ['1', '2', '3', '4', '5', '6', '7', '8', '9']:
             idx = int(key) - 1
             handle_action(menu_items[idx][3])
+        elif key in ['u', 'U']:
+            handle_action("update")
+        elif key in ['m', 'M']:
+            handle_action("menubar")
         elif key in ['l', 'L']:
             handle_action("toggle_lang")
         elif key in ['0', 'q', 'ESC']:
@@ -2280,21 +2326,15 @@ def handle_action(action):
     if action == "apply_all":
         apply_prompt = txt("Tüm 100 optimizasyon uygulanacak. Onaylıyor musunuz? (e/h):", "All 100 optimizations will be applied. Continue? (y/n):")
         print(f"\n{C.GOLD}{apply_prompt}{C.RESET} ", end="")
-        choice = get_key()
-        if choice.lower() in ['e', 'y', 'ENTER']:
+        ans = input().strip().lower()
+        if ans in ["e", "evet", "y", "yes"]:
             apply_tweaks_list(TWEAKS, mode="apply")
-            cont_msg = txt("Devam etmek için bir tuşa basın...", "Press any key to continue...")
-            print(f"\n{C.GRAY}{cont_msg}{C.RESET}")
-            get_key()
     elif action == "revert_all":
-        revert_prompt = txt("Tüm ayarlar Apple fabrika varsayılanına döndürülecek. Onaylıyor musunuz? (e/h):", "All settings will be restored to Apple defaults. Continue? (y/n):")
+        revert_prompt = txt("DİKKAT: Tüm ayarlar Apple fabrika varsayılanına döndürülecek. Devam edilsin mi? (e/h):", "WARNING: All settings will revert to Apple factory defaults. Continue? (y/n):")
         print(f"\n{C.ROSE}{revert_prompt}{C.RESET} ", end="")
-        choice = get_key()
-        if choice.lower() in ['e', 'y', 'ENTER']:
+        ans = input().strip().lower()
+        if ans in ["e", "evet", "y", "yes"]:
             apply_tweaks_list(TWEAKS, mode="revert")
-            cont_msg = txt("Devam etmek için bir tuşa basın...", "Press any key to continue...")
-            print(f"\n{C.GRAY}{cont_msg}{C.RESET}")
-            get_key()
     elif action == "categories":
         run_category_menu()
     elif action == "presets":
@@ -2307,6 +2347,8 @@ def handle_action(action):
         export_custom_scripts()
     elif action == "install":
         install_mc_globally()
+    elif action == "menubar":
+        launch_menubar_app(interactive=True)
     elif action == "update":
         update_mc(interactive=True)
     elif action == "toggle_lang":
@@ -2325,6 +2367,7 @@ def main():
   mc --revert-all        Restore all settings to Apple factory defaults / Tüm ayarları sıfırlar
   mc --status            Scan system for active tweaks status / Sistem denetimi (Audit)
   mc --preset dev        Apply developer presets (dev | speed | battery | tahoe)
+  mc --menubar           Launch Swift Menu Bar companion app / Menü çubuğu aracını başlatır
   mc --search dock       Search and list tweaks matching "dock"
   mc --lang en           Set active language to English / Turkish (en | tr)
   mc --install           Install "mc" command globally / Sisteme kalıcı kurar
@@ -2337,6 +2380,7 @@ def main():
     parser.add_argument("-r", "--revert-all", action="store_true", help=txt("Tüm ayarları sıfırla (revert)", "Restore all settings to Apple factory defaults"))
     parser.add_argument("-s", "--status", action="store_true", help=txt("Sistem denetimi ve durum raporu (Audit)", "Run system configuration audit"))
     parser.add_argument("-p", "--preset", choices=["dev", "speed", "battery", "tahoe"], help=txt("Hızlı optimizasyon paketi çalıştır", "Run preset suite"))
+    parser.add_argument("-m", "--menubar", action="store_true", help=txt("macOS Menü Bar hızlı ayar aracını başlat", "Launch macOS Menu Bar companion app"))
     parser.add_argument("--search", type=str, help=txt("Belirli bir kelimeyi ara", "Search tweaks by keyword"))
     parser.add_argument("-l", "--lang", choices=["en", "tr"], help=txt("Dili ayarla (en: English, tr: Türkçe)", "Set CLI language (en: English, tr: Turkish)"))
     parser.add_argument("-d", "--dry-run", action="store_true", help=txt("Komutları çalıştırmadan sadece ekranda göster", "Preview commands without applying"))
@@ -2357,6 +2401,8 @@ def main():
         apply_tweaks_list(TWEAKS, mode="revert", dry_run=args.dry_run)
     elif args.status:
         run_system_audit(interactive=False)
+    elif args.menubar:
+        launch_menubar_app(interactive=False)
     elif args.preset:
         chosen = PRESETS[args.preset]
         tweaks_to_run = [t for t in TWEAKS if t["id"] in chosen["ids"]]
