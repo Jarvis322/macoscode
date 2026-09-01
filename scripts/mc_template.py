@@ -1120,11 +1120,11 @@ class MenuBarAppDelegate: NSObject, NSApplicationDelegate {
     @objc func toggleTapToClick() {
         let current = readBoolDefault(domain: "com.apple.driver.AppleBluetoothMultitouch.trackpad", key: "Clicking")
         if current {
-            shell("defaults delete com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking; defaults delete com.apple.AppleMultitouchTrackpad Clicking")
-            notify(title: "Trackpad", subtitle: "Dokunarak Tıklama Kapatıldı", message: "Fiziksel basma gerekecek.")
+            shell("defaults delete com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking 2>/dev/null; defaults delete com.apple.AppleMultitouchTrackpad Clicking 2>/dev/null; defaults -currentHost delete NSGlobalDomain com.apple.mouse.tapBehavior 2>/dev/null; defaults delete NSGlobalDomain com.apple.mouse.tapBehavior 2>/dev/null || true")
+            notify(title: "Trackpad", subtitle: "Dokunarak Tıklama Kapatıldı", message: "Değişikliğin donanıma tam yansıması için oturumu kapatıp açabilirsiniz.")
         } else {
-            shell("defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true; defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true; defaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1")
-            notify(title: "Trackpad", subtitle: "Dokunarak Tıklama Aktif", message: "Hafifçe dokunarak tıklama (Tap to Click) devrede.")
+            shell("defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true; defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true; defaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1; defaults write NSGlobalDomain com.apple.mouse.tapBehavior -int 1")
+            notify(title: "Trackpad", subtitle: "Dokunarak Tıklama Diske Yazıldı", message: "macOS donanım sürücüsünün algılaması için oturumu kapatıp açmanız (Log out) gerekir.")
         }
         refreshMenu()
     }
