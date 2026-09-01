@@ -2212,6 +2212,10 @@ class MenuBarAppDelegate: NSObject, NSApplicationDelegate {
         addToggle(to: inputMenu, title: "Trackpad Üç Parmakla Sürükleme", state: threeFinger, action: #selector(toggleThreeFinger))
         addToggle(to: inputMenu, title: "Otomatik Nokta, Büyük Harf ve Düzeltmeyi Kapat", state: autocorrectOff, action: #selector(toggleAutocorrect))
         addToggle(to: inputMenu, title: "Ses Seviyesi Değişirken Çıkan Bip Sesini Kapat", state: volumeBeepOff, action: #selector(toggleVolumeBeep))
+        inputMenu.addItem(NSMenuItem.separator())
+        let tpSettingsItem = NSMenuItem(title: "⚙️ Trackpad Sistem Ayarlarını Aç", action: #selector(openTrackpadSettings), keyEquivalent: "")
+        tpSettingsItem.target = self
+        inputMenu.addItem(tpSettingsItem)
         
         let inputParent = NSMenuItem(title: "⌨️ Klavye, Trackpad & Donanım Girdileri", action: nil, keyEquivalent: "")
         inputParent.submenu = inputMenu
@@ -2801,6 +2805,10 @@ class MenuBarAppDelegate: NSObject, NSApplicationDelegate {
         _ = shell("mc --revert-all 2>/dev/null || true")
         notify(title: "macOSCode", subtitle: "⏪ Fabrika Ayarlarına Dönüldü", message: "Tüm ayarlar orijinal Apple varsayılanına döndürüldü.")
         refreshMenu()
+    }
+    
+    @objc func openTrackpadSettings() {
+        _ = shell("open 'x-apple.systempreferences:com.apple.Trackpad-Settings.extension' 2>/dev/null || open /System/Applications/System\\ Settings.app")
     }
     
     @objc func openTerminalMC() {
